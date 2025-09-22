@@ -39,6 +39,8 @@ Este documento proporciona instrucciones para instalar y configurar el sistema C
    DB_PASSWORD=contraseña_mysql
    DB_NAME=nombre_de_la_base_de_datos_de_wordpress
    PORT=4000
+   ENABLE_SWAGGER=true
+   NODE_ENV=production
    ```
 
 5. Configurar las tablas de la base de datos ejecutando el script SQL en `database-setup.sql`:
@@ -65,7 +67,7 @@ Este documento proporciona instrucciones para instalar y configurar el sistema C
 
 2. En el panel de administración de WordPress, ir a Plugins y activar "Condo360 Polls"
 
-3. Si tu servicio Node.js se ejecuta en una URL diferente a `http://localhost:4000`, actualiza la variable `$api_url` en `condo360-polls.php`
+3. Si tu servicio Node.js se ejecuta en una URL diferente a `https://api.bonaventurecclub.com/polls`, actualiza la variable `$api_url` en `condo360-polls.php`
 
 ### 3. Uso del Sistema
 
@@ -89,13 +91,41 @@ Usar el shortcode `[condo360_poll_results id="X"]` donde X es el ID de la encues
 - **Administradores**: Pueden crear encuestas y ver resultados
 - **Suscriptores/Residentes**: Pueden votar en encuestas y ver resultados
 
-### 5. Solución de Problemas
+### 5. Documentación de la API (Swagger)
+
+La documentación de la API está disponible a través de Swagger UI:
+
+- En desarrollo: `http://localhost:4000/polls/api-docs`
+- En producción: `https://api.bonaventurecclub.com/polls/api-docs`
+
+Para habilitar Swagger en producción, asegúrate de que la variable `ENABLE_SWAGGER=true` esté en tu archivo `.env`.
+
+### 6. Configuración de Proxy Reverso (Nginx Proxy Manager)
+
+Para usar SSL offloading con Nginx Proxy Manager:
+
+1. Configura un proxy inverso que apunte a tu servicio Node.js
+2. Establece las siguientes cabeceras en la configuración del proxy:
+   ```
+   X-Forwarded-Proto: https
+   X-Forwarded-Port: 443
+   X-Real-IP: $remote_addr
+   X-Forwarded-For: $proxy_add_x_forwarded_for
+   Host: $http_host
+   ```
+3. Asegúrate de que el FQDN esté configurado como `api.bonaventurecclub.com`
+4. Todos los endpoints estarán disponibles bajo `/polls/api/`
+
+### 7. Solución de Problemas
 
 1. **El servicio no inicia**: Verificar que las credenciales de la base de datos en `.env` sean correctas
 2. **Las encuestas no se muestran**: Verificar que el servicio Node.js esté en ejecución y accesible
 3. **La votación no funciona**: Asegurarse de que los usuarios estén conectados a WordPress
 4. **Problemas de CORS**: Verificar que la URL del sitio WordPress coincida con la configuración de CORS en el servicio Node.js
+5. **Swagger no accesible**: Verificar que `ENABLE_SWAGGER=true` esté en el archivo `.env`
 
-### 6. Notas de Seguridad
+### 8. Notas de Seguridad
 
 - El servicio Node.js valida todos los IDs de usuarios de WordPress contra la base de datos
+- Se recomienda deshabilitar Swagger en producción si no es necesario (configurar `ENABLE_SWAGGER=false`)
+- Asegúrate de que el proxy inverso maneje correctamente las cabeceras de seguridad

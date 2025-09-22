@@ -15,7 +15,7 @@ Ubicación: `node-poll-service/`
 5. **Controladores**:
    - pollController.js - Implementaciones de endpoints API
 6. **Rutas**:
-   - pollRoutes.js - Definiciones de rutas API
+   - pollRoutes.js - Definiciones de rutas API con documentación Swagger
 7. **Aplicación Principal**:
    - index.js - Configuración de la aplicación Express
 8. **Configuración de Base de Datos**:
@@ -24,6 +24,7 @@ Ubicación: `node-poll-service/`
    - .env.example - Plantilla de variables de entorno
 10. **Documentación**:
     - README.md - Documentación del servicio
+    - Swagger UI - Documentación interactiva de la API
 
 ## Plugin de WordPress (wordpress-plugin/condo360-polls)
 
@@ -40,11 +41,19 @@ Ubicación: `wordpress-plugin/condo360-polls/`
 
 ## Endpoints API
 
-1. POST /api/polls - Crear encuesta (solo administradores)
-2. GET /api/polls - Listar encuestas abiertas
-3. GET /api/polls/:id - Obtener detalles de encuesta
-4. POST /api/polls/:id/vote - Votar en encuesta
-5. GET /api/polls/:id/results - Obtener resultados de encuesta
+Todos los endpoints están disponibles bajo el prefijo `/polls/api/`:
+
+1. POST /polls/api/polls - Crear encuesta (solo administradores)
+2. GET /polls/api/polls - Listar encuestas abiertas
+3. GET /polls/api/polls/:id - Obtener detalles de encuesta
+4. POST /polls/api/polls/:id/vote - Votar en encuesta
+5. GET /polls/api/polls/:id/results - Obtener resultados de encuesta
+
+## Documentación de la API (Swagger)
+
+La documentación interactiva de la API está disponible en:
+- Desarrollo: `http://localhost:4000/polls/api-docs`
+- Producción: `https://api.bonaventurecclub.com/polls/api-docs`
 
 ## Shortcodes de WordPress
 
@@ -55,3 +64,8 @@ Ubicación: `wordpress-plugin/condo360-polls/`
 
 1. condo360_polls - Preguntas y opciones de encuestas
 2. condo360_votes - Votos de usuarios en encuestas
+
+## Configuración de Proxy Reverso
+
+El sistema está configurado para funcionar con SSL offloading a través de un proxy reverso (como Nginx Proxy Manager) con el FQDN:
+- `https://api.bonaventurecclub.com/polls`

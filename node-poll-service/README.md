@@ -8,6 +8,8 @@ A Node.js microservice for handling polling functionality in Condo360, integrate
 - Integration with WordPress users and database
 - Role-based access control (admins can create polls, residents can vote)
 - CORS support for WordPress frontend integration
+- Swagger UI documentation
+- SSL offloading support for reverse proxy configurations
 
 ## Setup
 
@@ -25,11 +27,19 @@ A Node.js microservice for handling polling functionality in Condo360, integrate
 
 ## API Endpoints
 
-- `POST /api/polls` - Create a new poll (admin only)
-- `GET /api/polls` - Get all open polls
-- `GET /api/polls/:id` - Get poll details
-- `POST /api/polls/:id/vote` - Vote on a poll
-- `GET /api/polls/:id/results` - Get poll results
+All endpoints are prefixed with `/polls/api`:
+
+- `POST /polls/api/polls` - Create a new poll (admin only)
+- `GET /polls/api/polls` - Get all open polls
+- `GET /polls/api/polls/:id` - Get poll details
+- `POST /polls/api/polls/:id/vote` - Vote on a poll
+- `GET /polls/api/polls/:id/results` - Get poll results
+
+## Swagger Documentation
+
+When running in development mode or with `ENABLE_SWAGGER=true`, Swagger UI is available at:
+- `http://localhost:4000/polls/api-docs` (development)
+- `https://api.bonaventurecclub.com/polls/api-docs` (production)
 
 ## Environment Variables
 
@@ -38,3 +48,5 @@ A Node.js microservice for handling polling functionality in Condo360, integrate
 - `DB_PASSWORD` - MySQL password
 - `DB_NAME` - WordPress database name
 - `PORT` - Service port (default: 4000)
+- `ENABLE_SWAGGER` - Set to "true" to enable Swagger UI in production
+- `NODE_ENV` - Environment (development/production)
