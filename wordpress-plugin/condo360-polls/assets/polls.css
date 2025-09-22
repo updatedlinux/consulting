@@ -1,0 +1,132 @@
+/* Polls Container */
+#condo360-polls-container {
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+/* Poll Item */
+.poll-item {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.poll-item h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+/* Poll Options */
+.poll-option {
+    margin: 10px 0;
+    padding: 5px 0;
+}
+
+.poll-option label {
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.poll-option input[type="radio"] {
+    margin-right: 8px;
+}
+
+/* Poll Button */
+.poll-vote-button {
+    background-color: #0073aa;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.poll-vote-button:hover {
+    background-color: #005a87;
+}
+
+.poll-vote-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Poll Message */
+.poll-message {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 3px;
+}
+
+.poll-message .success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.poll-message .error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Poll Results */
+.condo360-poll-results {
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.poll-results {
+    margin-top: 20px;
+}
+
+.result-item {
+    margin-bottom: 15px;
+}
+
+.result-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.result-bar-container {
+    height: 20px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.result-bar {
+    height: 100%;
+    background-color: #0073aa;
+    border-radius: 10px;
+}
+
+.result-count {
+    font-size: 14px;
+    color: #666;
+}
+
+.total-votes {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+    font-weight: bold;
+}
+
+/* Loading */
+.polls-loading, .results-loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
