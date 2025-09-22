@@ -1,48 +1,41 @@
-# Condo360 Polls System - Verification Checklist
+# Lista de Verificación de Verificación del Sistema Condo360 Polls
 
-## Node.js Microservice
-- [x] Package.json with all dependencies
-- [x] Database configuration with connection pooling
-- [x] Poll model with CRUD operations
-- [x] Vote model with CRUD operations
-- [x] WordPress user service for validation
-- [x] Poll controller with all required endpoints
-- [x] API routes properly defined
-- [x] Main application entry point
-- [x] Database setup SQL script
-- [x] Environment configuration example
-- [x] README documentation
+## Verificación del Microservicio Node.js
 
-## WordPress Plugin
-- [x] Main plugin file with proper WordPress hooks
-- [x] Shortcode implementation for polls and results
-- [x] Admin interface for creating polls
-- [x] Frontend JavaScript for AJAX interactions
-- [x] CSS styling for polls and results
-- [x] README documentation
+- [ ] Node.js 14+ está instalado y disponible en el sistema
+- [ ] Las dependencias se instalaron correctamente con `npm install`
+- [ ] El archivo `.env` está configurado con las credenciales correctas de la base de datos
+- [ ] Las tablas de la base de datos se crearon ejecutando `database-setup.sql`
+- [ ] El servicio se inicia correctamente con `npm start`
+- [ ] El servicio responde en el puerto configurado (por defecto 4000)
+- [ ] Los endpoints API están accesibles y funcionando correctamente
 
-## API Endpoints
-- [x] POST /api/polls - Create poll (admin only)
-- [x] GET /api/polls - List open polls
-- [x] GET /api/polls/:id - Get poll details
-- [x] POST /api/polls/:id/vote - Vote on poll
-- [x] GET /api/polls/:id/results - Get poll results
+## Verificación del Plugin de WordPress
 
-## Security Features
-- [x] WordPress user validation
-- [x] Role-based access control (admin/resident)
-- [x] One vote per user per poll
-- [x] CORS configuration
-- [x] Input validation and sanitization
+- [ ] El plugin se copió correctamente al directorio de plugins de WordPress
+- [ ] El plugin está activado en el panel de administración de WordPress
+- [ ] El menú "Cartas Consulta" aparece para los administradores
+- [ ] El shortcode `[condo360_polls]` muestra encuestas abiertas
+- [ ] El shortcode `[condo360_poll_results id="X"]` muestra resultados de encuestas
 
-## Database Schema
-- [x] condo360_polls table
-- [x] condo360_votes table
-- [x] Foreign key constraints
-- [x] Proper indexing
+## Verificación de Funcionalidad
 
-## WordPress Integration
-- [x] [condo360_polls] shortcode
-- [x] [condo360_poll_results id="X"] shortcode
-- [x] Admin interface for poll creation
-- [x] AJAX-based frontend interactions
+- [ ] Los administradores pueden crear nuevas encuestas
+- [ ] Las encuestas creadas se almacenan correctamente en la base de datos
+- [ ] Los usuarios registrados pueden votar en encuestas
+- [ ] Los votos se registran correctamente en la base de datos
+- [ ] Los resultados de las encuestas se calculan y muestran correctamente
+- [ ] La seguridad está implementada correctamente (solo administradores pueden crear encuestas)
+
+## Verificación de Integración
+
+- [ ] El plugin de WordPress puede comunicarse con el microservicio Node.js
+- [ ] No hay errores de CORS entre WordPress y el servicio Node.js
+- [ ] Los datos de usuario se validan correctamente entre WordPress y el servicio Node.js
+- [ ] El sistema funciona correctamente en diferentes navegadores
+
+## Pruebas de Rendimiento
+
+- [ ] El sistema maneja múltiples usuarios votando simultáneamente
+- [ ] Las respuestas de la API son adecuadamente rápidas
+- [ ] La base de datos maneja correctamente las operaciones concurrentes

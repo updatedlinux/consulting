@@ -1,57 +1,57 @@
-# Condo360 Polls System - Component Summary
+# Resumen del Sistema Condo360 Polls - Componentes
 
-## Node.js Microservice (node-poll-service)
+## Microservicio Node.js (node-poll-service)
 
-Location: `node-poll-service/`
+Ubicación: `node-poll-service/`
 
-### Components:
-1. **Package.json** - Project dependencies and scripts
-2. **Database Configuration** - MySQL connection pool setup
-3. **Models**:
-   - Poll.js - Poll database operations
-   - Vote.js - Vote database operations
-4. **Services**:
-   - wordpressUserService.js - WordPress user validation
-5. **Controllers**:
-   - pollController.js - API endpoint implementations
-6. **Routes**:
-   - pollRoutes.js - API route definitions
-7. **Main Application**:
-   - index.js - Express app setup
-8. **Database Setup**:
-   - database-setup.sql - SQL schema for polls and votes
-9. **Configuration**:
-   - .env.example - Environment variable template
-10. **Documentation**:
-    - README.md - Service documentation
+### Componentes:
+1. **Package.json** - Dependencias del proyecto y scripts
+2. **Configuración de Base de Datos** - Configuración del pool de conexiones MySQL
+3. **Modelos**:
+   - Poll.js - Operaciones de base de datos de encuestas
+   - Vote.js - Operaciones de base de datos de votos
+4. **Servicios**:
+   - wordpressUserService.js - Validación de usuarios de WordPress
+5. **Controladores**:
+   - pollController.js - Implementaciones de endpoints API
+6. **Rutas**:
+   - pollRoutes.js - Definiciones de rutas API
+7. **Aplicación Principal**:
+   - index.js - Configuración de la aplicación Express
+8. **Configuración de Base de Datos**:
+   - database-setup.sql - Esquema SQL para encuestas y votos
+9. **Configuración**:
+   - .env.example - Plantilla de variables de entorno
+10. **Documentación**:
+    - README.md - Documentación del servicio
 
-## WordPress Plugin (wordpress-plugin/condo360-polls)
+## Plugin de WordPress (wordpress-plugin/condo360-polls)
 
-Location: `wordpress-plugin/condo360-polls/`
+Ubicación: `wordpress-plugin/condo360-polls/`
 
-### Components:
-1. **Main Plugin File**:
-   - condo360-polls.php - Plugin initialization and shortcodes
-2. **Assets**:
-   - polls.js - Frontend JavaScript functionality
-   - polls.css - Frontend styling
-3. **Documentation**:
-   - README.md - Plugin documentation
+### Componentes:
+1. **Archivo Principal del Plugin**:
+   - condo360-polls.php - Inicialización del plugin y shortcodes
+2. **Recursos**:
+   - polls.js - Funcionalidad JavaScript frontend
+   - polls.css - Estilos frontend
+3. **Documentación**:
+   - README.md - Documentación del plugin
 
-## API Endpoints
+## Endpoints API
 
-1. POST /api/polls - Create poll (admin only)
-2. GET /api/polls - List open polls
-3. GET /api/polls/:id - Get poll details
-4. POST /api/polls/:id/vote - Vote on poll
-5. GET /api/polls/:id/results - Get poll results
+1. POST /api/polls - Crear encuesta (solo administradores)
+2. GET /api/polls - Listar encuestas abiertas
+3. GET /api/polls/:id - Obtener detalles de encuesta
+4. POST /api/polls/:id/vote - Votar en encuesta
+5. GET /api/polls/:id/results - Obtener resultados de encuesta
 
-## WordPress Shortcodes
+## Shortcodes de WordPress
 
-1. [condo360_polls] - Display open polls
-2. [condo360_poll_results id="X"] - Display poll results
+1. [condo360_polls] - Mostrar encuestas abiertas
+2. [condo360_poll_results id="X"] - Mostrar resultados de encuesta
 
-## Database Tables
+## Tablas de Base de Datos
 
-1. condo360_polls - Poll questions and options
-2. condo360_votes - User votes on polls
+1. condo360_polls - Preguntas y opciones de encuestas
+2. condo360_votes - Votos de usuarios en encuestas

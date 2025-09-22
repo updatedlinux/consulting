@@ -1,104 +1,101 @@
-# Condo360 Polls System Installation Guide
+# Guía de Instalación del Sistema Condo360 Polls
 
-## Overview
+## Descripción General
 
-This document provides instructions for installing and configuring the Condo360 Polls system, which consists of:
-1. A Node.js microservice for handling poll operations
-2. A WordPress plugin for frontend integration
+Este documento proporciona instrucciones para instalar y configurar el sistema Condo360 Polls, que consiste en:
+1. Un microservicio Node.js para manejar las operaciones de encuestas
+2. Un plugin de WordPress para integración frontend
 
-## Prerequisites
+## Requisitos Previos
 
-- Node.js 14+ installed
-- MySQL database (shared with WordPress)
-- WordPress 5.0+ installed
-- npm or yarn package manager
+- Node.js 14+ instalado
+- Base de datos MySQL (compartida con WordPress)
+- WordPress 5.0+ instalado
+- Gestor de paquetes npm o yarn
 
-## Installation Steps
+## Pasos de Instalación
 
-### 1. Set up the Node.js Microservice
+### 1. Configurar el Microservicio Node.js
 
-1. Navigate to the `node-poll-service` directory:
+1. Navegar al directorio `node-poll-service`:
    ```bash
    cd node-poll-service
    ```
 
-2. Install dependencies:
+2. Instalar dependencias:
    ```bash
    npm install
    ```
 
-3. Create a `.env` file based on `.env.example`:
+3. Crear un archivo `.env` basado en `.env.example`:
    ```bash
    cp .env.example .env
    ```
 
-4. Edit the `.env` file with your database credentials:
+4. Editar el archivo `.env` con tus credenciales de base de datos:
    ```
    DB_HOST=localhost
-   DB_USER=your_mysql_username
-   DB_PASSWORD=your_mysql_password
-   DB_NAME=your_wordpress_database_name
+   DB_USER=nombre_de_usuario_mysql
+   DB_PASSWORD=contraseña_mysql
+   DB_NAME=nombre_de_la_base_de_datos_de_wordpress
    PORT=4000
    ```
 
-5. Set up the database tables by running the SQL script in `database-setup.sql`:
+5. Configurar las tablas de la base de datos ejecutando el script SQL en `database-setup.sql`:
    ```bash
-   mysql -u your_username -p your_database_name < database-setup.sql
+   mysql -u tu_usuario -p nombre_de_tu_base_de_datos < database-setup.sql
    ```
 
-6. Start the service:
+6. Iniciar el servicio:
    ```bash
    npm start
    ```
    
-   Or for development with auto-restart:
+   O para desarrollo con reinicio automático:
    ```bash
    npm run dev
    ```
 
-### 2. Install the WordPress Plugin
+### 2. Instalar el Plugin de WordPress
 
-1. Copy the `wordpress-plugin/condo360-polls` directory to your WordPress plugins directory:
+1. Copiar el directorio `wordpress-plugin/condo360-polls` al directorio de plugins de WordPress:
    ```bash
-   cp -r wordpress-plugin/condo360-polls /path/to/wordpress/wp-content/plugins/
+   cp -r wordpress-plugin/condo360-polls /ruta/a/wordpress/wp-content/plugins/
    ```
 
-2. In your WordPress admin panel, go to Plugins and activate "Condo360 Polls"
+2. En el panel de administración de WordPress, ir a Plugins y activar "Condo360 Polls"
 
-3. If your Node.js service is running on a different URL than `http://localhost:4000`, update the `$api_url` variable in `condo360-polls.php`
+3. Si tu servicio Node.js se ejecuta en una URL diferente a `http://localhost:4000`, actualiza la variable `$api_url` en `condo360-polls.php`
 
-### 3. Using the System
+### 3. Uso del Sistema
 
-#### Creating Polls
+#### Crear Encuestas
 
-1. As an administrator, go to the WordPress admin panel
-2. Navigate to "Cartas Consulta" in the main menu
-3. Fill in the poll question and options (one per line)
-4. Click "Crear Encuesta"
+1. Como administrador, ir al panel de administración de WordPress
+2. Navegar a "Cartas Consulta" en el menú principal
+3. Completar la pregunta de la encuesta y las opciones (una por línea)
+4. Hacer clic en "Crear Encuesta"
 
-#### Displaying Polls
+#### Mostrar Encuestas
 
-Use the shortcode `[condo360_polls]` in any post or page to display open polls.
+Usar el shortcode `[condo360_polls]` en cualquier entrada o página para mostrar las encuestas abiertas.
 
-#### Displaying Results
+#### Mostrar Resultados
 
-Use the shortcode `[condo360_poll_results id="X"]` where X is the poll ID to display results.
+Usar el shortcode `[condo360_poll_results id="X"]` donde X es el ID de la encuesta para mostrar los resultados.
 
-### 4. User Roles
+### 4. Roles de Usuario
 
-- **Administrators**: Can create polls and view results
-- **Subscribers/Residents**: Can vote on polls and view results
+- **Administradores**: Pueden crear encuestas y ver resultados
+- **Suscriptores/Residentes**: Pueden votar en encuestas y ver resultados
 
-### 5. Troubleshooting
+### 5. Solución de Problemas
 
-1. **Service won't start**: Check that your database credentials in `.env` are correct
-2. **Polls not displaying**: Verify the Node.js service is running and accessible
-3. **Voting not working**: Ensure users are logged in to WordPress
-4. **CORS issues**: Check that the WordPress site URL matches the CORS configuration in the Node.js service
+1. **El servicio no inicia**: Verificar que las credenciales de la base de datos en `.env` sean correctas
+2. **Las encuestas no se muestran**: Verificar que el servicio Node.js esté en ejecución y accesible
+3. **La votación no funciona**: Asegurarse de que los usuarios estén conectados a WordPress
+4. **Problemas de CORS**: Verificar que la URL del sitio WordPress coincida con la configuración de CORS en el servicio Node.js
 
-### 6. Security Notes
+### 6. Notas de Seguridad
 
-- The Node.js service validates all WordPress user IDs against the database
-- Users can only vote once per poll
-- Only administrators can create polls
-- All API endpoints use proper error handling and validation
+- El servicio Node.js valida todos los IDs de usuarios de WordPress contra la base de datos
