@@ -1,0 +1,157 @@
+/* Frontend Surveys Styles - Compatible with Astra theme */
+
+.condo360-surveys-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.condo360-survey-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.condo360-survey-card h3 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.4em;
+}
+
+.survey-description {
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.survey-dates {
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.survey-question {
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.survey-question:last-child {
+  border-bottom: none;
+  margin-bottom: 20px;
+  padding-bottom: 0;
+}
+
+.survey-question h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #444;
+}
+
+.survey-options {
+  margin-left: 10px;
+}
+
+.survey-option {
+  margin-bottom: 10px;
+}
+
+.survey-option label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.survey-option label:hover {
+  background-color: #f8f9fa;
+}
+
+.survey-option input[type="radio"] {
+  margin-right: 10px;
+}
+
+.survey-actions {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.survey-submit-btn {
+  background-color: #0073aa;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.survey-submit-btn:hover {
+  background-color: #005a87;
+}
+
+.survey-message {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.survey-message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.survey-message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.condo360-survey-message {
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.condo360-survey-message.info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.condo360-survey-message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .condo360-surveys-container {
+    padding: 10px;
+  }
+  
+  .condo360-survey-card {
+    padding: 15px;
+  }
+  
+  .survey-option label {
+    padding: 6px 10px;
+  }
+  
+  .survey-submit-btn {
+    width: 100%;
+    padding: 14px;
+  }
+}
