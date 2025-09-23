@@ -13,6 +13,12 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Logging middleware
+app.use('/api', (req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 // Swagger UI - solo en entorno de desarrollo o con variable de entorno específica
 if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SWAGGER === 'true') {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
