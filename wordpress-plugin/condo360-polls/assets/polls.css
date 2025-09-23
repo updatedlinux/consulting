@@ -127,6 +127,8 @@
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
+    position: relative;
+    padding-left: 50px;
 }
 
 .condo360-option:hover {
@@ -135,7 +137,13 @@
 }
 
 .condo360-option input[type="radio"] {
-    margin-right: 10px;
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0;
+    width: 18px;
+    height: 18px;
 }
 
 /* Resultados */
@@ -210,5 +218,9 @@
     .condo360-btn {
         width: 100%;
         margin: 5px 0;
+    }
+    
+    .condo360-option {
+        padding-left: 45px;
     }
 }

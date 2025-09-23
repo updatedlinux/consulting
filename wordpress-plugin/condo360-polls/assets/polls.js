@@ -10,19 +10,20 @@ jQuery(document).ready(function($) {
         },
         
         bindEvents: function() {
-            $('#condo360-poll-list').on('click', '.condo360-poll-item', function() {
+            $('#condo360-polls-container').on('click', '.condo360-poll-item', function() {
                 const pollId = $(this).data('poll-id');
                 condo360.loadPollDetails(pollId);
             });
             
-            $('#condo360-poll-details').on('click', '#condo360-back-to-list', function() {
+            $('#condo360-polls-container').on('click', '#condo360-back-to-list', function() {
                 condo360.loadPollList();
             });
         },
         
         loadPollList: function() {
             // Mostrar mensaje de carga
-            $('#condo360-poll-list').html('<p>Cargando encuestas...</p>');
+            $('#condo360-poll-list').html('<p>Cargando encuestas...</p>').show();
+            $('#condo360-poll-details').hide();
             
             $.get(`${this.apiBaseUrl}/polls`)
                 .done((data) => {
@@ -56,8 +57,9 @@ jQuery(document).ready(function($) {
         },
         
         loadPollDetails: function(pollId) {
-            // Mostrar mensaje de carga
-            $('#condo360-poll-details').html('<p>Cargando detalles de la encuesta...</p>');
+            // Mostrar mensaje de carga y ocultar la lista
+            $('#condo360-poll-list').hide();
+            $('#condo360-poll-details').html('<p>Cargando detalles de la encuesta...</p>').show();
             
             $.get(`${this.apiBaseUrl}/polls/${pollId}`)
                 .done((data) => {
