@@ -25,7 +25,11 @@ class Vote {
   // Get all votes for a poll
   static async getByPollId(pollId) {
     const [rows] = await pool.execute(
-      'SELECT id, poll_id, wp_user_id, answer, created_at FROM condo360_votes WHERE poll_id = ?',
+      `SELECT v.id, v.poll_id, v.wp_user_id, v.answer, v.created_at, u.user_login, u.user_email
+       FROM condo360_votes v
+       LEFT JOIN wp_users u ON v.wp_user_id = u.ID
+       WHERE v.poll_id = ?
+       ORDER BY v.created_at DESC`,
       [pollId]
     );
     return rows;

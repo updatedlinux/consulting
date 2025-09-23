@@ -1,52 +1,28 @@
 # Condo360 Poll Service
 
-A Node.js microservice for handling polling functionality in Condo360, integrated with WordPress.
+Microservicio para manejar encuestas en el sistema Condo360, integrado con WordPress.
 
-## Features
+## Características
 
-- REST API for creating and managing polls
-- Integration with WordPress users and database
-- Role-based access control (admins can create polls, residents can vote)
-- CORS support for WordPress frontend integration
-- Swagger UI documentation
-- SSL offloading support for reverse proxy configurations
+- Creación de encuestas con fechas de inicio y fin
+- Votación en encuestas abiertas
+- Visualización de resultados de encuestas
+- Prevención de votos duplicados
+- Integración con usuarios de WordPress
+- Documentación de API con Swagger
+- Visualización de votos por encuesta (solo administradores)
 
-## Setup
+## Endpoints de la API
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Create a `.env` file based on `.env.example`
-4. Set up the database tables using `database-setup.sql`
-5. Start the service:
-   ```bash
-   npm start
-   ```
+### Encuestas
 
-## API Endpoints
+- `POST /api/polls` - Crear una nueva encuesta (solo administradores)
+- `GET /api/polls` - Obtener todas las encuestas abiertas
+- `GET /api/polls/{id}` - Obtener una encuesta por ID
+- `POST /api/polls/{id}/vote` - Votar en una encuesta
+- `GET /api/polls/{id}/results` - Obtener resultados de una encuesta
+- `GET /api/polls/{id}/votes` - Obtener votos de una encuesta (solo administradores)
 
-All endpoints are prefixed with `/api`:
+### Documentación de la API
 
-- `POST /api/polls` - Create a new poll (admin only)
-- `GET /api/polls` - Get all open polls
-- `GET /api/polls/{id}` - Get poll details
-- `POST /api/polls/{id}/vote` - Vote on a poll
-- `GET /api/polls/{id}/results` - Get poll results
-
-## Swagger Documentation
-
-When running in development mode or with `ENABLE_SWAGGER=true`, Swagger UI is available at:
-- `http://localhost:4000/api-docs` (development)
-- `https://api.bonaventurecclub.com/api-docs` (production)
-
-## Environment Variables
-
-- `DB_HOST` - MySQL host
-- `DB_USER` - MySQL user
-- `DB_PASSWORD` - MySQL password
-- `DB_NAME` - WordPress database name
-- `PORT` - Service port (default: 4000)
-- `ENABLE_SWAGGER` - Set to "true" to enable Swagger UI in production
-- `NODE_ENV` - Environment (development/production)
+La documentación de la API está disponible en `/api-docs` cuando se ejecuta en modo desarrollo o cuando la variable de entorno `ENABLE_SWAGGER` está establecida en `true`.
