@@ -11,7 +11,7 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000/polls',
+        url: 'https://api.bonaventurecclub.com/polls',
         description: 'Development server',
       },
     ],
