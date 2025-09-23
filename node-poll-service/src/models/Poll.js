@@ -24,6 +24,9 @@ class Poll {
 
   // Get all open polls
   static async getOpenPolls() {
+    // First, check for polls that should be closed due to end date
+    await this.closeExpiredPolls();
+    
     const [rows] = await pool.execute(
       `SELECT id, question, options, status, start_date, end_date, created_at 
        FROM condo360_polls 
@@ -45,6 +48,9 @@ class Poll {
 
   // Get poll by ID
   static async getById(id) {
+    // First, check if this poll should be closed due to end date
+    await this.closeExpiredPollIfNecessary(id);
+    
     const [rows] = await pool.execute(
       'SELECT id, question, options, status, start_date, end_date, created_at FROM condo360_polls WHERE id = ?',
       [id]
@@ -79,6 +85,9 @@ class Poll {
 
   // Get poll results
   static async getResults(pollId) {
+    // First, check if this poll should be closed due to end date
+    await this.closeExpiredPollIfNecessary(pollId);
+    
     // Get poll details
     const poll = await this.getById(pollId);
     if (!poll) return null;
@@ -108,6 +117,51 @@ class Poll {
       results,
       total_votes: totalVotes
     };
+  }
+
+  // Close polls that have expired
+  static async closeExpiredPolls() {
+    const [result] = await pool.execute(
+      `UPDATE condo360_polls 
+       SET status = 'closed' 
+       WHERE status = 'open' 
+       AND end_date IS NOT NULL 
+       AND end_date <= NOW()`
+    );
+    return result.affectedRows;
+  }
+
+  // Close a specific poll if it has expired
+  static async closeExpiredPollIfNecessary(pollId) {
+    const [result] = await pool.execute(
+      `UPDATE condo360_polls 
+       SET status = 'closed' 
+       WHERE id = ? 
+       AND status = 'open' 
+       AND end_date IS NOT NULL 
+       AND end_date <= NOW()`
+    );
+    return result.affectedRows > 0;
+  }
+
+  // Get all polls (for admin view)
+  static async getAllPolls() {
+    // First, check for polls that should be closed due to end date
+    await this.closeExpiredPolls();
+    
+    const [rows] = await pool.execute(
+      `SELECT id, question, options, status, start_date, end_date, created_at 
+       FROM condo360_polls 
+       ORDER BY created_at DESC`
+    );
+    
+    // Parse options JSON
+    return rows.map(poll => {
+      return {
+        ...poll,
+        options: JSON.parse(poll.options)
+      };
+    });
   }
 }
 

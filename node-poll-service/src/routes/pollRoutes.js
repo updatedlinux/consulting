@@ -205,7 +205,7 @@ router.get('/polls', PollController.getOpenPolls);
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/polls/:id', PollController.getPollById);
+router.get('/polls/{id}', PollController.getPollById);
 
 // Vote on a poll
 /**
@@ -249,7 +249,7 @@ router.get('/polls/:id', PollController.getPollById);
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/polls/:id/vote', PollController.voteOnPoll);
+router.post('/polls/{id}/vote', PollController.voteOnPoll);
 
 // Get poll results
 /**
@@ -277,7 +277,7 @@ router.post('/polls/:id/vote', PollController.voteOnPoll);
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/polls/:id/results', PollController.getPollResults);
+router.get('/polls/{id}/results', PollController.getPollResults);
 
 // Get poll votes (admin only)
 /**
@@ -325,6 +325,65 @@ router.get('/polls/:id/results', PollController.getPollResults);
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/polls/:id/votes', PollController.getPollVotes);
+router.get('/polls/{id}/votes', PollController.getPollVotes);
+
+// Close a poll manually (admin only)
+/**
+ * @swagger
+ * /api/polls/{id}/close:
+ *   post:
+ *     summary: Cerrar una encuesta manualmente (solo administradores)
+ *     tags: [Polls]
+ *     security:
+ *       - wordpressAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la encuesta
+ *     responses:
+ *       200:
+ *         description: Encuesta cerrada exitosamente
+ *       400:
+ *         description: La encuesta ya está cerrada
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Solo administradores pueden cerrar encuestas
+ *       404:
+ *         description: Encuesta no encontrada
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.post('/polls/{id}/close', PollController.closePoll);
+
+// Get all polls (admin only)
+/**
+ * @swagger
+ * /api/polls/all:
+ *   get:
+ *     summary: Obtener todas las encuestas (solo administradores)
+ *     tags: [Polls]
+ *     security:
+ *       - wordpressAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de todas las encuestas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Poll'
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Solo administradores pueden ver todas las encuestas
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/polls/all', PollController.getAllPolls);
 
 module.exports = router;

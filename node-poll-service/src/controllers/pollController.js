@@ -191,6 +191,82 @@ class PollController {
       res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+  // Close a poll manually (admin only)
+  static async closePoll(req, res) {
+    try {
+      const { id } = req.params;
+      const userId = req.headers['x-wordpress-user-id']; // wp_user_id from header
+
+      // Validate user
+      if (!userId) {
+        return res.status(400).json({ error: 'User ID is required' });
+      }
+
+      const user = await WordPressUserService.validateUser(userId);
+      if (!user) {
+        return res.status(401).json({ error: 'Invalid user' });
+      }
+
+      // Check if user is admin
+      if (!user.isAdmin) {
+        return res.status(403).json({ error: 'Only administrators can close polls' });
+      }
+
+      // Check if poll exists
+      const poll = await Poll.getById(id);
+      if (!poll) {
+        return res.status(404).json({ error: 'Poll not found' });
+      }
+
+      // Check if poll is already closed
+      if (poll.status === 'closed') {
+        return res.status(400).json({ error: 'Poll is already closed' });
+      }
+
+      // Close the poll
+      const success = await Poll.updateStatus(id, 'closed');
+      
+      if (success) {
+        res.json({ message: 'Poll closed successfully' });
+      } else {
+        res.status(500).json({ error: 'Failed to close poll' });
+      }
+    } catch (error) {
+      console.error('Error closing poll:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  // Get all polls (admin only)
+  static async getAllPolls(req, res) {
+    try {
+      const userId = req.headers['x-wordpress-user-id']; // wp_user_id from header
+
+      // Validate user
+      if (!userId) {
+        return res.status(400).json({ error: 'User ID is required' });
+      }
+
+      const user = await WordPressUserService.validateUser(userId);
+      if (!user) {
+        return res.status(401).json({ error: 'Invalid user' });
+      }
+
+      // Check if user is admin
+      if (!user.isAdmin) {
+        return res.status(403).json({ error: 'Only administrators can view all polls' });
+      }
+
+      // Get all polls
+      const polls = await Poll.getAllPolls();
+      
+      res.json(polls);
+    } catch (error) {
+      console.error('Error fetching all polls:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
 
 module.exports = PollController;
