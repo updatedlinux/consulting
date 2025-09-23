@@ -56,7 +56,7 @@ class Condo360_Polls {
         if (!current_user_can('manage_options')) {
             wp_die('Insufficient permissions');
         }
-        
+
         // Handle messages
         $message = '';
         if (isset($_GET['message'])) {
@@ -72,15 +72,15 @@ class Condo360_Polls {
                     break;
             }
         }
-        
+
         // Get existing polls from API
         $current_user_id = get_current_user_id();
-        $response = wp_remote_get($this->api_url . '/api/polls/all', array(
+        $response = wp_remote_get($this->api_url . '/api/polls/admin', array(
             'headers' => array(
                 'X-WordPress-User-ID' => $current_user_id
             )
         ));
-        
+
         $polls = array();
         if (is_wp_error($response)) {
             $message .= '<div class="notice notice-error"><p>Error de conexión: ' . $response->get_error_message() . '</p></div>';
@@ -97,18 +97,18 @@ class Condo360_Polls {
                 $message .= '<div class="notice notice-error"><p>Error al obtener encuestas: ' . $response_code . ' - ' . $error_body . '</p></div>';
             }
         }
-        
+
         ?>
         <div class="wrap">
             <h1>Condo360 Polls</h1>
-            
+
             <?php echo $message; ?>
-            
+
             <h2>Crear Nueva Encuesta</h2>
             <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" id="create-poll-form">
                 <input type="hidden" name="action" value="condo360_create_poll">
                 <?php wp_nonce_field('condo360_create_poll', 'condo360_create_poll_nonce'); ?>
-                
+
                 <table class="form-table">
                     <tr>
                         <th scope="row"><label for="title">Título</label></th>
