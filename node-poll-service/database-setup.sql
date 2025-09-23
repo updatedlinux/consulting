@@ -1,25 +1,33 @@
--- Create polls table
-CREATE TABLE IF NOT EXISTS `condo360_polls` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `question` TEXT NOT NULL,
-  `options` TEXT NOT NULL,
-  `status` ENUM('open', 'closed') NOT NULL DEFAULT 'open',
-  `start_date` DATETIME NULL DEFAULT NULL,
-  `end_date` DATETIME NULL DEFAULT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- Create polls table with support for multiple questions
+CREATE TABLE IF NOT EXISTS condo360_polls (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    status ENUM('open', 'closed') DEFAULT 'open',
+    start_date DATETIME NULL,
+    end_date DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create poll_questions table to support multiple questions per poll
+CREATE TABLE IF NOT EXISTS condo360_poll_questions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    poll_id INT NOT NULL,
+    question_text TEXT NOT NULL,
+    options JSON NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (poll_id) REFERENCES condo360_polls(id) ON DELETE CASCADE
+);
 
 -- Create votes table
-CREATE TABLE IF NOT EXISTS `condo360_votes` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `poll_id` BIGINT UNSIGNED NOT NULL,
-  `wp_user_id` BIGINT UNSIGNED NOT NULL,
-  `answer` VARCHAR(255) NOT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `poll_id` (`poll_id`),
-  KEY `wp_user_id` (`wp_user_id`),
-  CONSTRAINT `fk_votes_poll_id` FOREIGN KEY (`poll_id`) REFERENCES `condo360_polls` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_votes_wp_user_id` FOREIGN KEY (`wp_user_id`) REFERENCES `wp_users` (`ID`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS condo360_votes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    poll_id INT NOT NULL,
+    question_id INT NOT NULL,
+    wp_user_id INT NOT NULL,
+    answer TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (poll_id) REFERENCES condo360_polls(id) ON DELETE CASCADE,
+    FOREIGN KEY (question_id) REFERENCES condo360_poll_questions(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_poll_question (wp_user_id, poll_id, question_id)
+);

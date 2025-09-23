@@ -1,12 +1,12 @@
 const Poll = require('../models/Poll');
 const Vote = require('../models/Vote');
-const WordPressUserService = require('../services/wordpressUserService');
+const WordPressUserService = require('../services/WordPressUserService');
 
 class PollController {
-  // Create a new poll (admin only)
+  // Create a new poll
   static async createPoll(req, res) {
     try {
-      const { question, options, start_date, end_date } = req.body;
+      const { title, description, questions, start_date, end_date } = req.body;
       const userId = req.headers['x-wordpress-user-id']; // wp_user_id from header
 
       // Validate user
@@ -25,12 +25,19 @@ class PollController {
       }
 
       // Validate input
-      if (!question || !options || !Array.isArray(options) || options.length === 0) {
-        return res.status(400).json({ error: 'Question and options are required' });
+      if (!title || !questions || !Array.isArray(questions) || questions.length === 0) {
+        return res.status(400).json({ error: 'Title and questions are required' });
+      }
+
+      // Validate each question
+      for (const question of questions) {
+        if (!question.text || !question.options || !Array.isArray(question.options) || question.options.length === 0) {
+          return res.status(400).json({ error: 'Each question must have text and options' });
+        }
       }
 
       // Create poll
-      const pollId = await Poll.create(question, options, start_date, end_date);
+      const pollId = await Poll.create(title, description, questions, start_date, end_date);
       
       res.status(201).json({ 
         message: 'Poll created successfully', 
@@ -42,7 +49,7 @@ class PollController {
     }
   }
 
-  // Get all open polls
+  // Get all open polls (without questions)
   static async getOpenPolls(req, res) {
     try {
       const polls = await Poll.getOpenPolls();
@@ -53,7 +60,7 @@ class PollController {
     }
   }
 
-  // Get poll by ID
+  // Get poll by ID with all its questions
   static async getPollById(req, res) {
     try {
       const { id } = req.params;
@@ -70,12 +77,12 @@ class PollController {
     }
   }
 
-  // Vote on a poll
+  // Vote on a poll question
   static async voteOnPoll(req, res) {
     try {
       const { id } = req.params;
-      const { optionIndex } = req.body;
-      const userId = req.headers['x-wordpress-user-id']; // wp_user_id from header
+      const { questionId, answer } = req.body;
+      const userId = req.headers['x-wordpress-user-id'];
 
       // Validate user
       if (!userId) {
@@ -87,45 +94,22 @@ class PollController {
         return res.status(401).json({ error: 'Invalid user' });
       }
 
-      // Check if poll exists
-      const poll = await Poll.getById(id);
-      if (!poll) {
-        return res.status(404).json({ error: 'Poll not found' });
+      // Validate input
+      if (questionId === undefined || answer === undefined) {
+        return res.status(400).json({ error: 'Question ID and answer are required' });
       }
 
-      // Check if poll is open
-      if (poll.status !== 'open') {
-        return res.status(400).json({ error: 'Poll is closed' });
-      }
-
-      // Check if poll is active (within start_date and end_date)
-      const now = new Date();
-      if (poll.start_date && new Date(poll.start_date) > now) {
-        return res.status(400).json({ error: 'Poll has not started yet' });
-      }
-      if (poll.end_date && new Date(poll.end_date) < now) {
-        return res.status(400).json({ error: 'Poll has expired' });
-      }
-
-      // Check if user has already voted
-      const hasVoted = await Poll.hasUserVoted(id, userId);
-      if (hasVoted) {
-        return res.status(409).json({ error: 'User has already voted on this poll' });
-      }
-
-      // Validate optionIndex
-      if (optionIndex === undefined || optionIndex < 0 || optionIndex >= poll.options.length) {
-        return res.status(400).json({ error: 'Invalid option index' });
-      }
-
-      // Get the actual answer text
-      const answer = poll.options[optionIndex];
-
-      // Create vote
-      await Vote.create(id, userId, answer);
+      // Vote on the poll
+      await Poll.vote(id, questionId, userId, answer);
       
       res.json({ message: 'Vote recorded successfully' });
     } catch (error) {
+      if (error.message === 'User already voted on this question') {
+        return res.status(409).json({ error: 'You have already voted on this question' });
+      }
+      if (error.message === 'Poll is not open') {
+        return res.status(400).json({ error: 'This poll is not open for voting' });
+      }
       console.error('Error voting on poll:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -136,13 +120,11 @@ class PollController {
     try {
       const { id } = req.params;
       const results = await Poll.getResults(id);
-      
-      if (!results) {
-        return res.status(404).json({ error: 'Poll not found' });
-      }
-      
       res.json(results);
     } catch (error) {
+      if (error.message === 'Poll not found') {
+        return res.status(404).json({ error: 'Poll not found' });
+      }
       console.error('Error fetching poll results:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -152,7 +134,7 @@ class PollController {
   static async getPollVotes(req, res) {
     try {
       const { id } = req.params;
-      const userId = req.headers['x-wordpress-user-id']; // wp_user_id from header
+      const userId = req.headers['x-wordpress-user-id'];
 
       // Validate user
       if (!userId) {
@@ -166,27 +148,15 @@ class PollController {
 
       // Check if user is admin
       if (!user.isAdmin) {
-        return res.status(403).json({ error: 'Only administrators can view poll votes' });
+        return res.status(403).json({ error: 'Only administrators can view votes' });
       }
 
-      // Check if poll exists
-      const poll = await Poll.getById(id);
-      if (!poll) {
+      const votes = await Vote.getVotesForPoll(id);
+      res.json(votes);
+    } catch (error) {
+      if (error.message === 'Poll not found') {
         return res.status(404).json({ error: 'Poll not found' });
       }
-
-      // Get votes
-      const votes = await Vote.getByPollId(id);
-      
-      res.json({ 
-        message: 'Poll votes retrieved successfully',
-        poll: {
-          id: poll.id,
-          question: poll.question
-        },
-        votes 
-      });
-    } catch (error) {
       console.error('Error fetching poll votes:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -196,7 +166,7 @@ class PollController {
   static async closePoll(req, res) {
     try {
       const { id } = req.params;
-      const userId = req.headers['x-wordpress-user-id']; // wp_user_id from header
+      const userId = req.headers['x-wordpress-user-id'];
 
       // Validate user
       if (!userId) {
@@ -213,26 +183,12 @@ class PollController {
         return res.status(403).json({ error: 'Only administrators can close polls' });
       }
 
-      // Check if poll exists
-      const poll = await Poll.getById(id);
-      if (!poll) {
-        return res.status(404).json({ error: 'Poll not found' });
-      }
-
-      // Check if poll is already closed
-      if (poll.status === 'closed') {
-        return res.status(400).json({ error: 'Poll is already closed' });
-      }
-
-      // Close the poll
-      const success = await Poll.updateStatus(id, 'closed');
-      
-      if (success) {
-        res.json({ message: 'Poll closed successfully' });
-      } else {
-        res.status(500).json({ error: 'Failed to close poll' });
-      }
+      await Poll.closePoll(id);
+      res.json({ message: 'Poll closed successfully' });
     } catch (error) {
+      if (error.message === 'Poll not found or already closed') {
+        return res.status(404).json({ error: 'Poll not found or already closed' });
+      }
       console.error('Error closing poll:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -241,7 +197,7 @@ class PollController {
   // Get all polls (admin only)
   static async getAllPolls(req, res) {
     try {
-      const userId = req.headers['x-wordpress-user-id']; // wp_user_id from header
+      const userId = req.headers['x-wordpress-user-id'];
 
       // Validate user
       if (!userId) {
@@ -258,9 +214,7 @@ class PollController {
         return res.status(403).json({ error: 'Only administrators can view all polls' });
       }
 
-      // Get all polls
       const polls = await Poll.getAllPolls();
-      
       res.json(polls);
     } catch (error) {
       console.error('Error fetching all polls:', error);

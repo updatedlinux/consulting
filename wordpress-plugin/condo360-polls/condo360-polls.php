@@ -105,18 +105,18 @@ class Condo360_Polls {
             <?php echo $message; ?>
             
             <h2>Crear Nueva Encuesta</h2>
-            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" id="create-poll-form">
                 <input type="hidden" name="action" value="condo360_create_poll">
                 <?php wp_nonce_field('condo360_create_poll', 'condo360_create_poll_nonce'); ?>
                 
                 <table class="form-table">
                     <tr>
-                        <th scope="row"><label for="question">Pregunta</label></th>
-                        <td><input type="text" id="question" name="question" class="regular-text" required></td>
+                        <th scope="row"><label for="title">Título</label></th>
+                        <td><input type="text" id="title" name="title" class="regular-text" required></td>
                     </tr>
                     <tr>
-                        <th scope="row"><label for="options">Opciones (una por línea)</label></th>
-                        <td><textarea id="options" name="options" rows="5" cols="50" required></textarea></td>
+                        <th scope="row"><label for="description">Descripción</label></th>
+                        <td><textarea id="description" name="description" rows="3" cols="50"></textarea></td>
                     </tr>
                     <tr>
                         <th scope="row"><label for="start_date">Fecha de Inicio (opcional)</label></th>
@@ -128,6 +128,28 @@ class Condo360_Polls {
                     </tr>
                 </table>
                 
+                <h3>Preguntas</h3>
+                <div id="questions-container">
+                    <div class="question-block">
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row"><label>Pregunta 1</label></th>
+                                <td><input type="text" name="questions[0][text]" class="regular-text" placeholder="Texto de la pregunta" required></td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label>Opciones</label></th>
+                                <td>
+                                    <textarea name="questions[0][options]" rows="4" cols="50" placeholder="Una opción por línea" required></textarea>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <p>
+                    <button type="button" id="add-question" class="button">Agregar Pregunta</button>
+                </p>
+                
                 <?php submit_button('Crear Encuesta'); ?>
             </form>
             
@@ -137,7 +159,8 @@ class Condo360_Polls {
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Pregunta</th>
+                            <th>Título</th>
+                            <th>Descripción</th>
                             <th>Estado</th>
                             <th>Fecha de Inicio</th>
                             <th>Fecha de Fin</th>
@@ -148,7 +171,8 @@ class Condo360_Polls {
                         <?php foreach ($polls as $poll): ?>
                             <tr>
                                 <td><?php echo esc_html($poll['id']); ?></td>
-                                <td><?php echo esc_html($poll['question']); ?></td>
+                                <td><?php echo esc_html($poll['title']); ?></td>
+                                <td><?php echo esc_html($poll['description'] ?? ''); ?></td>
                                 <td><?php echo esc_html($poll['status']); ?></td>
                                 <td><?php echo esc_html($poll['start_date'] ? date('Y-m-d H:i', strtotime($poll['start_date'])) : 'N/A'); ?></td>
                                 <td><?php echo esc_html($poll['end_date'] ? date('Y-m-d H:i', strtotime($poll['end_date'])) : 'N/A'); ?></td>
@@ -172,6 +196,55 @@ class Condo360_Polls {
                 <p>No hay encuestas disponibles.</p>
             <?php endif; ?>
         </div>
+        
+        <script>
+        jQuery(document).ready(function($) {
+            var questionIndex = 1;
+            
+            $('#add-question').click(function() {
+                var questionBlock = `
+                    <div class="question-block">
+                        <hr>
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row"><label>Pregunta ${questionIndex + 1}</label></th>
+                                <td><input type="text" name="questions[${questionIndex}][text]" class="regular-text" placeholder="Texto de la pregunta" required></td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label>Opciones</label></th>
+                                <td>
+                                    <textarea name="questions[${questionIndex}][options]" rows="4" cols="50" placeholder="Una opción por línea" required></textarea>
+                                </td>
+                            </tr>
+                        </table>
+                        <p><button type="button" class="button remove-question">Eliminar Pregunta</button></p>
+                    </div>
+                `;
+                
+                $('#questions-container').append(questionBlock);
+                questionIndex++;
+            });
+            
+            $(document).on('click', '.remove-question', function() {
+                $(this).closest('.question-block').remove();
+                // Update question numbers
+                $('.question-block').each(function(index) {
+                    $(this).find('label:first').text('Pregunta ' + (index + 1));
+                    $(this).find('input[name*="questions["]').each(function() {
+                        var name = $(this).attr('name');
+                        var newName = name.replace(/\[\d+\]/, '[' + index + ']');
+                        $(this).attr('name', newName);
+                    });
+                    $(this).find('textarea[name*="questions["]').each(function() {
+                        var name = $(this).attr('name');
+                        var newName = name.replace(/\[\d+\]/, '[' + index + ']');
+                        $(this).attr('name', newName);
+                    });
+                });
+                questionIndex = $('.question-block').length;
+            });
+        });
+        </script>
         <?php
     }
     
@@ -187,24 +260,40 @@ class Condo360_Polls {
         }
         
         // Get form data
-        $question = sanitize_text_field($_POST['question']);
-        $options = sanitize_textarea_field($_POST['options']);
+        $title = sanitize_text_field($_POST['title']);
+        $description = sanitize_textarea_field($_POST['description']);
         $start_date = sanitize_text_field($_POST['start_date']);
         $end_date = sanitize_text_field($_POST['end_date']);
+        $questions_data = isset($_POST['questions']) ? $_POST['questions'] : array();
         
-        // Convert options to array
-        $options_array = array_filter(array_map('trim', explode("\n", $options)));
+        // Process questions
+        $questions = array();
+        foreach ($questions_data as $question_data) {
+            $text = sanitize_text_field($question_data['text']);
+            $options = sanitize_textarea_field($question_data['options']);
+            
+            // Convert options to array
+            $options_array = array_filter(array_map('trim', explode("\n", $options)));
+            
+            if (!empty($text) && !empty($options_array)) {
+                $questions[] = array(
+                    'text' => $text,
+                    'options' => $options_array
+                );
+            }
+        }
         
         // Validate data
-        if (empty($question) || empty($options_array)) {
+        if (empty($title) || empty($questions)) {
             wp_redirect(add_query_arg(array('page' => 'condo360-polls', 'message' => 'error'), admin_url('admin.php')));
             exit;
         }
         
         // Prepare data for API
         $data = array(
-            'question' => $question,
-            'options' => $options_array
+            'title' => $title,
+            'description' => $description,
+            'questions' => $questions
         );
         
         // Add dates if provided

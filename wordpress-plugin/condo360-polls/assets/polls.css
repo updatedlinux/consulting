@@ -1,51 +1,76 @@
-/* Polls Container */
+/* polls.css */
+
 #condo360-polls-container {
     margin: 20px 0;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
 }
 
-/* Poll Item */
-.poll-item {
-    margin-bottom: 30px;
+.polls-loading, .poll-results-loading {
+    text-align: center;
     padding: 20px;
-    border: 1px solid #e0e0e0;
+    font-style: italic;
+}
+
+.poll-item {
+    border: 1px solid #ddd;
     border-radius: 5px;
-    background-color: #fff;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
 }
 
 .poll-item h3 {
     margin-top: 0;
-    color: #333;
 }
 
-/* Poll Options */
-.poll-option {
-    margin: 10px 0;
-    padding: 5px 0;
-}
-
-.poll-option label {
-    font-weight: normal;
+.select-poll-button {
+    background-color: #0073aa;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 3px;
     cursor: pointer;
 }
 
-.poll-option input[type="radio"] {
-    margin-right: 8px;
+.select-poll-button:hover {
+    background-color: #005a87;
 }
 
-/* Poll Button */
+.back-to-polls {
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.poll-question {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #fff;
+}
+
+.poll-question h3 {
+    margin-top: 0;
+}
+
+.poll-option {
+    margin-bottom: 10px;
+}
+
+.poll-option input[type="radio"] {
+    margin-right: 5px;
+}
+
 .poll-vote-button {
     background-color: #0073aa;
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 8px 15px;
     border-radius: 3px;
     cursor: pointer;
-    font-size: 14px;
-    margin-top: 10px;
 }
 
 .poll-vote-button:hover {
@@ -57,9 +82,8 @@
     cursor: not-allowed;
 }
 
-/* Poll Message */
 .poll-message {
-    margin-top: 15px;
+    margin-top: 10px;
     padding: 10px;
     border-radius: 3px;
 }
@@ -76,57 +100,45 @@
     border: 1px solid #f5c6cb;
 }
 
-/* Poll Results */
-.condo360-poll-results {
-    margin: 20px 0;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
+.poll-result-item {
+    margin-bottom: 20px;
 }
 
-.poll-results {
-    margin-top: 20px;
+.poll-result-item h3 {
+    margin-bottom: 10px;
 }
 
-.result-item {
-    margin-bottom: 15px;
+.poll-result-option {
+    margin-bottom: 10px;
 }
 
-.result-label {
+.poll-result-label {
     font-weight: bold;
     margin-bottom: 5px;
 }
 
-.result-bar-container {
+.poll-result-bar {
     height: 20px;
-    background-color: #e0e0e0;
-    border-radius: 10px;
+    background-color: #e9ecef;
+    border-radius: 3px;
     overflow: hidden;
     margin-bottom: 5px;
 }
 
-.result-bar {
+.poll-result-bar-fill {
     height: 100%;
     background-color: #0073aa;
-    border-radius: 10px;
+    transition: width 0.3s ease;
 }
 
-.result-count {
-    font-size: 14px;
+.poll-result-count {
+    font-size: 0.9em;
     color: #666;
 }
 
-.total-votes {
-    margin-top: 20px;
+.poll-total-votes {
+    font-weight: bold;
+    margin-top: 15px;
     padding-top: 10px;
     border-top: 1px solid #ddd;
-    font-weight: bold;
-}
-
-/* Loading */
-.polls-loading, .results-loading {
-    text-align: center;
-    padding: 20px;
-    color: #666;
 }

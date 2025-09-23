@@ -16,20 +16,32 @@ const PollController = require('../controllers/pollController');
  *     Poll:
  *       type: object
  *       required:
- *         - question
- *         - options
+ *         - title
+ *         - questions
  *       properties:
  *         id:
  *           type: integer
  *           description: ID de la encuesta
- *         question:
+ *         title:
  *           type: string
- *           description: La pregunta de la encuesta
- *         options:
+ *           description: Título de la encuesta
+ *         description:
+ *           type: string
+ *           description: Descripción de la encuesta
+ *         questions:
  *           type: array
  *           items:
- *             type: string
- *           description: Las opciones de respuesta
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               text:
+ *                 type: string
+ *               options:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *           description: Las preguntas de la encuesta
  *         status:
  *           type: string
  *           description: Estado de la encuesta (open/closed)
@@ -54,6 +66,12 @@ const PollController = require('../controllers/pollController');
  *         poll_id:
  *           type: integer
  *           description: ID de la encuesta
+ *         question_id:
+ *           type: integer
+ *           description: ID de la pregunta
+ *         question_text:
+ *           type: string
+ *           description: Texto de la pregunta
  *         wp_user_id:
  *           type: integer
  *           description: ID del usuario que votó
@@ -73,22 +91,26 @@ const PollController = require('../controllers/pollController');
  *     PollResult:
  *       type: object
  *       properties:
- *         poll_id:
- *           type: integer
- *           description: ID de la encuesta
- *         question:
- *           type: string
- *           description: Pregunta de la encuesta
- *         options:
- *           type: array
- *           items:
+ *         poll:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *             title:
+ *               type: string
+ *             description:
+ *               type: string
+ *         results:
+ *           type: object
+ *           additionalProperties:
  *             type: object
  *             properties:
- *               text:
+ *               question:
  *                 type: string
- *               votes:
- *                 type: integer
- *           description: Opciones con conteo de votos
+ *               options:
+ *                 type: object
+ *                 additionalProperties:
+ *                   type: integer
  *         total_votes:
  *           type: integer
  *           description: Total de votos
@@ -110,17 +132,31 @@ const PollController = require('../controllers/pollController');
  *           schema:
  *             type: object
  *             required:
- *               - question
- *               - options
+ *               - title
+ *               - questions
  *             properties:
- *               question:
+ *               title:
  *                 type: string
- *                 description: Pregunta de la encuesta
- *               options:
+ *                 description: Título de la encuesta
+ *               description:
+ *                 type: string
+ *                 description: Descripción de la encuesta
+ *               questions:
  *                 type: array
  *                 items:
- *                   type: string
- *                 description: Opciones de respuesta
+ *                   type: object
+ *                   required:
+ *                     - text
+ *                     - options
+ *                   properties:
+ *                     text:
+ *                       type: string
+ *                       description: Texto de la pregunta
+ *                     options:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: Opciones de respuesta
  *               start_date:
  *                 type: string
  *                 format: date-time
@@ -135,7 +171,12 @@ const PollController = require('../controllers/pollController');
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Poll'
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 pollId:
+ *                   type: integer
  *       400:
  *         description: Datos inválidos
  *       401:
@@ -147,16 +188,40 @@ const PollController = require('../controllers/pollController');
  */
 router.post('/polls', PollController.createPoll);
 
-// Get all open polls
+// Get all open polls (without questions)
 /**
  * @swagger
  * /api/polls:
  *   get:
- *     summary: Obtener todas las encuestas abiertas
+ *     summary: Obtener todas las encuestas abiertas (sin preguntas)
  *     tags: [Polls]
  *     responses:
  *       200:
  *         description: Lista de encuestas abiertas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   title:
+ *                     type: string
+ *                   description:
+ *                     type: string
+ *                   status:
+ *                     type: string
+ *                   start_date:
+ *                     type: string
+ *                     format: date-time
+ *                   end_date:
+ *                     type: string
+ *                     format: date-time
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
  *       500:
  *         description: Error interno del servidor
  */
@@ -179,7 +244,25 @@ router.get('/polls', PollController.getOpenPolls);
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Poll'
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   title:
+ *                     type: string
+ *                   description:
+ *                     type: string
+ *                   status:
+ *                     type: string
+ *                   start_date:
+ *                     type: string
+ *                     format: date-time
+ *                   end_date:
+ *                     type: string
+ *                     format: date-time
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
  *       401:
  *         description: No autorizado
  *       403:
@@ -189,12 +272,12 @@ router.get('/polls', PollController.getOpenPolls);
  */
 router.get('/polls/all', PollController.getAllPolls);
 
-// Get poll by ID
+// Get poll by ID with all its questions
 /**
  * @swagger
  * /api/polls/{id}:
  *   get:
- *     summary: Obtener una encuesta por ID
+ *     summary: Obtener una encuesta por ID con todas sus preguntas
  *     tags: [Polls]
  *     parameters:
  *       - in: path
@@ -217,12 +300,12 @@ router.get('/polls/all', PollController.getAllPolls);
  */
 router.get('/polls/:id', PollController.getPollById);
 
-// Vote on a poll
+// Vote on a poll question
 /**
  * @swagger
  * /api/polls/{id}/vote:
  *   post:
- *     summary: Votar en una encuesta
+ *     summary: Votar en una pregunta de la encuesta
  *     tags: [Polls]
  *     security:
  *       - wordpressAuth: []
@@ -240,11 +323,15 @@ router.get('/polls/:id', PollController.getPollById);
  *           schema:
  *             type: object
  *             required:
- *               - option_index
+ *               - questionId
+ *               - answer
  *             properties:
- *               option_index:
+ *               questionId:
  *                 type: integer
- *                 description: Índice de la opción seleccionada (0-based)
+ *                 description: ID de la pregunta
+ *               answer:
+ *                 type: string
+ *                 description: Respuesta seleccionada
  *     responses:
  *       200:
  *         description: Voto registrado exitosamente
@@ -255,7 +342,7 @@ router.get('/polls/:id', PollController.getPollById);
  *       404:
  *         description: Encuesta no encontrada
  *       409:
- *         description: Usuario ya votó en esta encuesta
+ *         description: Usuario ya votó en esta pregunta
  *       500:
  *         description: Error interno del servidor
  */
@@ -313,14 +400,12 @@ router.get('/polls/:id/results', PollController.getPollResults);
  *             schema:
  *               type: object
  *               properties:
- *                 message:
- *                   type: string
  *                 poll:
  *                   type: object
  *                   properties:
  *                     id:
  *                       type: integer
- *                     question:
+ *                     title:
  *                       type: string
  *                 votes:
  *                   type: array
