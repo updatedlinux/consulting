@@ -99,7 +99,6 @@ const PollController = require('../controllers/pollController');
  *           type: string
  */
 
-// Create a new poll (admin only)
 /**
  * @swagger
  * /api/polls:
@@ -131,7 +130,6 @@ const PollController = require('../controllers/pollController');
  */
 router.post('/polls', PollController.createPoll);
 
-// Get all open polls (public)
 /**
  * @swagger
  * /api/polls:
@@ -152,7 +150,6 @@ router.post('/polls', PollController.createPoll);
  */
 router.get('/polls', PollController.getOpenPolls);
 
-// Get poll by ID with questions (public)
 /**
  * @swagger
  * /api/polls/{id}:
@@ -163,12 +160,12 @@ router.get('/polls', PollController.getOpenPolls);
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID de la encuesta
  *         schema:
  *           type: integer
+ *         description: ID de la encuesta
  *     responses:
  *       200:
- *         description: Detalles de la encuesta
+ *         description: Detalles de la encuesta con preguntas
  *         content:
  *           application/json:
  *             schema:
@@ -177,13 +174,65 @@ router.get('/polls', PollController.getOpenPolls);
  *         description: Encuesta no encontrada
  *       500:
  *         description: Error interno del servidor
- // Get all polls (admin only)
+ */
+/**
+ * @swagger
+ * /api/polls/{id}:
+ *   get:
+ *     summary: Obtener una encuesta por ID con sus preguntas
+ *     tags: [Polls]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la encuesta
+ *     responses:
+ *       200:
+ *         description: Detalles de la encuesta con preguntas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Poll'
+ *       404:
+ *         description: Encuesta no encontrada
+ *       500:
+ *         description: Error interno del servidor
+ */
+// Get poll by ID with questions (public)
+router.get('/polls/:id', PollController.getPollById);
+
 /**
  * @swagger
  * /api/polls/admin:
  *   get:
  *     summary: Obtener todas las encuestas (solo administradores)
  *     tags: [Polls]
+ *     security:
+ *       - wordpressAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de todas las encuestas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Poll'
+ *       500:
+ *         description: Error interno del servidor
+ */
+// Get all polls (admin only)
+router.get('/polls/admin', PollController.getAllPolls);
+/**
+ * @swagger
+ * /api/polls/admin:
+ *   get:
+ *     summary: Obtener todas las encuestas (solo administradores)
+ *     tags: [Polls]
+ *     security:
+ *       - wordpressAuth: []
  *     responses:
  *       200:
  *         description: Lista de todas las encuestas
@@ -197,45 +246,110 @@ router.get('/polls', PollController.getOpenPolls);
  *         description: Error interno del servidor
  */
 router.get('/polls/admin', PollController.getAllPolls);
+router.get('/polls/admin', PollController.getAllPolls);
 
-// Test endpoint
 /**
  * @swagger
  * /api/polls/test:
  *   get:
  *     summary: Endpoint de prueba
  *     tags: [Polls]
+ *     parameters:
+ *       - in: query
+ *         name: testParam
+ *         schema:
+ *           type: string
+ *         description: Parámetro de prueba
  *     responses:
  *       200:
- *         description: Éxito
+ *         description: Respuesta de prueba
  *         content:
  *           application/json:
  *             schema:
  *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 params:
+ *                   type: object
+ *                 query:
+ *                   type: object
+ */
+// Test endpoint
+router.get('/polls/test', (req, res) => {
+  console.log('Test endpoint called');
+  console.log('Request params:', req.params);
+  console.log('Request query:', req.query);
+  res.json({ message: 'Test endpoint working', params: req.params, query: req.query });
+});
+/**
+ * @swagger
+ * /api/polls/test:
+ *   get:
+ *     summary: Endpoint de prueba
+ *     tags: [Polls]
+ *     parameters:
+ *       - in: query
+ *         name: testParam
+ *         schema:
+ *           type: string
+ *         description: Parámetro de prueba
+ *     responses:
+ *       200:
+ *         description: Respuesta de prueba
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 params:
+ *                   type: object
+ *                 query:
+ *                   type: object
+ */
+/**
+ * @swagger
+ * /api/polls/test:
+ *   get:
+ *     summary: Endpoint de prueba
+ *     tags: [Polls]
+ *     parameters:
+ *       - in: query
+ *         name: testParam
+ *         schema:
+ *           type: string
+ *         description: Parámetro de prueba
+ *     responses:
+ *       200:
+ *         description: Respuesta de prueba
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 params:
+ *                   type: object
+ *                 query:
+ *                   type: object
+ */
+// Test endpoint
+router.get('/polls/test', (req, res) => {
+  console.log('Test endpoint called');
+  console.log('Request params:', req.params);
+  console.log('Request query:', req.query);
+  res.json({ message: 'Test endpoint working', params: req.params, query: req.query });
+});
  // Test endpoint
- /**
-  * @swagger
-  * /api/polls/test:
-  *   get:
-  *     summary: Endpoint de prueba
-  *     tags: [Polls]
-  *     responses:
-  *       200:
-  *         description: Éxito
-  *         content:
-  *           application/json:
-  *             schema:
-  *               type: object
-  *               properties:
-  *                 message:
-  *                   type: string
-  */
- router.get('/polls/test', (req, res) => {
-   console.log('Test endpoint called');
-   console.log('Request params:', req.params);
-   console.log('Request query:', req.query);
-   res.json({ message: 'Test endpoint working', params: req.params, query: req.query });
- });
+router.get('/polls/test', (req, res) => {
+  console.log('Test endpoint called');
+  console.log('Request params:', req.params);
+  console.log('Request query:', req.query);
+  res.json({ message: 'Test endpoint working', params: req.params, query: req.query });
+});
 
  // Get poll by ID with questions (public)
  /**
