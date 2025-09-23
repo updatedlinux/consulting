@@ -3,113 +3,6 @@ jQuery(document).ready(function($) {
     loadPolls();
     
     // Load poll results when the results shortcode is present
-    j('Qcondo360-poll-results').euch(function() {
-        var pollId = $(this).data('poll-id');
-        loadPollResults(pollId);
-    });
-    
-    function loadPolls() {
-        var container = $('#condo360-polls-container');
-        var loading = container.find('.polls-loading');
-        var content = container.find('.polls-content');
-        
-        $.aery(document).ready(function($) {
-    // Load polls when the page loadsurl + '/api/polls',
-            method: 'GET',
-            success: function(data) {
-                loading.hide();
-                if (data.length > 0) {
-                    var pollsHtml = '';
-                    data.forEach(function(poll) {
-                        pollsHtml += '<div class="poll" data-poll-id="' + poll.id + '">';
-                        pollsHtml += '<h3>' + poll.question + '</h3>';
-                        pollsHtml += '<form class="poll-form">';
-                        pollsHtml += '<input type="hidden" name="poll_id" value="' + poll.id + '">';
-                        poll.options.forEach(function(option, index) {
-                            pollsHtml += '<div class="poll-option">';
-                            pollsHtml += '<input type="radio" name="option" id="option-' + poll.id + '-' + index + '" vale="' + index + '">';
-                            pollsHtml += '<label fo="option-' + pol.id + '-'index + ">' + option + '<lbel>';
-                            ollsHtml += '</dv>';
-                        });
-                        pollsHtml += '<button type="submit" class="poll-vote-button">Votar<button>';
-                        Html += '<form>;
-                        pollsHtml= '<divclass="ll-message" stye="dispay: none;"></div>';
-                        pollsHtml += '<div class="poll-results" style="display: none;"></div>';
-                        pollsHtml += '</div>';
-                    });
-                    content.html(pollsHtml).show();
-                } else {
-                    content.html('<p>No hay encuestas disponibles.</p>').show();
-                }
-            },
-            error: function(xhr, status, error) {
-                loading.hide();
-                container.html('<p>Error al cargar las encuestas.</p>');
-            }
-        });
-    }
-    
-    function loadPollResults(pollId) {
-        var resultsContainer = $('.condo360-poll-results[data-poll-id="' + poll '"]');
-        var loading =resultsContainer.find('.poll-results-loading);
-        var content = resultsContainer.find('.poll-results-content');
-        
-        $.ajax({
-            url: condo360_polls_ajax.api_url + 'api/polls/' + pollId + '/results',
-            method: 'GET',
-            success: function(data) {
-                loading.hide();
-                ar resultsHtml = '<h3>' + data.pll.quesion + '</h3>';
-                rsultsHtml += <div class="poll-results-chart">';
-                var totalVotes = data.total_votes;
-                for (var option in data.results) {
-                    var votes = data.results[option];
-                    var percentage = totalVotes > 0 ? (votes / totalVotes * 100).toFixed(1) : 0;
-                    resultsHtml += '<div class="poll-result-item">';
-                    resultsHtml += '<div class="poll-result-label">' + option + '</div>';
-                    resultsHtml += '<div class="poll-result-bar">';
-                    resultsHtml += '<div class="poll-result-bar-fill" style="width: ' + percentage + '%"></div>';
-                    resultsHtml += '</div>';
-                    resultsHtml += '<div class="poll-result-count">' + votes + ' votos (' + percentage + '%)</div>';
-                    resultsHtml += '</div>';
-                }
-                resultsHtml += '<div class="poll-total-votes">Total de votos: ' + totalVotes + '</div>';
-                resultsHtml += '</div>';
-                content.html(resultsHtml).show();
-            },
-            error: function(xhr, status, error) {
-                loading.hide();
-                content.html('<p>Error al cargar los resultados.</p>').show();
-            }
-        });
-    }
-    
-    // Handle poll voting
-    $(document).on('submit', '.poll-form', function(e) {
-        e.preventDefault();
-        var form = $(this);
-        var pollId = form.find('input[name="poll_id"]').val();
-        var selectedOption = form.find('input[name="option"]:checked');
-        var messageDiv = form.siblings('.poll-message');
-        var resultsDiv = form.siblings('.poll-results');
-        
-        if (selectedOption.length === 0) {
-            messageDiv.html('<p class="error">Por favor selecciona una opción.</p>').show();
-            return;
-        }
-        
-        var selectedOptionIndex = selectedOption.val();
-        var currentUserId = condo360_polls_ajax.current_user_id;
-        
-        // Disable the vote button to prevent double voting
-        form.find('.poll-vote-button').prop('disabled', true);
-        messageDiv.hide();
-        
-        $.ajax({
-            url: condo360_polls_ajax.api_url + '/api/polls/' + pollId + '/vote'
-    loadPolls();
-    
-    // Load poll results when the results shortcode is present
     $('.condo360-poll-results').each(function() {
         var pollId = $(this).data('poll-id');
         loadPollResults(pollId);
@@ -130,9 +23,7 @@ jQuery(document).ready(function($) {
                     data.forEach(function(poll) {
                         pollsHtml += '<div class="poll" data-poll-id="' + poll.id + '">';
                         pollsHtml += '<h3>' + poll.question + '</h3>';
-        });
-    });
-                pollsHtml += '<form class="poll-form">';
+                        pollsHtml += '<form class="poll-form">';
                         pollsHtml += '<input type="hidden" name="poll_id" value="' + poll.id + '">';
                         poll.options.forEach(function(option, index) {
                             pollsHtml += '<div class="poll-option">';

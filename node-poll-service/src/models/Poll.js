@@ -48,12 +48,18 @@ class Poll {
 
   // Get poll by ID
   static async getById(id) {
+    // Validate that id is a number
+    const pollId = parseInt(id);
+    if (isNaN(pollId)) {
+      return null;
+    }
+    
     // First, check if this poll should be closed due to end date
-    await this.closeExpiredPollIfNecessary(id);
+    await this.closeExpiredPollIfNecessary(pollId);
     
     const [rows] = await pool.execute(
       'SELECT id, question, options, status, start_date, end_date, created_at FROM condo360_polls WHERE id = ?',
-      [id]
+      [pollId]
     );
     
     if (rows.length === 0) return null;
@@ -67,35 +73,51 @@ class Poll {
 
   // Update poll status
   static async updateStatus(id, status) {
+    const pollId = parseInt(id);
+    if (isNaN(pollId)) {
+      return false;
+    }
+    
     const [result] = await pool.execute(
       'UPDATE condo360_polls SET status = ? WHERE id = ?',
-      [status, id]
+      [status, pollId]
     );
     return result.affectedRows > 0;
   }
 
   // Check if user has voted on a poll
   static async hasUserVoted(pollId, userId) {
+    const id = parseInt(pollId);
+    const uid = parseInt(userId);
+    if (isNaN(id) || isNaN(uid)) {
+      return false;
+    }
+    
     const [rows] = await pool.execute(
       'SELECT id FROM condo360_votes WHERE poll_id = ? AND wp_user_id = ?',
-      [pollId, userId]
+      [id, uid]
     );
     return rows.length > 0;
   }
 
   // Get poll results
   static async getResults(pollId) {
+    const id = parseInt(pollId);
+    if (isNaN(id)) {
+      return null;
+    }
+    
     // First, check if this poll should be closed due to end date
-    await this.closeExpiredPollIfNecessary(pollId);
+    await this.closeExpiredPollIfNecessary(id);
     
     // Get poll details
-    const poll = await this.getById(pollId);
+    const poll = await this.getById(id);
     if (!poll) return null;
 
     // Get vote counts
     const [voteRows] = await pool.execute(
       'SELECT answer, COUNT(*) as count FROM condo360_votes WHERE poll_id = ? GROUP BY answer',
-      [pollId]
+      [id]
     );
 
     // Format results
@@ -139,6 +161,12 @@ class Poll {
 
   // Close a specific poll if it has expired
   static async closeExpiredPollIfNecessary(pollId) {
+    // Validate that pollId is a number
+    const id = parseInt(pollId);
+    if (isNaN(id)) {
+      return false;
+    }
+    
     try {
       const [result] = await pool.execute(
         `UPDATE condo360_polls 
@@ -147,7 +175,7 @@ class Poll {
          AND status = 'open' 
          AND end_date IS NOT NULL 
          AND end_date <= NOW()`,
-        [pollId]
+        [id]
       );
       return result.affectedRows > 0;
     } catch (error) {

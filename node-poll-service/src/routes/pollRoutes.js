@@ -157,16 +157,37 @@ router.post('/polls', PollController.createPoll);
  *     responses:
  *       200:
  *         description: Lista de encuestas abiertas
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/polls', PollController.getOpenPolls);
+
+// Get all polls (admin only) - This route must be defined BEFORE /polls/:id
+/**
+ * @swagger
+ * /api/polls/all:
+ *   get:
+ *     summary: Obtener todas las encuestas (solo administradores)
+ *     tags: [Polls]
+ *     security:
+ *       - wordpressAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de todas las encuestas
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Poll'
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Solo administradores pueden ver todas las encuestas
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/polls', PollController.getOpenPolls);
+router.get('/polls/all', PollController.getAllPolls);
 
 // Get poll by ID
 /**
@@ -346,33 +367,6 @@ router.get('/polls/:id/votes', PollController.getPollVotes);
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/polls/{id}/close', PollController.closePoll);
-
-// Get all polls (admin only)
-/**
- * @swagger
- * /api/polls/all:
- *   get:
- *     summary: Obtener todas las encuestas (solo administradores)
- *     tags: [Polls]
- *     security:
- *       - wordpressAuth: []
- *     responses:
- *       200:
- *         description: Lista de todas las encuestas
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Poll'
- *       401:
- *         description: No autorizado
- *       403:
- *         description: Solo administradores pueden ver todas las encuestas
- *       500:
- *         description: Error interno del servidor
- */
-router.get('/polls/all', PollController.getAllPolls);
+router.post('/polls/:id/close', PollController.closePoll);
 
 module.exports = router;
