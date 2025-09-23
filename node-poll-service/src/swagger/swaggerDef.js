@@ -29,7 +29,8 @@ const options = {
       }
     }
   },
-  apis: ['./src/routes/*.js'],
+  apis: ['./src/routes/*.js'], // paths to files containing OpenAPI definitions
 };
 
-module.exports = swaggerJsdoc(options);
+const specs = swaggerJsdoc(options);
+module.exports = specs;
