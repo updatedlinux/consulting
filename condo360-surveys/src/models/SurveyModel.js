@@ -1,5 +1,11 @@
 const db = require('../config/database');
 
+// Helper function to format date for MySQL
+function formatMySQLDate(dateString) {
+  // Remove milliseconds and 'Z' suffix, then replace 'T' with space
+  return dateString.replace(/\.\d{3}Z$/, '').replace('T', ' ');
+}
+
 class SurveyModel {
   // Create a new survey with questions and options
   static async createSurvey(surveyData) {
@@ -9,10 +15,14 @@ class SurveyModel {
     try {
       await connection.beginTransaction();
       
+      // Format dates for MySQL
+      const formattedStartDate = formatMySQLDate(start_date);
+      const formattedEndDate = formatMySQLDate(end_date);
+      
       // Insert survey
       const [surveyResult] = await connection.execute(
         'INSERT INTO condo360_surveys (title, description, start_date, end_date) VALUES (?, ?, ?, ?)',
-        [title, description, start_date, end_date]
+        [title, description, formattedStartDate, formattedEndDate]
       );
       
       const surveyId = surveyResult.insertId;
