@@ -13,6 +13,13 @@ jQuery(document).ready(function($) {
         var loading = container.find('.polls-loading');
         var content = container.find('.polls-content');
         
+        // Check if we have the necessary data
+        if (typeof condo360_polls_ajax === 'undefined') {
+            loading.hide();
+            container.html('<p>Error: No se pudo cargar la configuración necesaria.</p>');
+            return;
+        }
+        
         $.ajax({
             url: condo360_polls_ajax.api_url + '/api/polls',
             method: 'GET',
@@ -44,7 +51,7 @@ jQuery(document).ready(function($) {
             },
             error: function(xhr, status, error) {
                 loading.hide();
-                container.html('<p>Error al cargar las encuestas.</p>');
+                container.html('<p>Error al cargar las encuestas: ' + error + '</p>');
             }
         });
     }
@@ -53,6 +60,13 @@ jQuery(document).ready(function($) {
         var resultsContainer = $('.condo360-poll-results[data-poll-id="' + pollId + '"]');
         var loading = resultsContainer.find('.poll-results-loading');
         var content = resultsContainer.find('.poll-results-content');
+        
+        // Check if we have the necessary data
+        if (typeof condo360_polls_ajax === 'undefined') {
+            loading.hide();
+            content.html('<p>Error: No se pudo cargar la configuración necesaria.</p>').show();
+            return;
+        }
         
         $.ajax({
             url: condo360_polls_ajax.api_url + '/api/polls/' + pollId + '/results',
@@ -79,7 +93,7 @@ jQuery(document).ready(function($) {
             },
             error: function(xhr, status, error) {
                 loading.hide();
-                content.html('<p>Error al cargar los resultados.</p>').show();
+                content.html('<p>Error al cargar los resultados: ' + error + '</p>').show();
             }
         });
     }
@@ -104,6 +118,13 @@ jQuery(document).ready(function($) {
         // Disable the vote button to prevent double voting
         form.find('.poll-vote-button').prop('disabled', true);
         messageDiv.hide();
+        
+        // Check if we have the necessary data
+        if (typeof condo360_polls_ajax === 'undefined') {
+            messageDiv.html('<p class="error">Error: No se pudo cargar la configuración necesaria.</p>').show();
+            form.find('.poll-vote-button').prop('disabled', false);
+            return;
+        }
         
         $.ajax({
             url: condo360_polls_ajax.api_url + '/api/polls/' + pollId + '/vote',
