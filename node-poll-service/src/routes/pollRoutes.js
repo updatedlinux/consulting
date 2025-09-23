@@ -31,3 +31,5 @@
 // router.get('/polls/:id/votes', PollController.getPollVotes);
 
 // Close a poll manually (admin only)
+
+module.exports = router;
