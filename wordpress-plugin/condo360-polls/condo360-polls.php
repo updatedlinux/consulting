@@ -31,21 +31,18 @@ class Condo360_Polls {
         wp_enqueue_style('condo360-polls-css', plugin_dir_url(__FILE__) . 'assets/polls.css');
         wp_enqueue_script('condo360-polls-js', plugin_dir_url(__FILE__) . 'assets/polls.js', array('jquery'), '1.0.0', true);
         
-        // Pass API URL and current user ID to JavaScript
+        // Pass data to JavaScript
         wp_localize_script('condo360-polls-js', 'condo360_polls_ajax', array(
             'api_url' => $this->api_url,
+            'current_user_id' => get_current_user_id(),
             'ajax_url' => admin_url('admin-ajax.php')
         ));
-        
-        // Pass current user ID to JavaScript
-        $current_user = wp_get_current_user();
-        wp_localize_script('condo360-polls-js', 'condo360_current_user_id', $current_user->ID);
     }
     
     public function add_admin_menu() {
         add_menu_page(
-            'Cartas Consulta',
-            'Cartas Consulta',
+            'Condo360 Polls',
+            'Encuestas',
             'manage_options',
             'condo360-polls',
             array($this, 'admin_page'),
@@ -55,27 +52,48 @@ class Condo360_Polls {
     }
     
     public function admin_page() {
-        // Check if user is admin
+        // Check permissions
         if (!current_user_can('manage_options')) {
-            wp_die(__('No tienes permisos suficientes para acceder a esta página.'));
+            wp_die('Insufficient permissions');
         }
         
-        // Get all polls for admin view
+        // Handle messages
+        $message = '';
+        if (isset($_GET['message'])) {
+            switch ($_GET['message']) {
+                case 'created':
+                    $message = '<div class="notice notice-success"><p>Encuesta creada exitosamente.</p></div>';
+                    break;
+                case 'closed':
+                    $message = '<div class="notice notice-success"><p>Encuesta cerrada exitosamente.</p></div>';
+                    break;
+                case 'error':
+                    $message = '<div class="notice notice-error"><p>Error al procesar la solicitud.</p></div>';
+                    break;
+            }
+        }
+        
+        // Get existing polls from API
         $current_user_id = get_current_user_id();
-        $polls_response = wp_remote_get($this->api_url . '/api/polls/all', array(
+        $response = wp_remote_get($this->api_url . '/api/polls/all', array(
             'headers' => array(
                 'X-WordPress-User-ID' => $current_user_id
             )
         ));
         
         $polls = array();
-        if (!is_wp_error($polls_response) && wp_remote_retrieve_response_code($polls_response) === 200) {
-            $polls = json_decode(wp_remote_retrieve_body($polls_response), true);
+        if (!is_wp_error($response)) {
+            $response_code = wp_remote_retrieve_response_code($response);
+            if ($response_code === 200) {
+                $polls = json_decode(wp_remote_retrieve_body($response), true);
+            }
         }
         
         ?>
         <div class="wrap">
-            <h1>Cartas Consulta</h1>
+            <h1>Condo360 Polls</h1>
+            
+            <?php echo $message; ?>
             
             <h2>Crear Nueva Encuesta</h2>
             <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
@@ -170,7 +188,8 @@ class Condo360_Polls {
         
         // Validate data
         if (empty($question) || empty($options_array)) {
-            wp_die('Question and options are required');
+            wp_redirect(add_query_arg(array('page' => 'condo360-polls', 'message' => 'error'), admin_url('admin.php')));
+            exit;
         }
         
         // Prepare data for API
@@ -201,19 +220,20 @@ class Condo360_Polls {
         
         // Check response
         if (is_wp_error($response)) {
-            wp_die('Error creating poll: ' . $response->get_error_message());
+            wp_redirect(add_query_arg(array('page' => 'condo360-polls', 'message' => 'error'), admin_url('admin.php')));
+            exit;
         }
         
         $response_code = wp_remote_retrieve_response_code($response);
         $response_body = json_decode(wp_remote_retrieve_body($response), true);
         
         if ($response_code !== 201) {
-            $error_message = isset($response_body['error']) ? $response_body['error'] : 'Unknown error';
-            wp_die('Error creating poll: ' . $error_message);
+            wp_redirect(add_query_arg(array('page' => 'condo360-polls', 'message' => 'error'), admin_url('admin.php')));
+            exit;
         }
         
-        // Redirect back to admin page
-        wp_redirect(add_query_arg('page', 'condo360-polls', admin_url('admin.php')));
+        // Redirect back to admin page with success message
+        wp_redirect(add_query_arg(array('page' => 'condo360-polls', 'message' => 'created'), admin_url('admin.php')));
         exit;
     }
     
@@ -247,19 +267,20 @@ class Condo360_Polls {
         
         // Check response
         if (is_wp_error($response)) {
-            wp_die('Error closing poll: ' . $response->get_error_message());
+            wp_redirect(add_query_arg(array('page' => 'condo360-polls', 'message' => 'error'), admin_url('admin.php')));
+            exit;
         }
         
         $response_code = wp_remote_retrieve_response_code($response);
         $response_body = json_decode(wp_remote_retrieve_body($response), true);
         
         if ($response_code !== 200) {
-            $error_message = isset($response_body['error']) ? $response_body['error'] : 'Unknown error';
-            wp_die('Error closing poll: ' . $error_message);
+            wp_redirect(add_query_arg(array('page' => 'condo360-polls', 'message' => 'error'), admin_url('admin.php')));
+            exit;
         }
         
-        // Redirect back to admin page
-        wp_redirect(add_query_arg('page', 'condo360-polls', admin_url('admin.php')));
+        // Redirect back to admin page with success message
+        wp_redirect(add_query_arg(array('page' => 'condo360-polls', 'message' => 'closed'), admin_url('admin.php')));
         exit;
     }
     
