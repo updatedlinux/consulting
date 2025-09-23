@@ -1,4 +1,3 @@
-// src/models/Poll.js
 const pool = require('../config/database');
 
 class Poll {
@@ -78,22 +77,38 @@ class Poll {
     const questions = questionRows.map(q => {
       let options;
       try {
-        // Try to parse as JSON first
-        options = JSON.parse(q.options);
-      } catch (e) {
-        // If parsing fails, treat as a comma-separated string or create empty array
-        if (typeof q.options === 'string') {
-          // If it's a comma-separated string, split it
-          if (q.options.includes(',')) {
-            options = q.options.split(',').map(opt => opt.trim());
-          } else {
-            // Otherwise, treat the whole string as a single option
-            options = [q.options];
+        // Si q.options ya es un objeto o array (posiblemente parseado por el driver de MySQL)
+        if (Array.isArray(q.options)) {
+          options = q.options;
+        } else if (typeof q.options === 'object' && q.options !== null) {
+          // Si es un objeto, convertirlo a array de valores
+          options = Object.values(q.options);
+        } else if (typeof q.options === 'string') {
+          // Try to parse as JSON first
+          try {
+            const parsed = JSON.parse(q.options);
+            if (Array.isArray(parsed)) {
+              options = parsed;
+            } else {
+              // Si no es un array, tratar como cadena normal
+              options = [q.options];
+            }
+          } catch (jsonError) {
+            // If parsing fails, treat as a comma-separated string or create single option array
+            if (q.options.includes(',')) {
+              options = q.options.split(',').map(opt => opt.trim());
+            } else {
+              // Otherwise, treat the whole string as a single option
+              options = [q.options];
+            }
           }
         } else {
           // If it's neither JSON nor string, create empty array
           options = [];
         }
+      } catch (e) {
+        console.error('Error processing options for question:', q.id, e);
+        options = [];
       }
       
       return {
@@ -265,10 +280,7 @@ class Poll {
     
     if (polls.length > 0) {
       await this.closeExpiredPolls();
-      return polls.length;
     }
-    
-    return 0;
   }
 }
 
