@@ -1,4 +1,76 @@
-// Vote on a poll
+const Poll = require('../models/Poll');
+const Vote = require('../models/Vote');
+const WordPressUserService = require('../services/wordpressUserService');
+
+class PollController {
+  // Create a new poll (admin only)
+  static async createPoll(req, res) {
+    try {
+      const { question, options, start_date, end_date } = req.body;
+      const userId = req.headers['x-wordpress-user-id']; // wp_user_id from header
+
+      // Validate user
+      if (!userId) {
+        return res.status(400).json({ error: 'User ID is required' });
+      }
+
+      const user = await WordPressUserService.validateUser(userId);
+      if (!user) {
+        return res.status(401).json({ error: 'Invalid user' });
+      }
+
+      // Check if user is admin
+      if (!user.isAdmin) {
+        return res.status(403).json({ error: 'Only administrators can create polls' });
+      }
+
+      // Validate input
+      if (!question || !options || !Array.isArray(options) || options.length === 0) {
+        return res.status(400).json({ error: 'Question and options are required' });
+      }
+
+      // Create poll
+      const pollId = await Poll.create(question, options, start_date, end_date);
+      
+      res.status(201).json({ 
+        message: 'Poll created successfully', 
+        pollId 
+      });
+    } catch (error) {
+      console.error('Error creating poll:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  // Get all open polls
+  static async getOpenPolls(req, res) {
+    try {
+      const polls = await Poll.getOpenPolls();
+      res.json(polls);
+    } catch (error) {
+      console.error('Error fetching polls:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  // Get poll by ID
+  static async getPollById(req, res) {
+    try {
+      const { id } = req.params;
+      const poll = await Poll.getById(id);
+      
+      if (!poll) {
+        return res.status(404).json({ error: 'Poll not found' });
+      }
+      
+      res.json(poll);
+    } catch (error) {
+      console.error('Error fetching poll:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  // Vote on a poll
   static async voteOnPoll(req, res) {
     try {
       const { id } = req.params;
@@ -58,3 +130,67 @@
       res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+  // Get poll results
+  static async getPollResults(req, res) {
+    try {
+      const { id } = req.params;
+      const results = await Poll.getResults(id);
+      
+      if (!results) {
+        return res.status(404).json({ error: 'Poll not found' });
+      }
+      
+      res.json(results);
+    } catch (error) {
+      console.error('Error fetching poll results:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  // Get poll votes (admin only)
+  static async getPollVotes(req, res) {
+    try {
+      const { id } = req.params;
+      const userId = req.headers['x-wordpress-user-id']; // wp_user_id from header
+
+      // Validate user
+      if (!userId) {
+        return res.status(400).json({ error: 'User ID is required' });
+      }
+
+      const user = await WordPressUserService.validateUser(userId);
+      if (!user) {
+        return res.status(401).json({ error: 'Invalid user' });
+      }
+
+      // Check if user is admin
+      if (!user.isAdmin) {
+        return res.status(403).json({ error: 'Only administrators can view poll votes' });
+      }
+
+      // Check if poll exists
+      const poll = await Poll.getById(id);
+      if (!poll) {
+        return res.status(404).json({ error: 'Poll not found' });
+      }
+
+      // Get votes
+      const votes = await Vote.getByPollId(id);
+      
+      res.json({ 
+        message: 'Poll votes retrieved successfully',
+        poll: {
+          id: poll.id,
+          question: poll.question
+        },
+        votes 
+      });
+    } catch (error) {
+      console.error('Error fetching poll votes:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+}
+
+module.exports = PollController;

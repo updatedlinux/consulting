@@ -1,4 +1,28 @@
-// Get all open polls
+const pool = require('../config/database');
+
+class Poll {
+  // Create a new poll
+  static async create(question, options, startDate = null, endDate = null) {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+      
+      const [result] = await connection.execute(
+        'INSERT INTO condo360_polls (question, options, start_date, end_date) VALUES (?, ?, ?, ?)',
+        [question, JSON.stringify(options), startDate, endDate]
+      );
+      
+      await connection.commit();
+      return result.insertId;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
+  // Get all open polls
   static async getOpenPolls() {
     const [rows] = await pool.execute(
       `SELECT id, question, options, status, start_date, end_date, created_at 
@@ -43,3 +67,48 @@
     );
     return result.affectedRows > 0;
   }
+
+  // Check if user has voted on a poll
+  static async hasUserVoted(pollId, userId) {
+    const [rows] = await pool.execute(
+      'SELECT id FROM condo360_votes WHERE poll_id = ? AND wp_user_id = ?',
+      [pollId, userId]
+    );
+    return rows.length > 0;
+  }
+
+  // Get poll results
+  static async getResults(pollId) {
+    // Get poll details
+    const poll = await this.getById(pollId);
+    if (!poll) return null;
+
+    // Get vote counts
+    const [voteRows] = await pool.execute(
+      'SELECT answer, COUNT(*) as count FROM condo360_votes WHERE poll_id = ? GROUP BY answer',
+      [pollId]
+    );
+
+    // Format results
+    const results = {};
+    let totalVotes = 0;
+    poll.options.forEach(option => {
+      const vote = voteRows.find(v => v.answer === option);
+      const count = vote ? parseInt(vote.count) : 0;
+      results[option] = count;
+      totalVotes += count;
+    });
+
+    return {
+      poll: {
+        id: poll.id,
+        question: poll.question,
+        options: poll.options
+      },
+      results,
+      total_votes: totalVotes
+    };
+  }
+}
+
+module.exports = Poll;
