@@ -121,27 +121,40 @@ class Poll {
 
   // Close polls that have expired
   static async closeExpiredPolls() {
-    const [result] = await pool.execute(
-      `UPDATE condo360_polls 
-       SET status = 'closed' 
-       WHERE status = 'open' 
-       AND end_date IS NOT NULL 
-       AND end_date <= NOW()`
-    );
-    return result.affectedRows;
+    try {
+      const [result] = await pool.execute(
+        `UPDATE condo360_polls 
+         SET status = 'closed' 
+         WHERE status = 'open' 
+         AND end_date IS NOT NULL 
+         AND end_date <= NOW()`
+      );
+      return result.affectedRows;
+    } catch (error) {
+      console.error('Error closing expired polls:', error);
+      // Don't throw the error to avoid breaking the main functionality
+      return 0;
+    }
   }
 
   // Close a specific poll if it has expired
   static async closeExpiredPollIfNecessary(pollId) {
-    const [result] = await pool.execute(
-      `UPDATE condo360_polls 
-       SET status = 'closed' 
-       WHERE id = ? 
-       AND status = 'open' 
-       AND end_date IS NOT NULL 
-       AND end_date <= NOW()`
-    );
-    return result.affectedRows > 0;
+    try {
+      const [result] = await pool.execute(
+        `UPDATE condo360_polls 
+         SET status = 'closed' 
+         WHERE id = ? 
+         AND status = 'open' 
+         AND end_date IS NOT NULL 
+         AND end_date <= NOW()`,
+        [pollId]
+      );
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error('Error closing expired poll:', error);
+      // Don't throw the error to avoid breaking the main functionality
+      return false;
+    }
   }
 
   // Get all polls (for admin view)
