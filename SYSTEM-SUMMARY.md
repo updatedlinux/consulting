@@ -45,15 +45,15 @@ Todos los endpoints están disponibles bajo el prefijo `/api/`:
 
 1. POST /api/polls - Crear encuesta (solo administradores)
 2. GET /api/polls - Listar encuestas abiertas
-3. GET /api/polls/:id - Obtener detalles de encuesta
-4. POST /api/polls/:id/vote - Votar en encuesta
-5. GET /api/polls/:id/results - Obtener resultados de encuesta
+3. GET /api/polls/{id} - Obtener detalles de encuesta
+4. POST /api/polls/{id}/vote - Votar en encuesta
+5. GET /api/polls/{id}/results - Obtener resultados de encuesta
 
 ## Documentación de la API (Swagger)
 
 La documentación interactiva de la API está disponible en:
 - Desarrollo: `http://localhost:4000/api-docs`
-- Producción: `https://api.bonaventurecclub.com/polls/api-docs`
+- Producción: `https://api.bonaventurecclub.com/api-docs`
 
 ## Shortcodes de WordPress
 
@@ -68,4 +68,4 @@ La documentación interactiva de la API está disponible en:
 ## Configuración de Proxy Reverso
 
 El sistema está configurado para funcionar con SSL offloading a través de un proxy reverso (como Nginx Proxy Manager) con el FQDN:
-- `https://api.bonaventurecclub.com/polls`
+- `https://api.bonaventurecclub.com`

@@ -11,7 +11,83 @@ const PollController = require('../controllers/pollController');
 
 /**
  * @swagger
- * /polls:
+ * components:
+ *   schemas:
+ *     Poll:
+ *       type: object
+ *       required:
+ *         - question
+ *         - options
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: ID de la encuesta
+ *         question:
+ *           type: string
+ *           description: La pregunta de la encuesta
+ *         options:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Las opciones de respuesta
+ *         status:
+ *           type: string
+ *           description: Estado de la encuesta (open/closed)
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de creación
+ *     Vote:
+ *       type: object
+ *       required:
+ *         - poll_id
+ *         - option_index
+ *         - user_id
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: ID del voto
+ *         poll_id:
+ *           type: integer
+ *           description: ID de la encuesta
+ *         option_index:
+ *           type: integer
+ *           description: Índice de la opción seleccionada
+ *         user_id:
+ *           type: integer
+ *           description: ID del usuario que votó
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha del voto
+ *     PollResult:
+ *       type: object
+ *       properties:
+ *         poll_id:
+ *           type: integer
+ *           description: ID de la encuesta
+ *         question:
+ *           type: string
+ *           description: Pregunta de la encuesta
+ *         options:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               text:
+ *                 type: string
+ *               votes:
+ *                 type: integer
+ *           description: Opciones con conteo de votos
+ *         total_votes:
+ *           type: integer
+ *           description: Total de votos
+ */
+
+// Create a new poll (admin only)
+/**
+ * @swagger
+ * /api/polls:
  *   post:
  *     summary: Crear una nueva encuesta
  *     tags: [Polls]
@@ -29,29 +105,36 @@ const PollController = require('../controllers/pollController');
  *             properties:
  *               question:
  *                 type: string
- *                 description: La pregunta de la encuesta
+ *                 description: Pregunta de la encuesta
  *               options:
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: Las opciones de respuesta
- *               open:
- *                 type: boolean
- *                 description: Si la encuesta está abierta o no
+ *                 description: Opciones de respuesta
+ *               expires_at:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Fecha de expiración (opcional)
  *     responses:
  *       201:
  *         description: Encuesta creada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Poll'
  *       400:
  *         description: Datos inválidos
  *       401:
  *         description: No autorizado
+ *       500:
+ *         description: Error interno del servidor
  */
-// Create a new poll (admin only)
 router.post('/polls', PollController.createPoll);
 
+// Get all open polls
 /**
  * @swagger
- * /polls:
+ * /api/polls:
  *   get:
  *     summary: Obtener todas las encuestas abiertas
  *     tags: [Polls]
@@ -64,13 +147,15 @@ router.post('/polls', PollController.createPoll);
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Poll'
+ *       500:
+ *         description: Error interno del servidor
  */
-// Get all open polls
 router.get('/polls', PollController.getOpenPolls);
 
+// Get poll by ID
 /**
  * @swagger
- * /polls/{id}:
+ * /api/polls/{id}:
  *   get:
  *     summary: Obtener una encuesta por ID
  *     tags: [Polls]
@@ -90,13 +175,15 @@ router.get('/polls', PollController.getOpenPolls);
  *               $ref: '#/components/schemas/Poll'
  *       404:
  *         description: Encuesta no encontrada
+ *       500:
+ *         description: Error interno del servidor
  */
-// Get poll by ID
 router.get('/polls/:id', PollController.getPollById);
 
+// Vote on a poll
 /**
  * @swagger
- * /polls/{id}/vote:
+ * /api/polls/{id}/vote:
  *   post:
  *     summary: Votar en una encuesta
  *     tags: [Polls]
@@ -116,11 +203,11 @@ router.get('/polls/:id', PollController.getPollById);
  *           schema:
  *             type: object
  *             required:
- *               - optionIndex
+ *               - option_index
  *             properties:
- *               optionIndex:
+ *               option_index:
  *                 type: integer
- *                 description: Índice de la opción seleccionada
+ *                 description: Índice de la opción seleccionada (0-based)
  *     responses:
  *       200:
  *         description: Voto registrado exitosamente
@@ -130,13 +217,17 @@ router.get('/polls/:id', PollController.getPollById);
  *         description: No autorizado
  *       404:
  *         description: Encuesta no encontrada
+ *       409:
+ *         description: Usuario ya votó en esta encuesta
+ *       500:
+ *         description: Error interno del servidor
  */
-// Vote on a poll
 router.post('/polls/:id/vote', PollController.voteOnPoll);
 
+// Get poll results
 /**
  * @swagger
- * /polls/{id}/results:
+ * /api/polls/{id}/results:
  *   get:
  *     summary: Obtener resultados de una encuesta
  *     tags: [Polls]
@@ -153,23 +244,12 @@ router.post('/polls/:id/vote', PollController.voteOnPoll);
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 poll:
- *                   $ref: '#/components/schemas/Poll'
- *                 results:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       option:
- *                         type: string
- *                       votes:
- *                         type: integer
+ *               $ref: '#/components/schemas/PollResult'
  *       404:
  *         description: Encuesta no encontrada
+ *       500:
+ *         description: Error interno del servidor
  */
-// Get poll results
 router.get('/polls/:id/results', PollController.getPollResults);
 
 module.exports = router;

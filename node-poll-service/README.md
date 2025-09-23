@@ -31,15 +31,15 @@ All endpoints are prefixed with `/api`:
 
 - `POST /api/polls` - Create a new poll (admin only)
 - `GET /api/polls` - Get all open polls
-- `GET /api/polls/:id` - Get poll details
-- `POST /api/polls/:id/vote` - Vote on a poll
-- `GET /api/polls/:id/results` - Get poll results
+- `GET /api/polls/{id}` - Get poll details
+- `POST /api/polls/{id}/vote` - Vote on a poll
+- `GET /api/polls/{id}/results` - Get poll results
 
 ## Swagger Documentation
 
 When running in development mode or with `ENABLE_SWAGGER=true`, Swagger UI is available at:
 - `http://localhost:4000/api-docs` (development)
-- `https://api.bonaventurecclub.com/polls/api-docs` (production)
+- `https://api.bonaventurecclub.com/api-docs` (production)
 
 ## Environment Variables
 

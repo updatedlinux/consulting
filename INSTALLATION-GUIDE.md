@@ -67,7 +67,7 @@ Este documento proporciona instrucciones para instalar y configurar el sistema C
 
 2. En el panel de administración de WordPress, ir a Plugins y activar "Condo360 Polls"
 
-3. Si tu servicio Node.js se ejecuta en una URL diferente a `https://api.bonaventurecclub.com/polls`, actualiza la variable `$api_url` en `condo360-polls.php`
+3. Si tu servicio Node.js se ejecuta en una URL diferente a `https://api.bonaventurecclub.com`, actualiza la variable `$api_url` en `condo360-polls.php`
 
 ### 3. Uso del Sistema
 
@@ -96,7 +96,7 @@ Usar el shortcode `[condo360_poll_results id="X"]` donde X es el ID de la encues
 La documentación de la API está disponible a través de Swagger UI:
 
 - En desarrollo: `http://localhost:4000/api-docs`
-- En producción: `https://api.bonaventurecclub.com/polls/api-docs`
+- En producción: `https://api.bonaventurecclub.com/api-docs`
 
 Para habilitar Swagger en producción, asegúrate de que la variable `ENABLE_SWAGGER=true` esté en tu archivo `.env`.
 

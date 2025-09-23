@@ -11,7 +11,7 @@ jQuery(document).ready(function($) {
     // Function to load polls
     function loadPolls() {
         $.ajax({
-            url: condo360_polls_ajax.api_url + '/polls',
+            url: condo360_polls_ajax.api_url + '/api/polls',
             method: 'GET',
             success: function(data) {
                 renderPolls(data);
@@ -41,10 +41,10 @@ jQuery(document).ready(function($) {
             html += '<h3>' + poll.question + '</h3>';
             html += '<form class="poll-form">';
             
-            poll.options.forEach(function(option) {
+            poll.options.forEach(function(option, index) {
                 html += '<div class="poll-option">';
                 html += '<label>';
-                html += '<input type="radio" name="poll_' + poll.id + '" value="' + option + '"> ';
+                html += '<input type="radio" name="poll_' + poll.id + '" value="' + index + '"> ';
                 html += option;
                 html += '</label>';
                 html += '</div>';
@@ -67,13 +67,13 @@ jQuery(document).ready(function($) {
         
         var form = $(this);
         var pollId = form.find('input[name="poll_id"]').val();
-        var selectedOption = form.find('input[name="poll_' + pollId + '"]:checked').val();
+        var selectedOptionIndex = form.find('input[name="poll_' + pollId + '"]:checked').val();
         var messageDiv = form.siblings('.poll-message');
         
         // Get current user ID from the global variable
         var currentUserId = typeof condo360_current_user_id !== 'undefined' ? condo360_current_user_id : 0;
         
-        if (!selectedOption) {
+        if (selectedOptionIndex === undefined) {
             messageDiv.html('<p class="error">Por favor selecciona una opción.</p>').show();
             return;
         }
@@ -87,12 +87,12 @@ jQuery(document).ready(function($) {
         form.find('.poll-vote-button').prop('disabled', true);
         
         $.ajax({
-            url: condo360_polls_ajax.api_url + '/polls/' + pollId + '/vote',
+            url: condo360_polls_ajax.api_url + '/api/polls/' + pollId + '/vote',
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({
                 userId: currentUserId,
-                answer: selectedOption
+                optionIndex: parseInt(selectedOptionIndex)
             }),
             success: function(data) {
                 messageDiv.html('<p class="success">¡Gracias por participar!</p>').show();
@@ -118,7 +118,7 @@ jQuery(document).ready(function($) {
         var loading = $('#condo360-poll-results-' + pollId + ' .results-loading');
         
         $.ajax({
-            url: condo360_polls_ajax.api_url + '/polls/' + pollId + '/results',
+            url: condo360_polls_ajax.api_url + '/api/polls/' + pollId + '/results',
             method: 'GET',
             success: function(data) {
                 renderPollResults(data, container, loading);
@@ -135,23 +135,20 @@ jQuery(document).ready(function($) {
         var html = '<h3>' + data.poll.question + '</h3>';
         html += '<div class="poll-results">';
         
-        var totalVotes = 0;
-        for (var option in data.results) {
-            totalVotes += data.results[option];
-        }
+        var totalVotes = data.total_votes || 0;
         
-        for (var option in data.results) {
-            var count = data.results[option];
+        data.options.forEach(function(option) {
+            var count = option.votes || 0;
             var percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
             
             html += '<div class="result-item">';
-            html += '<div class="result-label">' + option + '</div>';
+            html += '<div class="result-label">' + option.text + '</div>';
             html += '<div class="result-bar-container">';
             html += '<div class="result-bar" style="width: ' + percentage + '%;"></div>';
             html += '</div>';
             html += '<div class="result-count">' + count + ' votos (' + percentage + '%)</div>';
             html += '</div>';
-        }
+        });
         
         html += '<div class="total-votes">Total de votos: ' + totalVotes + '</div>';
         html += '</div>';

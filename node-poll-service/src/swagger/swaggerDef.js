@@ -10,7 +10,7 @@ const options = {
     },
     servers: [
       {
-        url: 'https://api.bonaventurecclub.com/polls',
+        url: 'https://api.bonaventurecclub.com',
         description: 'Servidor de producción'
       },
       {
@@ -29,7 +29,7 @@ const options = {
       }
     }
   },
-  apis: ['./src/routes/*.js', './src/swagger/schemas.js'],
+  apis: ['./src/routes/*.js'],
 };
 
 module.exports = swaggerJsdoc(options);
