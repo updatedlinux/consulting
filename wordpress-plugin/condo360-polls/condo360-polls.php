@@ -199,21 +199,21 @@ class Condo360_Polls {
         
         <script>
         jQuery(document).ready(function($) {
-            var questionIndex = 1;
+            let questionCount = 1;
             
             $('#add-question').click(function() {
-                var questionBlock = `
+                const newQuestion = `
                     <div class="question-block">
                         <hr>
                         <table class="form-table">
                             <tr>
-                                <th scope="row"><label>Pregunta ${questionIndex + 1}</label></th>
-                                <td><input type="text" name="questions[${questionIndex}][text]" class="regular-text" placeholder="Texto de la pregunta" required></td>
+                                <th scope="row"><label>Pregunta ${questionCount + 1}</label></th>
+                                <td><input type="text" name="questions[${questionCount}][text]" class="regular-text" placeholder="Texto de la pregunta" required></td>
                             </tr>
                             <tr>
                                 <th scope="row"><label>Opciones</label></th>
                                 <td>
-                                    <textarea name="questions[${questionIndex}][options]" rows="4" cols="50" placeholder="Una opción por línea" required></textarea>
+                                    <textarea name="questions[${questionCount}][options]" rows="4" cols="50" placeholder="Una opción por línea" required></textarea>
                                 </td>
                             </tr>
                         </table>
@@ -221,27 +221,15 @@ class Condo360_Polls {
                     </div>
                 `;
                 
-                $('#questions-container').append(questionBlock);
-                questionIndex++;
+                $('#questions-container').append(newQuestion);
+                questionCount++;
             });
             
             $(document).on('click', '.remove-question', function() {
-                $(this).closest('.question-block').remove();
-                // Update question numbers
-                $('.question-block').each(function(index) {
-                    $(this).find('label:first').text('Pregunta ' + (index + 1));
-                    $(this).find('input[name*="questions["]').each(function() {
-                        var name = $(this).attr('name');
-                        var newName = name.replace(/\[\d+\]/, '[' + index + ']');
-                        $(this).attr('name', newName);
-                    });
-                    $(this).find('textarea[name*="questions["]').each(function() {
-                        var name = $(this).attr('name');
-                        var newName = name.replace(/\[\d+\]/, '[' + index + ']');
-                        $(this).attr('name', newName);
-                    });
-                });
-                questionIndex = $('.question-block').length;
+                if ($('.question-block').length > 1) {
+                    $(this).closest('.question-block').remove();
+                    questionCount--;
+                }
             });
         });
         </script>
@@ -249,136 +237,122 @@ class Condo360_Polls {
     }
     
     public function handle_create_poll() {
-        // Check nonce
-        if (!wp_verify_nonce($_POST['condo360_create_poll_nonce'], 'condo360_create_poll')) {
-            wp_die('Nonce verification failed');
-        }
-        
         // Check permissions
         if (!current_user_can('manage_options')) {
             wp_die('Insufficient permissions');
+        }
+        
+        // Verify nonce
+        if (!isset($_POST['condo360_create_poll_nonce']) || !wp_verify_nonce($_POST['condo360_create_poll_nonce'], 'condo360_create_poll')) {
+            wp_die('Security check failed');
         }
         
         // Get form data
         $title = sanitize_text_field($_POST['title']);
         $description = sanitize_textarea_field($_POST['description']);
-        $start_date = sanitize_text_field($_POST['start_date']);
-        $end_date = sanitize_text_field($_POST['end_date']);
-        $questions_data = isset($_POST['questions']) ? $_POST['questions'] : array();
-        
-        // Process questions
-        $questions = array();
-        foreach ($questions_data as $question_data) {
-            $text = sanitize_text_field($question_data['text']);
-            $options = sanitize_textarea_field($question_data['options']);
-            
-            // Convert options to array
-            $options_array = array_filter(array_map('trim', explode("\n", $options)));
-            
-            if (!empty($text) && !empty($options_array)) {
-                $questions[] = array(
-                    'text' => $text,
-                    'options' => $options_array
-                );
-            }
-        }
+        $start_date = !empty($_POST['start_date']) ? sanitize_text_field($_POST['start_date']) : null;
+        $end_date = !empty($_POST['end_date']) ? sanitize_text_field($_POST['end_date']) : null;
+        $questions = isset($_POST['questions']) ? $_POST['questions'] : array();
         
         // Validate data
         if (empty($title) || empty($questions)) {
-            wp_redirect(add_query_arg(array('page' => 'condo360-polls', 'message' => 'error'), admin_url('admin.php')));
+            wp_redirect(add_query_arg('message', 'error', admin_url('admin.php?page=condo360-polls')));
             exit;
         }
         
-        // Prepare data for API
-        $data = array(
-            'title' => $title,
-            'description' => $description,
-            'questions' => $questions
-        );
-        
-        // Add dates if provided
-        if (!empty($start_date)) {
-            $data['start_date'] = $start_date;
+        // Process questions
+        $processed_questions = array();
+        foreach ($questions as $question) {
+            if (!empty($question['text']) && !empty($question['options'])) {
+                $options = explode("\n", $question['options']);
+                $options = array_map('trim', $options);
+                $options = array_filter($options, function($option) {
+                    return !empty($option);
+                });
+                
+                if (!empty($options)) {
+                    $processed_questions[] = array(
+                        'text' => sanitize_text_field($question['text']),
+                        'options' => array_values($options)
+                    );
+                }
+            }
         }
-        if (!empty($end_date)) {
-            $data['end_date'] = $end_date;
+        
+        if (empty($processed_questions)) {
+            wp_redirect(add_query_arg('message', 'error', admin_url('admin.php?page=condo360-polls')));
+            exit;
         }
         
-        // Get current user ID
+        // Send data to API
         $current_user_id = get_current_user_id();
-        
-        // Send request to API
         $response = wp_remote_post($this->api_url . '/api/polls', array(
             'headers' => array(
                 'Content-Type' => 'application/json',
                 'X-WordPress-User-ID' => $current_user_id
             ),
-            'body' => json_encode($data)
+            'body' => json_encode(array(
+                'title' => $title,
+                'description' => $description,
+                'questions' => $processed_questions,
+                'startDate' => $start_date,
+                'endDate' => $end_date
+            ))
         ));
         
-        // Check response
         if (is_wp_error($response)) {
-            wp_redirect(add_query_arg(array('page' => 'condo360-polls', 'message' => 'error'), admin_url('admin.php')));
-            exit;
+            wp_redirect(add_query_arg('message', 'error', admin_url('admin.php?page=condo360-polls')));
+        } else {
+            $response_code = wp_remote_retrieve_response_code($response);
+            if ($response_code === 201) {
+                wp_redirect(add_query_arg('message', 'created', admin_url('admin.php?page=condo360-polls')));
+            } else {
+                wp_redirect(add_query_arg('message', 'error', admin_url('admin.php?page=condo360-polls')));
+            }
         }
         
-        $response_code = wp_remote_retrieve_response_code($response);
-        $response_body = json_decode(wp_remote_retrieve_body($response), true);
-        
-        if ($response_code !== 201) {
-            wp_redirect(add_query_arg(array('page' => 'condo360-polls', 'message' => 'error'), admin_url('admin.php')));
-            exit;
-        }
-        
-        // Redirect back to admin page with success message
-        wp_redirect(add_query_arg(array('page' => 'condo360-polls', 'message' => 'created'), admin_url('admin.php')));
         exit;
     }
     
     public function handle_close_poll() {
-        // Check nonce
-        if (!wp_verify_nonce($_POST['condo360_close_poll_nonce'], 'condo360_close_poll')) {
-            wp_die('Nonce verification failed');
-        }
-        
         // Check permissions
         if (!current_user_can('manage_options')) {
             wp_die('Insufficient permissions');
         }
         
-        // Get poll ID
-        $poll_id = intval($_POST['poll_id']);
-        
-        if (empty($poll_id)) {
-            wp_die('Poll ID is required');
+        // Verify nonce
+        if (!isset($_POST['condo360_close_poll_nonce']) || !wp_verify_nonce($_POST['condo360_close_poll_nonce'], 'condo360_close_poll')) {
+            wp_die('Security check failed');
         }
         
-        // Get current user ID
-        $current_user_id = get_current_user_id();
+        // Get poll ID
+        $poll_id = isset($_POST['poll_id']) ? intval($_POST['poll_id']) : 0;
         
-        // Send request to API to close poll
+        if ($poll_id <= 0) {
+            wp_redirect(add_query_arg('message', 'error', admin_url('admin.php?page=condo360-polls')));
+            exit;
+        }
+        
+        // Send request to API
+        $current_user_id = get_current_user_id();
         $response = wp_remote_post($this->api_url . '/api/polls/' . $poll_id . '/close', array(
             'headers' => array(
                 'X-WordPress-User-ID' => $current_user_id
-            )
+            ),
+            'method' => 'POST'
         ));
         
-        // Check response
         if (is_wp_error($response)) {
-            wp_redirect(add_query_arg(array('page' => 'condo360-polls', 'message' => 'error'), admin_url('admin.php')));
-            exit;
+            wp_redirect(add_query_arg('message', 'error', admin_url('admin.php?page=condo360-polls')));
+        } else {
+            $response_code = wp_remote_retrieve_response_code($response);
+            if ($response_code === 200) {
+                wp_redirect(add_query_arg('message', 'closed', admin_url('admin.php?page=condo360-polls')));
+            } else {
+                wp_redirect(add_query_arg('message', 'error', admin_url('admin.php?page=condo360-polls')));
+            }
         }
         
-        $response_code = wp_remote_retrieve_response_code($response);
-        $response_body = json_decode(wp_remote_retrieve_body($response), true);
-        
-        if ($response_code !== 200) {
-            wp_redirect(add_query_arg(array('page' => 'condo360-polls', 'message' => 'error'), admin_url('admin.php')));
-            exit;
-        }
-        
-        // Redirect back to admin page with success message
-        wp_redirect(add_query_arg(array('page' => 'condo360-polls', 'message' => 'closed'), admin_url('admin.php')));
         exit;
     }
     
@@ -391,35 +365,99 @@ class Condo360_Polls {
         ob_start();
         ?>
         <div id="condo360-polls-container">
-            <div class="polls-loading">Cargando encuestas...</div>
-            <div class="polls-content" style="display: none;"></div>
+            <div id="condo360-poll-list">
+                <p>Cargando encuestas...</p>
+            </div>
+            <div id="condo360-poll-details"></div>
         </div>
         <?php
         return ob_get_clean();
     }
     
     public function render_poll_results($atts) {
+        // Enqueue scripts if not already enqueued
+        if (!wp_script_is('condo360-polls-js', 'enqueued')) {
+            $this->enqueue_scripts();
+        }
+        
         $atts = shortcode_atts(array(
             'id' => 0
         ), $atts);
         
         $poll_id = intval($atts['id']);
         
-        if (empty($poll_id)) {
-            return '<p>ID de encuesta no especificado.</p>';
-        }
-        
-        // Enqueue scripts if not already enqueued
-        if (!wp_script_is('condo360-polls-js', 'enqueued')) {
-            $this->enqueue_scripts();
+        if ($poll_id <= 0) {
+            return '<p>ID de encuesta no válido.</p>';
         }
         
         ob_start();
         ?>
-        <div class="condo360-poll-results" data-poll-id="<?php echo esc_attr($poll_id); ?>">
-            <div class="poll-results-loading">Cargando resultados...</div>
-            <div class="poll-results-content" style="display: none;"></div>
+        <div id="condo360-polls-container">
+            <div id="condo360-poll-details">
+                <p>Cargando resultados de la encuesta...</p>
+            </div>
         </div>
+        <script>
+        jQuery(document).ready(function($) {
+            // Load poll results directly
+            const condo360 = {
+                apiBaseUrl: '<?php echo esc_js($this->api_url); ?>/api',
+                
+                loadPollResults: function(pollId) {
+                    $('#condo360-poll-details').html('<p>Cargando resultados de la encuesta...</p>');
+                    
+                    $.get(`${this.apiBaseUrl}/polls/${pollId}/results`)
+                        .done((data) => {
+                            this.renderPollResults(data);
+                        })
+                        .fail((xhr) => {
+                            $('#condo360-poll-details').html('<p>Error al cargar los resultados de la encuesta. Por favor, inténtalo de nuevo más tarde.</p>');
+                        });
+                },
+                
+                renderPollResults: function(results) {
+                    const $container = $('#condo360-poll-details');
+                    $container.empty();
+                    
+                    // Título de los resultados
+                    const header = `<h2>Resultados: ${results.poll.title}</h2>`;
+                    
+                    // Mostrar resultados por pregunta
+                    let resultsHtml = '';
+                    Object.entries(results.results).forEach(([questionId, questionData]) => {
+                        let optionsHtml = '';
+                        Object.entries(questionData.options).forEach(([option, count]) => {
+                            const percentage = questionData.total > 0 ? (count / questionData.total * 100).toFixed(1) : 0;
+                            optionsHtml += `
+                                <div class="condo360-result-option">
+                                    <span class="condo360-option-text">${option}</span>
+                                    <div class="condo360-progress-bar">
+                                        <div class="condo360-progress" style="width: ${percentage}%"></div>
+                                    </div>
+                                    <span class="condo360-vote-count">${count} votos (${percentage}%)</span>
+                                </div>
+                            `;
+                        });
+                        
+                        resultsHtml += `
+                            <div class="condo360-result-question">
+                                <h3>${questionData.question}</h3>
+                                <div class="condo360-result-options">
+                                    ${optionsHtml}
+                                </div>
+                                <p class="condo360-total-votes">Total de votos: ${questionData.total}</p>
+                            </div>
+                        `;
+                    });
+                    
+                    $container.html(header + resultsHtml);
+                }
+            };
+            
+            // Load results for specified poll
+            condo360.loadPollResults(<?php echo intval($poll_id); ?>);
+        });
+        </script>
         <?php
         return ob_get_clean();
     }

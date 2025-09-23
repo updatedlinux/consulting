@@ -1,7 +1,8 @@
 jQuery(document).ready(function($) {
+    // Usar los datos proporcionados por wp_localize_script
     const condo360 = {
-        apiBaseUrl: 'https://api.bonaventurecclub.com/api',
-        userId: condo360_polls_data.user_id,
+        apiBaseUrl: condo360_polls_ajax.api_url + '/api',
+        userId: condo360_polls_ajax.current_user_id,
         
         init: function() {
             this.loadPollList();
@@ -28,6 +29,7 @@ jQuery(document).ready(function($) {
                     this.renderPollList(data);
                 })
                 .fail((xhr) => {
+                    console.error('Error al cargar encuestas:', xhr);
                     $('#condo360-poll-list').html('<p>Error al cargar la lista de encuestas. Por favor, inténtalo de nuevo más tarde.</p>');
                 });
         },
@@ -62,6 +64,7 @@ jQuery(document).ready(function($) {
                     this.renderPollDetails(data);
                 })
                 .fail((xhr) => {
+                    console.error('Error al cargar detalles de encuesta:', xhr);
                     $('#condo360-poll-details').html('<p>Error al cargar los detalles de la encuesta. Por favor, inténtalo de nuevo más tarde.</p>');
                 });
         },
@@ -203,6 +206,7 @@ jQuery(document).ready(function($) {
                 })
                 .catch((xhr) => {
                     $('#condo360-vote-btn').prop('disabled', false).text('Votar');
+                    console.error('Error al registrar voto:', xhr);
                     if (xhr.status === 409) {
                         alert('Ya has votado en esta encuesta.');
                     } else {
@@ -220,6 +224,7 @@ jQuery(document).ready(function($) {
                     this.renderPollResults(data);
                 })
                 .fail((xhr) => {
+                    console.error('Error al cargar resultados:', xhr);
                     $('#condo360-poll-details').html('<p>Error al cargar los resultados de la encuesta. Por favor, inténtalo de nuevo más tarde.</p>');
                 });
         },
