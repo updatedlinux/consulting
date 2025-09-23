@@ -201,8 +201,35 @@ router.get('/polls/:id', PollController.getPollById);
  */
 router.get('/polls/admin', PollController.getAllPolls);
 
-// Vote on a poll question
+// Test endpoint
 /**
+ * @swagger
+ * /api/polls/test:
+ *   get:
+ *     summary: Endpoint de prueba
+ *     tags: [Polls]
+ *     responses:
+ *       200:
+ *         description: Éxito
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.get('/polls/test', (req, res) => {
+  res.json({ message: 'Test endpoint working' });
+});
+
+/**
+ * @swagger
+ * /api/polls/{id}/vote:
+ *   post:
+ *     summary: Votar en una pregunta de una encuesta
+ *     tags: [Polls]
+ *     parameters:
  * @swagger
  * /api/polls/{id}/vote:
  *   post:
