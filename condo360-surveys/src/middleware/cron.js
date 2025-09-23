@@ -1,5 +1,5 @@
 const cron = require('node-cron');
-const db = require('../src/config/database');
+const db = require('../config/database');
 
 // Schedule a task to run every hour
 cron.schedule('0 * * * *', async () => {
