@@ -6,11 +6,11 @@
  *     tags: [Polls]
  *     parameters:
  *       - in: path
- *       name: id
- *       required: true
- *       description: ID de la encuesta
- *       schema:
- *         type: integer
+ *         name: id
+ *         required: true
+ *         description: ID de la encuesta
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Votos de la encuesta
