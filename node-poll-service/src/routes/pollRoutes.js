@@ -1,3 +1,7 @@
+const express = require('express');
+const router = express.Router();
+const PollController = require('../controllers/pollController');
+
 /**
  * @swagger
  * /api/polls/{id}/votes:
