@@ -14,7 +14,7 @@ const options = {
         description: 'Servidor de producción'
       },
       {
-        url: 'http://localhost:4000/polls',
+        url: 'http://localhost:4000',
         description: 'Servidor de desarrollo'
       }
     ],

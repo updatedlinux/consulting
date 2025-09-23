@@ -27,18 +27,18 @@ A Node.js microservice for handling polling functionality in Condo360, integrate
 
 ## API Endpoints
 
-All endpoints are prefixed with `/polls/api`:
+All endpoints are prefixed with `/api`:
 
-- `POST /polls/api/polls` - Create a new poll (admin only)
-- `GET /polls/api/polls` - Get all open polls
-- `GET /polls/api/polls/:id` - Get poll details
-- `POST /polls/api/polls/:id/vote` - Vote on a poll
-- `GET /polls/api/polls/:id/results` - Get poll results
+- `POST /api/polls` - Create a new poll (admin only)
+- `GET /api/polls` - Get all open polls
+- `GET /api/polls/:id` - Get poll details
+- `POST /api/polls/:id/vote` - Vote on a poll
+- `GET /api/polls/:id/results` - Get poll results
 
 ## Swagger Documentation
 
 When running in development mode or with `ENABLE_SWAGGER=true`, Swagger UI is available at:
-- `http://localhost:4000/polls/api-docs` (development)
+- `http://localhost:4000/api-docs` (development)
 - `https://api.bonaventurecclub.com/polls/api-docs` (production)
 
 ## Environment Variables

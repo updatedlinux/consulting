@@ -41,18 +41,18 @@ Ubicación: `wordpress-plugin/condo360-polls/`
 
 ## Endpoints API
 
-Todos los endpoints están disponibles bajo el prefijo `/polls/api/`:
+Todos los endpoints están disponibles bajo el prefijo `/api/`:
 
-1. POST /polls/api/polls - Crear encuesta (solo administradores)
-2. GET /polls/api/polls - Listar encuestas abiertas
-3. GET /polls/api/polls/:id - Obtener detalles de encuesta
-4. POST /polls/api/polls/:id/vote - Votar en encuesta
-5. GET /polls/api/polls/:id/results - Obtener resultados de encuesta
+1. POST /api/polls - Crear encuesta (solo administradores)
+2. GET /api/polls - Listar encuestas abiertas
+3. GET /api/polls/:id - Obtener detalles de encuesta
+4. POST /api/polls/:id/vote - Votar en encuesta
+5. GET /api/polls/:id/results - Obtener resultados de encuesta
 
 ## Documentación de la API (Swagger)
 
 La documentación interactiva de la API está disponible en:
-- Desarrollo: `http://localhost:4000/polls/api-docs`
+- Desarrollo: `http://localhost:4000/api-docs`
 - Producción: `https://api.bonaventurecclub.com/polls/api-docs`
 
 ## Shortcodes de WordPress

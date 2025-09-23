@@ -15,11 +15,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Swagger UI - solo en entorno de desarrollo o con variable de entorno específica
 if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SWAGGER === 'true') {
-  app.use('/polls/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
 
-// Routes - todos los endpoints dentro de /polls/api
-app.use('/polls/api', pollRoutes);
+// Routes - todos los endpoints dentro de /api
+app.use('/api', pollRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -39,7 +39,7 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`Poll service running on port ${PORT}`);
-  console.log(`Swagger UI available at http://localhost:${PORT}/polls/api-docs`);
+  console.log(`Swagger UI available at http://localhost:${PORT}/api-docs`);
 });
 
 module.exports = app;

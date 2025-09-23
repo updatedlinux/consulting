@@ -95,7 +95,7 @@ Usar el shortcode `[condo360_poll_results id="X"]` donde X es el ID de la encues
 
 La documentación de la API está disponible a través de Swagger UI:
 
-- En desarrollo: `http://localhost:4000/polls/api-docs`
+- En desarrollo: `http://localhost:4000/api-docs`
 - En producción: `https://api.bonaventurecclub.com/polls/api-docs`
 
 Para habilitar Swagger en producción, asegúrate de que la variable `ENABLE_SWAGGER=true` esté en tu archivo `.env`.
@@ -114,7 +114,7 @@ Para usar SSL offloading con Nginx Proxy Manager:
    Host: $http_host
    ```
 3. Asegúrate de que el FQDN esté configurado como `api.bonaventurecclub.com`
-4. Todos los endpoints estarán disponibles bajo `/polls/api/`
+4. Todos los endpoints estarán disponibles bajo `/api/`
 
 ### 7. Solución de Problemas
 
