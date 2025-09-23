@@ -157,14 +157,14 @@ class Poll {
       throw new Error('Poll is not open');
     }
     
-    // Check if user already voted on this question
+    // Check if user already voted on ANY question of this poll
     const [voteRows] = await pool.execute(
-      'SELECT id FROM condo360_votes WHERE poll_id = ? AND question_id = ? AND wp_user_id = ?',
-      [pollId, questionId, userId]
+      'SELECT id FROM condo360_votes WHERE poll_id = ? AND wp_user_id = ? LIMIT 1',
+      [pollId, userId]
     );
     
     if (voteRows.length > 0) {
-      throw new Error('User already voted on this question');
+      throw new Error('User already voted on this poll');
     }
     
     // Record the vote
