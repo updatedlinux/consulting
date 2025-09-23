@@ -16,6 +16,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Logging middleware
 app.use('/api', (req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  console.log(`Headers:`, req.headers);
+  console.log(`Params:`, req.params);
   next();
 });
 
