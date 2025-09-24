@@ -27,44 +27,13 @@ class Condo360_Surveys_Admin {
         $this->plugin_name = 'condo360-surveys-admin';
         $this->version = '1.0.0';
         
-        // Add admin menu and shortcode
-        add_action('admin_menu', array($this, 'add_admin_menu'));
+        // Add shortcode
         add_action('wp_ajax_condo360_admin_get_surveys', array($this, 'get_surveys'));
         add_action('wp_ajax_condo360_admin_create_survey', array($this, 'create_survey'));
         add_action('wp_ajax_condo360_admin_close_survey', array($this, 'close_survey'));
         add_action('wp_ajax_condo360_admin_get_survey_results', array($this, 'get_survey_results'));
         add_action('wp_ajax_condo360_admin_load_template', array($this, 'load_template'));
         add_shortcode('condo360_admin_surveys', array($this, 'render_admin_shortcode'));
-    }
-    
-    /**
-     * Add admin menu page
-     */
-    public function add_admin_menu() {
-        add_menu_page(
-            'Gestión de Cartas Consulta',
-            'Cartas Consulta',
-            'manage_options',
-            'condo360-surveys-admin',
-            array($this, 'admin_page'),
-            'dashicons-chart-bar',
-            30
-        );
-    }
-    
-    /**
-     * Admin page content
-     */
-    public function admin_page() {
-        // Check if user has permission
-        if (!current_user_can('manage_options')) {
-            return;
-        }
-        
-        echo '<div class="wrap">';
-        echo '<h1>Gestión de Cartas Consulta</h1>';
-        echo do_shortcode('[condo360_admin_surveys]');
-        echo '</div>';
     }
     
     /**
