@@ -1,54 +1,55 @@
-<?php
-/**
- * Admin select survey template
- */
-?>
-
-<div class="wrap">
-    <h1><?php _e('Survey Results', 'condo360-surveys'); ?></h1>
+<div class="admin-section">
+    <h3>Ver Resultados</h3>
+    <div class="form-group">
+        <label for="select-survey-results">Seleccione una Carta Consulta:</label>
+        <select id="select-survey-results" class="form-control">
+            <option value="">Cargando Cartas Consulta...</option>
+        </select>
+    </div>
     
-    <?php if (empty($surveys)): ?>
-        <div class="notice notice-info">
-            <p><?php _e('No surveys found.', 'condo360-surveys'); ?></p>
+    <div class="results-container" style="display: none;">
+        <div class="survey-results">
+            <!-- Results will be loaded here -->
         </div>
-    <?php else: ?>
-        <table class="wp-list-table widefat fixed striped">
-            <thead>
-                <tr>
-                    <th><?php _e('Title', 'condo360-surveys'); ?></th>
-                    <th><?php _e('Status', 'condo360-surveys'); ?></th>
-                    <th><?php _e('Dates', 'condo360-surveys'); ?></th>
-                    <th><?php _e('Actions', 'condo360-surveys'); ?></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($surveys as $survey): ?>
-                    <tr>
-                        <td><?php echo esc_html($survey['title']); ?></td>
-                        <td>
-                            <span class="survey-status <?php echo esc_attr($survey['status']); ?>">
-                                <?php 
-                                echo $survey['status'] === 'open' ? 
-                                    __('Open', 'condo360-surveys') : 
-                                    __('Closed', 'condo360-surveys'); 
-                                ?>
-                            </span>
-                        </td>
-                        <td>
-                            <?php 
-                            $start_date = date_i18n(get_option('date_format'), strtotime($survey['start_date']));
-                            $end_date = date_i18n(get_option('date_format'), strtotime($survey['end_date']));
-                            echo sprintf(__('%s to %s', 'condo360-surveys'), $start_date, $end_date);
-                            ?>
-                        </td>
-                        <td>
-                            <a href="<?php echo admin_url('admin.php?page=condo360-survey-results&survey_id=' . $survey['id']); ?>" class="button">
-                                <?php _e('View Results', 'condo360-surveys'); ?>
-                            </a>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php endif; ?>
+    </div>
+    
+    <div id="results-message" class="admin-message" style="display: none;"></div>
 </div>
+
+<script>
+// Load all surveys for results dropdown
+function loadSurveysForResults() {
+    var select = $('#select-survey-results');
+    select.html('<option value="">Cargando Cartas Consulta...</option>');
+    
+    $.ajax({
+        url: condo360_admin_ajax.ajax_url,
+        type: 'POST',
+        data: {
+            action: 'condo360_admin_get_surveys',
+            nonce: condo360_admin_ajax.nonce
+        },
+        success: function(response) {
+            if (response.success) {
+                var options = '<option value="">Seleccione una Carta Consulta</option>';
+                // Show all surveys (both open and closed) for results
+                $.each(response.data.surveys, function(index, survey) {
+                    var statusText = survey.status === 'open' ? ' (Activa)' : ' (Cerrada)';
+                    options += `<option value="${survey.id}">${survey.title}${statusText}</option>`;
+                });
+                select.html(options);
+            } else {
+                select.html('<option value="">Error al cargar las Cartas Consulta: ' + response.data.message + '</option>');
+            }
+        },
+        error: function(xhr, status, error) {
+            select.html('<option value="">Error de conexión: ' + error + '</option>');
+        }
+    });
+}
+
+// Initialize results dropdown when results tab is shown
+$('#survey-results-tab').on('show', function() {
+    loadSurveysForResults();
+});
+</script>
