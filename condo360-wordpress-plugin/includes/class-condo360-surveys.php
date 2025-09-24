@@ -51,7 +51,7 @@ class Condo360_Surveys {
     public function enqueue_frontend_scripts() {
         wp_enqueue_style(
             $this->plugin_name,
-            plugin_dir_url(__FILE__) . 'assets/css/surveys.css',
+            plugin_dir_url(__FILE__) . '../assets/css/surveys.css',
             array(),
             $this->version,
             'all'
@@ -59,7 +59,7 @@ class Condo360_Surveys {
         
         wp_enqueue_script(
             $this->plugin_name,
-            plugin_dir_url(__FILE__) . 'assets/js/surveys.js',
+            plugin_dir_url(__FILE__) . '../assets/js/surveys.js',
             array('jquery'),
             $this->version,
             true
@@ -155,7 +155,7 @@ class Condo360_Surveys {
         
         // Load template
         ob_start();
-        include plugin_dir_path(__FILE__) . 'templates/frontend-surveys.php';
+        include plugin_dir_path(__FILE__) . '../templates/frontend-surveys.php';
         return ob_get_clean();
     }
 }
