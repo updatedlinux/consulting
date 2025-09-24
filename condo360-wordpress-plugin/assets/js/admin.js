@@ -187,28 +187,23 @@ jQuery(document).ready(function($) {
         });
     }
     
-    // Load surveys for results dropdown
+    // Load ALL surveys for results dropdown (including closed ones)
     function loadSurveysForResults() {
         var select = $('#select-survey-results');
         select.html('<option value="">Cargando Cartas Consulta...</option>');
         
+        // Use the /all endpoint to get all surveys including closed ones
         $.ajax({
-            url: condo360_admin_ajax.ajax_url,
-            type: 'POST',
-            data: {
-                action: 'condo360_admin_get_surveys',
-                nonce: condo360_admin_ajax.nonce
-            },
-            success: function(response) {
-                if (response.success) {
-                    var options = '<option value="">Seleccione una Carta Consulta</option>';
-                    $.each(response.data.surveys, function(index, survey) {
-                        options += `<option value="${survey.id}">${survey.title}</option>`;
-                    });
-                    select.html(options);
-                } else {
-                    select.html('<option value="">Error al cargar las Cartas Consulta: ' + response.data.message + '</option>');
-                }
+            url: 'https://api.bonaventurecclub.com/polls/surveys/all',
+            type: 'GET',
+            success: function(surveys) {
+                var options = '<option value="">Seleccione una Carta Consulta</option>';
+                // Show all surveys (both open and closed) for results
+                $.each(surveys, function(index, survey) {
+                    var statusText = survey.status === 'open' ? ' (Activa)' : ' (Cerrada)';
+                    options += `<option value="${survey.id}">${survey.title}${statusText}</option>`;
+                });
+                select.html(options);
             },
             error: function(xhr, status, error) {
                 select.html('<option value="">Error de conexión: ' + error + '</option>');
