@@ -23,12 +23,5 @@ require_once CONDO360_SURVEYS_PLUGIN_DIR . 'includes/class-condo360-surveys.php'
 // Initialize the plugin
 function condo360_surveys_init() {
     $plugin = new Condo360_Surveys();
-    $plugin->init();
 }
 add_action('plugins_loaded', 'condo360_surveys_init');
-
-// Activation hook
-register_activation_hook(__FILE__, array('Condo360_Surveys', 'activate'));
-
-// Deactivation hook
-register_deactivation_hook(__FILE__, array('Condo360_Surveys', 'deactivate'));

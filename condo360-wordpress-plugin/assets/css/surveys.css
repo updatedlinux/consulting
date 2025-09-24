@@ -2,75 +2,51 @@
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
 .condo360-survey-card {
-    background: #fff;
+    background: #f9f9f9;
     border: 1px solid #ddd;
-    border-radius: 8px;
+    border-radius: 5px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .condo360-survey-card h3 {
     margin-top: 0;
-    color: #333;
-    font-size: 1.5em;
 }
 
 .survey-description {
     color: #666;
     margin: 10px 0;
-    line-height: 1.5;
 }
 
 .survey-dates {
     color: #888;
     font-size: 0.9em;
     margin: 15px 0;
-    padding: 8px 0;
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
 }
 
 .survey-question {
-    margin-bottom: 25px;
-    padding: 15px;
-    background: #f9f9f9;
-    border-radius: 6px;
+    margin-bottom: 15px;
 }
 
 .survey-question h4 {
-    margin-top: 0;
-    color: #444;
-    font-size: 1.1em;
-}
-
-.survey-options {
-    margin-top: 10px;
+    margin: 0 0 10px 0;
 }
 
 .survey-option {
-    margin: 8px 0;
-    padding: 8px 0;
+    margin: 5px 0;
 }
 
 .survey-option label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
     font-weight: normal;
-}
-
-.survey-option input[type="radio"] {
-    margin-right: 10px;
+    cursor: pointer;
 }
 
 .survey-actions {
-    margin-top: 30px;
-    padding-top: 20px;
+    margin-top: 20px;
+    padding-top: 15px;
     border-top: 1px solid #eee;
 }
 
@@ -78,11 +54,9 @@
     background: #0073aa;
     color: white;
     border: none;
-    padding: 12px 20px;
-    border-radius: 4px;
+    padding: 10px 20px;
+    border-radius: 3px;
     cursor: pointer;
-    font-size: 1em;
-    transition: background 0.2s ease;
 }
 
 .survey-submit-btn:hover {
@@ -95,10 +69,9 @@
 }
 
 .survey-message {
-    margin-top: 20px;
-    padding: 15px;
-    border-radius: 4px;
-    text-align: center;
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 3px;
 }
 
 .survey-message.success {
@@ -117,55 +90,6 @@
     background: #d1ecf1;
     color: #0c5460;
     padding: 15px;
-    border-radius: 4px;
+    border-radius: 3px;
     text-align: center;
-    border: 1px solid #bee5eb;
-}
-
-/* Navigation styles */
-.survey-navigation {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-    gap: 10px;
-}
-
-.survey-nav-btn {
-    background: #f1f1f1;
-    color: #333;
-    border: 1px solid #ddd;
-    padding: 10px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9em;
-    transition: background 0.2s ease;
-    flex: 1;
-}
-
-.survey-nav-btn:hover {
-    background: #e1e1e1;
-}
-
-.survey-nav-btn:disabled {
-    background: #f5f5f5;
-    cursor: not-allowed;
-    color: #999;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    .condo360-surveys-container {
-        padding: 10px;
-    }
-    
-    .survey-navigation {
-        flex-direction: column;
-    }
-    
-    .survey-nav-btn {
-        width: 100%;
-        margin-bottom: 10px;
-    }
 }

@@ -58,18 +58,4 @@ jQuery(document).ready(function($) {
             }
         });
     });
-    
-    // Handle navigation between surveys
-    $('.condo360-surveys-container').on('click', '.survey-nav-btn', function(e) {
-        e.preventDefault();
-        
-        var currentCard = $(this).closest('.condo360-survey-card');
-        var currentIndex = parseInt(currentCard.data('survey-index'));
-        var direction = $(this).hasClass('next-btn') ? 1 : -1;
-        var targetIndex = currentIndex + direction;
-        
-        // Hide current card and show target card
-        currentCard.hide();
-        $('.condo360-survey-card[data-survey-index="' + targetIndex + '"]').show();
-    });
 });
