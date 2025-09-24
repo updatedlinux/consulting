@@ -1,67 +1,298 @@
 jQuery(document).ready(function($) {
-    var questionCount = 1;
-    var optionCounts = {1: 2};
-    
-    // Add new question
-    $('#add-question').on('click', function() {
-        questionCount++;
-        optionCounts[questionCount] = 2;
+    // Tab switching
+    $('.tab-btn').on('click', function() {
+        var tab = $(this).data('tab');
         
-        var newQuestion = `
-            <div class="question-group" data-question="${questionCount}">
-                <h3>Question ${questionCount}</h3>
-                
-                <table class="form-table">
-                    <tr>
-                        <th scope="row">
-                            <label for="question_${questionCount}">Question Text</label>
-                        </th>
-                        <td>
-                            <textarea name="question_${questionCount}" id="question_${questionCount}" rows="2" class="regular-text" required></textarea>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <th scope="row">
-                            Options
-                        </th>
-                        <td>
-                            <div class="options-container" id="options-container-${questionCount}">
-                                <div class="option-group">
-                                    <input type="text" name="option_${questionCount}_1" placeholder="Option 1" required>
-                                </div>
-                                <div class="option-group">
-                                    <input type="text" name="option_${questionCount}_2" placeholder="Option 2" required>
-                                </div>
+        // Update active tab button
+        $('.tab-btn').removeClass('active');
+        $(this).addClass('active');
+        
+        // Show active tab content
+        $('.tab-content').removeClass('active');
+        $('#' + tab + '-tab').addClass('active');
+        
+        // Load data based on tab
+        if (tab === 'surveys-list') {
+            loadSurveysList();
+        } else if (tab === 'survey-results') {
+            loadSurveysForResults();
+        }
+    });
+    
+    // Add question
+    $(document).on('click', '.add-question-btn', function() {
+        var questionTemplate = `
+            <div class="question-item">
+                <input type="text" class="question-text" placeholder="Texto de la pregunta" required>
+                <div class="options-container">
+                    <input type="text" class="option-text" placeholder="Opción 1" required>
+                    <input type="text" class="option-text" placeholder="Opción 2" required>
+                </div>
+                <button type="button" class="add-option-btn">+ Agregar Opción</button>
+                <button type="button" class="remove-question-btn">Eliminar Pregunta</button>
+            </div>
+        `;
+        $('.questions-container').append(questionTemplate);
+    });
+    
+    // Add option
+    $(document).on('click', '.add-option-btn', function() {
+        var optionInput = '<input type="text" class="option-text" placeholder="Nueva opción" required>';
+        $(this).siblings('.options-container').append(optionInput);
+    });
+    
+    // Remove question
+    $(document).on('click', '.remove-question-btn', function() {
+        if ($('.question-item').length > 1) {
+            $(this).closest('.question-item').remove();
+        } else {
+            alert('Debe haber al menos una pregunta.');
+        }
+    });
+    
+    // Create survey form submission
+    $('#create-survey-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        var form = $(this);
+        var submitBtn = form.find('.submit-btn');
+        var messageDiv = $('#create-survey-message');
+        
+        // Collect form data
+        var surveyData = {
+            title: $('#survey-title').val(),
+            description: $('#survey-description').val(),
+            start_date: $('#survey-start-date').val(),
+            end_date: $('#survey-end-date').val(),
+            questions: []
+        };
+        
+        // Collect questions and options
+        $('.question-item').each(function() {
+            var questionText = $(this).find('.question-text').val();
+            var options = [];
+            
+            $(this).find('.option-text').each(function() {
+                var optionText = $(this).val();
+                if (optionText.trim() !== '') {
+                    options.push(optionText);
+                }
+            });
+            
+            if (questionText.trim() !== '' && options.length >= 2) {
+                surveyData.questions.push({
+                    question_text: questionText,
+                    options: options
+                });
+            }
+        });
+        
+        // Validate form
+        if (surveyData.title.trim() === '' || surveyData.questions.length === 0) {
+            showMessage(messageDiv, 'Por favor complete todos los campos requeridos.', 'error');
+            return;
+        }
+        
+        // Disable submit button
+        submitBtn.prop('disabled', true).text('Creando...');
+        
+        // Send AJAX request
+        $.ajax({
+            url: condo360_admin_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'condo360_admin_create_survey',
+                nonce: condo360_admin_ajax.nonce,
+                title: surveyData.title,
+                description: surveyData.description,
+                start_date: surveyData.start_date,
+                end_date: surveyData.end_date,
+                questions: surveyData.questions
+            },
+            success: function(response) {
+                if (response.success) {
+                    showMessage(messageDiv, response.data.message, 'success');
+                    form[0].reset();
+                    $('.questions-container').html(`
+                        <div class="question-item">
+                            <input type="text" class="question-text" placeholder="Texto de la pregunta" required>
+                            <div class="options-container">
+                                <input type="text" class="option-text" placeholder="Opción 1" required>
+                                <input type="text" class="option-text" placeholder="Opción 2" required>
                             </div>
-                            
-                            <button type="button" class="button add-option" data-question="${questionCount}">
-                                Add Option
-                            </button>
-                        </td>
-                    </tr>
-                </table>
-                
-                <input type="hidden" name="option_count_${questionCount}" id="option_count_${questionCount}" value="2">
-            </div>
-        `;
-        
-        $('#questions-container').append(newQuestion);
-        $('#question_count').val(questionCount);
+                            <button type="button" class="add-option-btn">+ Agregar Opción</button>
+                        </div>
+                    `);
+                } else {
+                    showMessage(messageDiv, response.data.message, 'error');
+                }
+            },
+            error: function() {
+                showMessage(messageDiv, 'Error al crear la Carta Consulta. Por favor intente de nuevo.', 'error');
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false).text('Crear Carta Consulta');
+            }
+        });
     });
     
-    // Add new option
-    $(document).on('click', '.add-option', function() {
-        var questionNum = $(this).data('question');
-        var optionCount = ++optionCounts[questionNum];
+    // Load surveys list
+    function loadSurveysList() {
+        var container = $('.surveys-list-container');
+        var loadingMessage = container.find('.loading-message');
+        var surveysList = container.find('.surveys-list');
         
-        var newOption = `
-            <div class="option-group">
-                <input type="text" name="option_${questionNum}_${optionCount}" placeholder="Option ${optionCount}" required>
-            </div>
-        `;
+        loadingMessage.show();
+        surveysList.hide();
         
-        $(`#options-container-${questionNum}`).append(newOption);
-        $(`#option_count_${questionNum}`).val(optionCount);
+        $.ajax({
+            url: condo360_admin_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'condo360_admin_get_surveys',
+                nonce: condo360_admin_ajax.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Load template
+                    $.post(condo360_admin_ajax.ajax_url, {
+                        action: 'condo360_admin_load_template',
+                        template: 'admin-surveys-list',
+                        nonce: condo360_admin_ajax.nonce,
+                        surveys: response.data.surveys
+                    }, function(html) {
+                        surveysList.html(html);
+                        loadingMessage.hide();
+                        surveysList.show();
+                    });
+                } else {
+                    loadingMessage.text('Error al cargar las Cartas Consulta.');
+                }
+            },
+            error: function() {
+                loadingMessage.text('Error al cargar las Cartas Consulta.');
+            }
+        });
+    }
+    
+    // Load surveys for results dropdown
+    function loadSurveysForResults() {
+        var select = $('#select-survey-results');
+        select.html('<option value="">Cargando Cartas Consulta...</option>');
+        
+        $.ajax({
+            url: condo360_admin_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'condo360_admin_get_surveys',
+                nonce: condo360_admin_ajax.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    var options = '<option value="">Seleccione una Carta Consulta</option>';
+                    $.each(response.data.surveys, function(index, survey) {
+                        options += `<option value="${survey.id}">${survey.title}</option>`;
+                    });
+                    select.html(options);
+                } else {
+                    select.html('<option value="">Error al cargar las Cartas Consulta</option>');
+                }
+            },
+            error: function() {
+                select.html('<option value="">Error al cargar las Cartas Consulta</option>');
+            }
+        });
+    }
+    
+    // Close survey
+    $(document).on('click', '.close-survey-btn', function() {
+        var surveyId = $(this).data('survey-id');
+        var button = $(this);
+        var originalText = button.text();
+        
+        if (!confirm('¿Está seguro de que desea cerrar esta Carta Consulta?')) {
+            return;
+        }
+        
+        button.prop('disabled', true).text('Cerrando...');
+        
+        $.ajax({
+            url: condo360_admin_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'condo360_admin_close_survey',
+                nonce: condo360_admin_ajax.nonce,
+                survey_id: surveyId
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.data.message);
+                    // Reload surveys list
+                    loadSurveysList();
+                } else {
+                    alert('Error: ' + response.data.message);
+                    button.prop('disabled', false).text(originalText);
+                }
+            },
+            error: function() {
+                alert('Error al cerrar la Carta Consulta. Por favor intente de nuevo.');
+                button.prop('disabled', false).text(originalText);
+            }
+        });
     });
+    
+    // Load survey results
+    $('#select-survey-results').on('change', function() {
+        var surveyId = $(this).val();
+        var resultsContainer = $('.results-container');
+        var messageDiv = $('#results-message');
+        
+        if (!surveyId) {
+            resultsContainer.hide();
+            return;
+        }
+        
+        resultsContainer.show();
+        $('.survey-results').html('<div class="loading-message">Cargando resultados...</div>');
+        
+        $.ajax({
+            url: condo360_admin_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'condo360_admin_get_survey_results',
+                nonce: condo360_admin_ajax.nonce,
+                survey_id: surveyId
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Load template
+                    $.post(condo360_admin_ajax.ajax_url, {
+                        action: 'condo360_admin_load_template',
+                        template: 'admin-survey-results',
+                        nonce: condo360_admin_ajax.nonce,
+                        survey: response.data.results.survey,
+                        results: response.data.results
+                    }, function(html) {
+                        $('.survey-results').html(html);
+                    });
+                } else {
+                    $('.survey-results').html('<p>Error al cargar los resultados: ' + response.data.message + '</p>');
+                }
+            },
+            error: function() {
+                $('.survey-results').html('<p>Error al cargar los resultados. Por favor intente de nuevo.</p>');
+            }
+        });
+    });
+    
+    // Show message function
+    function showMessage(messageDiv, text, type) {
+        messageDiv.removeClass('success error').addClass(type).text(text).show();
+        setTimeout(function() {
+            messageDiv.fadeOut();
+        }, 5000);
+    }
+    
+    // Initialize with surveys list
+    loadSurveysList();
 });

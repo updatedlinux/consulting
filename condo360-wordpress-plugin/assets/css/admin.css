@@ -1,93 +1,353 @@
-/* Admin Styles for Condo360 Surveys */
-
-.survey-status.open {
-  color: #008000;
-  font-weight: bold;
+.condo360-admin-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
 }
 
-.survey-status.closed {
-  color: #cc0000;
-  font-weight: bold;
+.condo360-admin-container h2 {
+    margin-top: 0;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
 }
 
-.question-group {
-  background: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 15px;
-  margin-bottom: 20px;
+/* Tabs */
+.admin-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ccc;
 }
 
-.question-group h3 {
-  margin-top: 0;
-  color: #333;
+.tab-btn {
+    background: #f1f1f1;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin-right: 5px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
 }
 
-.option-group {
-  margin-bottom: 10px;
+.tab-btn.active {
+    background: #fff;
+    border-bottom: 1px solid #fff;
+    margin-bottom: -1px;
 }
 
-.option-group input[type="text"] {
-  width: 300px;
+.tab-btn:hover:not(.active) {
+    background: #e5e5e5;
 }
 
-.add-option {
-  margin-top: 10px;
+/* Tab Content */
+.tab-content {
+    display: none;
 }
 
-.survey-results-question {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 20px;
-  margin-bottom: 20px;
+.tab-content.active {
+    display: block;
 }
 
-.survey-results-options {
-  margin-top: 15px;
+/* Admin Sections */
+.admin-section {
+    background: #fafafa;
+    border: 1px solid #e5e5e5;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 3px;
 }
 
-.survey-results-option {
-  margin-bottom: 15px;
+.admin-section h3 {
+    margin-top: 0;
+    color: #23282d;
+}
+
+/* Form Styles */
+.create-survey-form {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #e5e5e5;
+    border-radius: 3px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+}
+
+.form-row .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 14px;
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+/* Questions and Options */
+.question-item {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.question-item .question-text {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.options-container {
+    margin-bottom: 10px;
 }
 
 .option-text {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.option-stats {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 5px;
-  font-size: 0.9em;
-  color: #666;
-}
-
-.option-bar-container {
-  height: 20px;
-  background-color: #f0f0f0;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.option-bar {
-  height: 100%;
-  background-color: #0073aa;
-  border-radius: 10px;
-  transition: width 0.5s ease-in-out;
-}
-
-.survey-info {
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-
-/* Responsive styles */
-@media (max-width: 768px) {
-  .option-group input[type="text"] {
     width: 100%;
-  }
+    margin-bottom: 5px;
+}
+
+.add-option-btn,
+.add-question-btn {
+    background: #f1f1f1;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.add-option-btn:hover,
+.add-question-btn:hover {
+    background: #e5e5e5;
+}
+
+/* Form Actions */
+.form-actions {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.submit-btn {
+    background: #0073aa;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.submit-btn:hover {
+    background: #005a87;
+}
+
+.submit-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Messages */
+.admin-message {
+    padding: 10px;
+    border-radius: 3px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.admin-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.admin-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Surveys List */
+.surveys-list-content {
+    display: grid;
+    gap: 15px;
+}
+
+.survey-item-admin {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 15px;
+}
+
+.survey-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.survey-header h4 {
+    margin: 0;
+    color: #23282d;
+}
+
+.survey-status {
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.survey-status.active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.survey-status.closed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.survey-description {
+    color: #666;
+    margin: 10px 0;
+}
+
+.survey-dates {
+    color: #888;
+    font-size: 13px;
+    margin: 10px 0;
+}
+
+.survey-actions {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.close-survey-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.close-survey-btn:hover {
+    background: #c82333;
+}
+
+.closed-label {
+    color: #666;
+    font-size: 12px;
+}
+
+/* Results */
+.results-container {
+    margin-top: 20px;
+}
+
+.survey-results-content h3 {
+    color: #23282d;
+    margin-top: 0;
+}
+
+.results-summary {
+    background: #f1f1f1;
+    padding: 15px;
+    border-radius: 3px;
+    margin-bottom: 20px;
+}
+
+.results-summary h4 {
+    margin-top: 0;
+}
+
+.question-result {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.question-result h4 {
+    margin-top: 0;
+    color: #23282d;
+}
+
+.option-result {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 3px;
+}
+
+.option-text {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.vote-count {
+    float: right;
+    font-size: 12px;
+    color: #666;
+}
+
+.vote-bar {
+    height: 20px;
+    background: #e9ecef;
+    border-radius: 10px;
+    margin: 5px 0;
+    overflow: hidden;
+}
+
+.vote-bar-fill {
+    height: 100%;
+    background: #0073aa;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.percentage {
+    font-size: 12px;
+    color: #666;
+    display: block;
+    text-align: right;
+}
+
+/* Loading */
+.loading-message {
+    text-align: center;
+    padding: 20px;
+    color: #666;
 }

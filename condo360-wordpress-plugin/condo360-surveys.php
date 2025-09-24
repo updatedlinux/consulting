@@ -19,9 +19,11 @@ define('CONDO360_SURVEYS_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 // Include required files
 require_once CONDO360_SURVEYS_PLUGIN_DIR . 'includes/class-condo360-surveys.php';
+require_once CONDO360_SURVEYS_PLUGIN_DIR . 'includes/class-condo360-surveys-admin.php';
 
 // Initialize the plugin
 function condo360_surveys_init() {
     $plugin = new Condo360_Surveys();
+    $admin_plugin = new Condo360_Surveys_Admin();
 }
 add_action('plugins_loaded', 'condo360_surveys_init');

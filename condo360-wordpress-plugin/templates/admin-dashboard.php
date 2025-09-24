@@ -4,66 +4,98 @@
  */
 ?>
 
-<div class="wrap">
-    <h1><?php _e('Cartas Consulta Dashboard', 'condo360-surveys'); ?></h1>
+<div class="condo360-admin-container">
+    <h2>Gestión de Cartas Consulta</h2>
     
-    <?php if (empty($surveys)): ?>
-        <div class="notice notice-info">
-            <p><?php _e('No surveys found.', 'condo360-surveys'); ?></p>
+    <!-- Tabs -->
+    <div class="admin-tabs">
+        <button class="tab-btn active" data-tab="surveys-list">Lista de Cartas Consulta</button>
+        <button class="tab-btn" data-tab="create-survey">Crear Nueva Carta Consulta</button>
+        <button class="tab-btn" data-tab="survey-results">Ver Resultados</button>
+    </div>
+    
+    <!-- Surveys List Tab -->
+    <div class="tab-content active" id="surveys-list-tab">
+        <div class="admin-section">
+            <h3>Cartas Consulta Activas</h3>
+            <div class="surveys-list-container">
+                <div class="loading-message">Cargando Cartas Consulta...</div>
+                <div class="surveys-list" style="display: none;">
+                    <!-- Surveys will be loaded here dynamically -->
+                </div>
+            </div>
         </div>
-    <?php else: ?>
-        <table class="wp-list-table widefat fixed striped">
-            <thead>
-                <tr>
-                    <th><?php _e('Title', 'condo360-surveys'); ?></th>
-                    <th><?php _e('Status', 'condo360-surveys'); ?></th>
-                    <th><?php _e('Dates', 'condo360-surveys'); ?></th>
-                    <th><?php _e('Participants', 'condo360-surveys'); ?></th>
-                    <th><?php _e('Questions', 'condo360-surveys'); ?></th>
-                    <th><?php _e('Actions', 'condo360-surveys'); ?></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($surveys as $survey): ?>
-                    <tr>
-                        <td><?php echo esc_html($survey['title']); ?></td>
-                        <td>
-                            <span class="survey-status <?php echo esc_attr($survey['status']); ?>">
-                                <?php 
-                                echo $survey['status'] === 'open' ? 
-                                    __('Open', 'condo360-surveys') : 
-                                    __('Closed', 'condo360-surveys'); 
-                                ?>
-                            </span>
-                        </td>
-                        <td>
-                            <?php 
-                            $start_date = date_i18n(get_option('date_format'), strtotime($survey['start_date']));
-                            $end_date = date_i18n(get_option('date_format'), strtotime($survey['end_date']));
-                            echo sprintf(__('%s to %s', 'condo360-surveys'), $start_date, $end_date);
-                            ?>
-                        </td>
-                        <td><?php echo esc_html($survey['participant_count']); ?></td>
-                        <td><?php echo esc_html($survey['question_count']); ?></td>
-                        <td>
-                            <?php if ($survey['status'] === 'open'): ?>
-                                <a href="<?php echo admin_url('admin.php?page=condo360-create-survey'); ?>" class="button">
-                                    <?php _e('Close', 'condo360-surveys'); ?>
-                                </a>
-                            <?php endif; ?>
-                            <a href="<?php echo admin_url('admin.php?page=condo360-survey-results&survey_id=' . $survey['id']); ?>" class="button">
-                                <?php _e('View Results', 'condo360-surveys'); ?>
-                            </a>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php endif; ?>
+    </div>
     
-    <div style="margin-top: 20px;">
-        <a href="<?php echo admin_url('admin.php?page=condo360-create-survey'); ?>" class="button button-primary">
-            <?php _e('Create New Survey', 'condo360-surveys'); ?>
-        </a>
+    <!-- Create Survey Tab -->
+    <div class="tab-content" id="create-survey-tab">
+        <div class="admin-section">
+            <h3>Crear Nueva Carta Consulta</h3>
+            <form id="create-survey-form" class="create-survey-form">
+                <div class="form-group">
+                    <label for="survey-title">Título de la Carta Consulta:</label>
+                    <input type="text" id="survey-title" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="survey-description">Descripción:</label>
+                    <textarea id="survey-description" name="description" rows="3"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="survey-start-date">Fecha de Inicio:</label>
+                        <input type="date" id="survey-start-date" name="start_date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="survey-end-date">Fecha de Fin:</label>
+                        <input type="date" id="survey-end-date" name="end_date" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Preguntas:</label>
+                    <div class="questions-container">
+                        <div class="question-item">
+                            <input type="text" class="question-text" placeholder="Texto de la pregunta" required>
+                            <div class="options-container">
+                                <input type="text" class="option-text" placeholder="Opción 1" required>
+                                <input type="text" class="option-text" placeholder="Opción 2" required>
+                            </div>
+                            <button type="button" class="add-option-btn">+ Agregar Opción</button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-question-btn">+ Agregar Pregunta</button>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Crear Carta Consulta</button>
+                </div>
+            </form>
+            
+            <div class="admin-message" id="create-survey-message" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <!-- Survey Results Tab -->
+    <div class="tab-content" id="survey-results-tab">
+        <div class="admin-section">
+            <h3>Ver Resultados de Cartas Consulta</h3>
+            <div class="form-group">
+                <label for="select-survey-results">Seleccionar Carta Consulta:</label>
+                <select id="select-survey-results" name="survey_id">
+                    <option value="">Cargando Cartas Consulta...</option>
+                </select>
+            </div>
+            
+            <div class="results-container" style="display: none;">
+                <div class="survey-results">
+                    <!-- Results will be loaded here dynamically -->
+                </div>
+            </div>
+            
+            <div class="admin-message" id="results-message" style="display: none;"></div>
+        </div>
     </div>
 </div>
