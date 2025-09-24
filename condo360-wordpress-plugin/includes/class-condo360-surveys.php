@@ -95,7 +95,7 @@ class Condo360_Surveys {
         $responses = $_POST['responses'];
         
         // Prepare data for API call
-        $api_url = 'http://localhost:3000/polls/surveys/' . $survey_id . '/vote';
+        $api_url = 'https://api.bonaventurecclub.com/polls/surveys/' . $survey_id . '/vote';
         $data = array(
             'wp_user_id' => $user_id,
             'responses' => $responses
@@ -132,7 +132,7 @@ class Condo360_Surveys {
         wp_enqueue_script($this->plugin_name);
         
         // Get active surveys from API
-        $api_url = 'http://localhost:3000/polls/surveys';
+        $api_url = 'https://api.bonaventurecclub.com/polls/surveys';
         $response = wp_remote_get($api_url, array('timeout' => 30));
         
         $surveys = array();
