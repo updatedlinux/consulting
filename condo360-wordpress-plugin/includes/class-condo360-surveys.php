@@ -1,361 +1,190 @@
 <?php
 /**
- * Main plugin class
+ * Main plugin file
  */
-
-// Prevent direct access
-if (!defined('ABSPATH')) {
-    exit;
+ 
+// If this file is called directly, abort.
+if (!defined('WPINC')) {
+    die;
 }
 
 class Condo360_Surveys {
     
     /**
-     * Initialize the plugin
+     * The unique identifier of this plugin.
      */
-    public function init() {
-        // Register shortcodes
-        add_shortcode('condo360_surveys', array($this, 'render_survey_shortcode'));
+    protected $plugin_name;
+    
+    /**
+     * The current version of the plugin.
+     */
+    protected $version;
+    
+    /**
+     * Define the core functionality of the plugin.
+     */
+    public function __construct() {
+        $this->plugin_name = 'condo360-surveys';
+        $this->version = '1.0.0';
         
-        // Admin menu
-        add_action('admin_menu', array($this, 'add_admin_menu'));
-        
-        // Enqueue scripts and styles
-        add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_assets'));
-        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
-        
-        // AJAX handlers
-        add_action('wp_ajax_condo360_submit_survey', array($this, 'submit_survey'));
-        add_action('wp_ajax_nopriv_condo360_submit_survey', array($this, 'submit_survey'));
+        add_action('init', array($this, 'load_textdomain'));
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
+        add_action('wp_ajax_condo360_submit_survey', array($this, 'handle_survey_submission'));
+        add_action('wp_ajax_nopriv_condo360_submit_survey', array($this, 'handle_survey_submission'));
+        add_action('wp_ajax_condo360_get_survey_detail', array($this, 'get_survey_detail'));
+        add_action('wp_ajax_nopriv_condo360_get_survey_detail', array($this, 'get_survey_detail'));
+        add_shortcode('condo360_surveys', array($this, 'render_surveys_shortcode'));
     }
     
     /**
-     * Plugin activation
+     * Load the plugin text domain for translation.
      */
-    public static function activate() {
-        // Nothing to do on activation for now
+    public function load_textdomain() {
+        load_plugin_textdomain(
+            'condo360-surveys',
+            false,
+            dirname(plugin_basename(__FILE__)) . '/languages/'
+        );
     }
     
     /**
-     * Plugin deactivation
+     * Register the stylesheets for the frontend.
      */
-    public static function deactivate() {
-        // Nothing to do on deactivation for now
+    public function enqueue_frontend_scripts() {
+        wp_enqueue_style(
+            $this->plugin_name,
+            plugin_dir_url(__FILE__) . 'assets/css/surveys.css',
+            array(),
+            $this->version,
+            'all'
+        );
+        
+        wp_enqueue_script(
+            $this->plugin_name,
+            plugin_dir_url(__FILE__) . 'assets/js/surveys.js',
+            array('jquery'),
+            $this->version,
+            true
+        );
+        
+        wp_localize_script(
+            $this->plugin_name,
+            'condo360_surveys_ajax',
+            array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('condo360_surveys_nonce')
+            )
+        );
     }
     
     /**
-     * Render the survey shortcode
+     * Handle survey submission via AJAX
      */
-    public function render_survey_shortcode($atts) {
-        // Check if user is logged in
-        if (!is_user_logged_in()) {
-            return '<div class="condo360-survey-message error">' . 
-                   __('You must be logged in to view surveys.', 'condo360-surveys') . 
-                   '</div>';
-        }
-        
-        // Get current user
-        $current_user = wp_get_current_user();
-        $user_id = $current_user->ID;
-        
-        // Load surveys from API
-        $surveys = $this->get_active_surveys();
-        
-        if (is_wp_error($surveys)) {
-            return '<div class="condo360-survey-message error">' . 
-                   __('Error loading surveys. Please try again later.', 'condo360-surveys') . 
-                   '</div>';
-        }
-        
-        // Render the surveys
-        ob_start();
-        include CONDO360_SURVEYS_PLUGIN_DIR . 'templates/frontend-surveys.php';
-        return ob_get_clean();
-    }
-    
-    /**
-     * Get active surveys from API
-     */
-    private function get_active_surveys() {
-        $api_url = defined('CONDO360_SURVEYS_API_URL') ? CONDO360_SURVEYS_API_URL : 'http://localhost:3000/polls';
-        
-        $response = wp_remote_get($api_url . '/surveys');
-        
-        if (is_wp_error($response)) {
-            return $response;
-        }
-        
-        $body = wp_remote_retrieve_body($response);
-        return json_decode($body, true);
-    }
-    
-    /**
-     * Submit survey via AJAX
-     */
-    public function submit_survey() {
-        // Check nonce
-        if (!wp_verify_nonce($_POST['nonce'], 'condo360_survey_nonce')) {
+    public function handle_survey_submission() {
+        // Verify nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'condo360_surveys_nonce')) {
             wp_die('Security check failed');
         }
         
-        // Check if user is logged in
-        if (!is_user_logged_in()) {
-            wp_die('You must be logged in to submit a survey');
+        // Get current user ID
+        $user_id = get_current_user_id();
+        if (!$user_id) {
+            wp_send_json_error(array('message' => __('Debes iniciar sesión para votar.', 'condo360-surveys')));
         }
-        
-        $current_user = wp_get_current_user();
-        $user_id = $current_user->ID;
         
         // Get survey data
         $survey_id = intval($_POST['survey_id']);
         $responses = $_POST['responses'];
         
-        // Prepare data for API
-        $api_data = array(
+        // Prepare data for API call
+        $api_url = 'http://localhost:3000/polls/surveys/' . $survey_id . '/vote';
+        $data = array(
             'wp_user_id' => $user_id,
             'responses' => $responses
         );
         
-        $api_url = defined('CONDO360_SURVEYS_API_URL') ? CONDO360_SURVEYS_API_URL : 'http://localhost:3000/polls';
-        
-        // Send data to API
-        $response = wp_remote_post($api_url . '/surveys/' . $survey_id . '/vote', array(
+        // Make API call
+        $response = wp_remote_post($api_url, array(
             'headers' => array('Content-Type' => 'application/json'),
-            'body' => json_encode($api_data),
+            'body' => json_encode($data),
             'timeout' => 30
         ));
         
         if (is_wp_error($response)) {
-            wp_send_json_error(array('message' => 'Error connecting to survey service'));
+            wp_send_json_error(array('message' => __('Error de conexión con el servidor.', 'condo360-surveys')));
         }
         
         $response_code = wp_remote_retrieve_response_code($response);
         $response_body = json_decode(wp_remote_retrieve_body($response), true);
         
         if ($response_code === 200) {
-            wp_send_json_success(array('message' => 'Vote recorded successfully'));
+            wp_send_json_success(array('message' => __('Voto registrado exitosamente', 'condo360-surveys')));
         } else {
-            wp_send_json_error(array('message' => $response_body['error'] ?? 'Error submitting survey'));
+            $error_message = isset($response_body['error']) ? $response_body['error'] : __('Error al enviar la encuesta.', 'condo360-surveys');
+            wp_send_json_error(array('message' => $error_message));
         }
     }
     
     /**
-     * Add admin menu
+     * Get survey detail via AJAX
      */
-    public function add_admin_menu() {
-        add_menu_page(
-            __('Cartas Consulta', 'condo360-surveys'),
-            __('Cartas Consulta', 'condo360-surveys'),
-            'manage_options',
-            'condo360-surveys',
-            array($this, 'admin_page'),
-            'dashicons-analytics',
-            30
-        );
+    public function get_survey_detail() {
+        // Verify nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'condo360_surveys_nonce')) {
+            wp_die('Security check failed');
+        }
         
-        add_submenu_page(
-            'condo360-surveys',
-            __('Create Survey', 'condo360-surveys'),
-            __('Create Survey', 'condo360-surveys'),
-            'manage_options',
-            'condo360-create-survey',
-            array($this, 'create_survey_page')
-        );
+        // Get survey ID
+        $survey_id = intval($_POST['survey_id']);
         
-        add_submenu_page(
-            'condo360-surveys',
-            __('Survey Results', 'condo360-surveys'),
-            __('Results', 'condo360-surveys'),
-            'manage_options',
-            'condo360-survey-results',
-            array($this, 'survey_results_page')
-        );
-    }
-    
-    /**
-     * Admin page
-     */
-    public function admin_page() {
-        // Get all surveys
-        $api_url = defined('CONDO360_SURVEYS_API_URL') ? CONDO360_SURVEYS_API_URL : 'http://localhost:3000/polls';
-        
-        $response = wp_remote_get($api_url . '/surveys/all');
+        // Make API call to get survey details
+        $api_url = 'http://localhost:3000/polls/surveys/' . $survey_id;
+        $response = wp_remote_get($api_url, array('timeout' => 30));
         
         if (is_wp_error($response)) {
-            $surveys = array();
-        } else {
-            $body = wp_remote_retrieve_body($response);
-            $surveys = json_decode($body, true);
-        }
-        
-        include CONDO360_SURVEYS_PLUGIN_DIR . 'templates/admin-dashboard.php';
-    }
-    
-    /**
-     * Create survey page
-     */
-    public function create_survey_page() {
-        if ($_POST && isset($_POST['condo360_create_survey_nonce'])) {
-            if (wp_verify_nonce($_POST['condo360_create_survey_nonce'], 'condo360_create_survey')) {
-                // Process form submission
-                $this->process_create_survey();
-            }
-        }
-        
-        include CONDO360_SURVEYS_PLUGIN_DIR . 'templates/admin-create-survey.php';
-    }
-    
-    /**
-     * Process create survey form
-     */
-    private function process_create_survey() {
-        // Prepare survey data
-        $survey_data = array(
-            'title' => sanitize_text_field($_POST['survey_title']),
-            'description' => sanitize_textarea_field($_POST['survey_description']),
-            'start_date' => $_POST['start_date'],
-            'end_date' => $_POST['end_date'],
-            'questions' => array()
-        );
-        
-        // Process questions
-        $question_count = intval($_POST['question_count']);
-        for ($i = 1; $i <= $question_count; $i++) {
-            if (!empty($_POST['question_' . $i])) {
-                $question = array(
-                    'question_text' => sanitize_textarea_field($_POST['question_' . $i]),
-                    'question_order' => $i,
-                    'options' => array()
-                );
-                
-                // Process options for this question
-                $option_count = intval($_POST['option_count_' . $i]);
-                for ($j = 1; $j <= $option_count; $j++) {
-                    if (!empty($_POST['option_' . $i . '_' . $j])) {
-                        $question['options'][] = array(
-                            'option_text' => sanitize_text_field($_POST['option_' . $i . '_' . $j])
-                        );
-                    }
-                }
-                
-                $survey_data['questions'][] = $question;
-            }
-        }
-        
-        // Send to API
-        $api_url = defined('CONDO360_SURVEYS_API_URL') ? CONDO360_SURVEYS_API_URL : 'http://localhost:3000/polls';
-        
-        $response = wp_remote_post($api_url . '/surveys', array(
-            'headers' => array('Content-Type' => 'application/json'),
-            'body' => json_encode($survey_data),
-            'timeout' => 30
-        ));
-        
-        if (is_wp_error($response)) {
-            add_action('admin_notices', function() {
-                echo '<div class="notice notice-error"><p>Error creating survey: ' . $response->get_error_message() . '</p></div>';
-            });
-            return;
+            wp_send_json_error(array('message' => __('Error de conexión con el servidor.', 'condo360-surveys')));
         }
         
         $response_code = wp_remote_retrieve_response_code($response);
+        $response_body = json_decode(wp_remote_retrieve_body($response), true);
         
-        if ($response_code === 201) {
-            add_action('admin_notices', function() {
-                echo '<div class="notice notice-success"><p>Survey created successfully!</p></div>';
-            });
+        if ($response_code === 200) {
+            // Load the survey detail template
+            ob_start();
+            $survey = $response_body;
+            include plugin_dir_path(__FILE__) . 'templates/frontend-survey-detail.php';
+            $html = ob_get_clean();
+            
+            wp_send_json_success(array('html' => $html));
         } else {
-            $body = json_decode(wp_remote_retrieve_body($response), true);
-            add_action('admin_notices', function() use ($body) {
-                echo '<div class="notice notice-error"><p>Error creating survey: ' . esc_html($body['error']) . '</p></div>';
-            });
+            $error_message = isset($response_body['error']) ? $response_body['error'] : __('Encuesta no encontrada.', 'condo360-surveys');
+            wp_send_json_error(array('message' => $error_message));
         }
     }
     
     /**
-     * Survey results page
+     * Render the surveys shortcode
      */
-    public function survey_results_page() {
-        $survey_id = isset($_GET['survey_id']) ? intval($_GET['survey_id']) : 0;
+    public function render_surveys_shortcode($atts) {
+        // Enqueue scripts
+        wp_enqueue_style($this->plugin_name);
+        wp_enqueue_script($this->plugin_name);
         
-        if ($survey_id > 0) {
-            // Get survey results
-            $api_url = defined('CONDO360_SURVEYS_API_URL') ? CONDO360_SURVEYS_API_URL : 'http://localhost:3000/polls';
-            
-            $response = wp_remote_get($api_url . '/surveys/' . $survey_id . '/results?admin=true');
-            
-            if (is_wp_error($response)) {
-                $results = null;
-            } else {
-                $body = wp_remote_retrieve_body($response);
-                $results = json_decode($body, true);
+        // Get active surveys from API
+        $api_url = 'http://localhost:3000/polls/surveys';
+        $response = wp_remote_get($api_url, array('timeout' => 30));
+        
+        $surveys = array();
+        if (!is_wp_error($response)) {
+            $response_code = wp_remote_retrieve_response_code($response);
+            if ($response_code === 200) {
+                $surveys = json_decode(wp_remote_retrieve_body($response), true);
             }
-            
-            include CONDO360_SURVEYS_PLUGIN_DIR . 'templates/admin-survey-results.php';
-        } else {
-            // Show list of surveys to select
-            $api_url = defined('CONDO360_SURVEYS_API_URL') ? CONDO360_SURVEYS_API_URL : 'http://localhost:3000/polls';
-            
-            $response = wp_remote_get($api_url . '/surveys/all');
-            
-            if (is_wp_error($response)) {
-                $surveys = array();
-            } else {
-                $body = wp_remote_retrieve_body($response);
-                $surveys = json_decode($body, true);
-            }
-            
-            include CONDO360_SURVEYS_PLUGIN_DIR . 'templates/admin-select-survey.php';
-        }
-    }
-    
-    /**
-     * Enqueue frontend assets
-     */
-    public function enqueue_frontend_assets() {
-        wp_enqueue_style(
-            'condo360-surveys-css',
-            CONDO360_SURVEYS_PLUGIN_URL . 'assets/css/surveys.css',
-            array(),
-            CONDO360_SURVEYS_VERSION
-        );
-        
-        wp_enqueue_script(
-            'condo360-surveys-js',
-            CONDO360_SURVEYS_PLUGIN_URL . 'assets/js/surveys.js',
-            array('jquery'),
-            CONDO360_SURVEYS_VERSION,
-            true
-        );
-        
-        wp_localize_script('condo360-surveys-js', 'condo360_surveys_ajax', array(
-            'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('condo360_survey_nonce')
-        ));
-    }
-    
-    /**
-     * Enqueue admin assets
-     */
-    public function enqueue_admin_assets($hook) {
-        // Only load on our plugin pages
-        if (strpos($hook, 'condo360-surveys') === false) {
-            return;
         }
         
-        wp_enqueue_style(
-            'condo360-admin-css',
-            CONDO360_SURVEYS_PLUGIN_URL . 'assets/css/admin.css',
-            array(),
-            CONDO360_SURVEYS_VERSION
-        );
-        
-        wp_enqueue_script(
-            'condo360-admin-js',
-            CONDO360_SURVEYS_PLUGIN_URL . 'assets/js/admin.js',
-            array('jquery'),
-            CONDO360_SURVEYS_VERSION,
-            true
-        );
+        // Load template
+        ob_start();
+        include plugin_dir_path(__FILE__) . 'templates/frontend-surveys.php';
+        return ob_get_clean();
     }
 }

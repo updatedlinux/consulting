@@ -1,11 +1,63 @@
 jQuery(document).ready(function($) {
+    var surveysContainer = $('.condo360-surveys-container');
+    var surveysList = $('#surveys-list');
+    var surveyDetail = $('#survey-detail');
+    
+    // Handle survey selection
+    surveysContainer.on('click', '.survey-select-btn', function(e) {
+        e.preventDefault();
+        
+        var surveyId = $(this).data('survey-id');
+        var button = $(this);
+        var originalText = button.text();
+        
+        // Show loading state
+        button.prop('disabled', true).text('Cargando...');
+        
+        // Get survey detail via AJAX
+        $.ajax({
+            url: condo360_surveys_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'condo360_get_survey_detail',
+                survey_id: surveyId,
+                nonce: condo360_surveys_ajax.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Hide survey list and show survey detail
+                    surveysList.hide();
+                    surveyDetail.html(response.data.html).show();
+                } else {
+                    alert(response.data.message || 'Error al cargar la encuesta.');
+                }
+            },
+            error: function() {
+                alert('Error de conexión. Por favor intente de nuevo.');
+            },
+            complete: function() {
+                button.prop('disabled', false).text(originalText);
+            }
+        });
+    });
+    
+    // Handle back to surveys list
+    surveysContainer.on('click', '.survey-back-btn', function(e) {
+        e.preventDefault();
+        
+        // Hide survey detail and show survey list
+        surveyDetail.hide();
+        surveysList.show();
+    });
+    
     // Handle survey form submission
-    $('.condo360-survey-form').on('submit', function(e) {
+    surveysContainer.on('submit', '.condo360-survey-form', function(e) {
         e.preventDefault();
         
         var form = $(this);
         var surveyId = form.data('survey-id');
         var submitBtn = form.find('.survey-submit-btn');
+        var backBtn = form.find('.survey-back-btn');
         var messageDiv = form.siblings('.survey-message');
         
         // Collect responses
@@ -29,8 +81,9 @@ jQuery(document).ready(function($) {
             return;
         }
         
-        // Disable submit button
+        // Disable buttons
         submitBtn.prop('disabled', true).text('Enviando...');
+        backBtn.prop('disabled', true);
         
         // Send AJAX request
         $.ajax({
@@ -55,6 +108,7 @@ jQuery(document).ready(function($) {
             },
             complete: function() {
                 submitBtn.prop('disabled', false).text('Enviar Encuesta');
+                backBtn.prop('disabled', false);
             }
         });
     });
