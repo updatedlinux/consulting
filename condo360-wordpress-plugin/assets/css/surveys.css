@@ -4,16 +4,33 @@
     padding: 20px;
 }
 
-.condo360-survey-card {
+.survey-selection-view h2 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.survey-list {
+    display: grid;
+    gap: 20px;
+}
+
+.survey-item {
     background: #f9f9f9;
     border: 1px solid #ddd;
     border-radius: 5px;
     padding: 20px;
-    margin-bottom: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.condo360-survey-card h3 {
+.survey-item:hover {
+    background: #f0f0f0;
+    border-color: #0073aa;
+}
+
+.survey-item h3 {
     margin-top: 0;
+    color: #0073aa;
 }
 
 .survey-description {
@@ -27,51 +44,111 @@
     margin: 15px 0;
 }
 
-.survey-question {
-    margin-bottom: 15px;
-}
-
-.survey-question h4 {
-    margin: 0 0 10px 0;
-}
-
-.survey-option {
-    margin: 5px 0;
-}
-
-.survey-option label {
-    font-weight: normal;
-    cursor: pointer;
-}
-
-.survey-actions {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid #eee;
-}
-
-.survey-submit-btn {
+.select-survey-btn {
     background: #0073aa;
     color: white;
     border: none;
     padding: 10px 20px;
     border-radius: 3px;
     cursor: pointer;
+    margin-top: 10px;
 }
 
-.survey-submit-btn:hover {
+.select-survey-btn:hover {
+    background: #005a87;
+}
+
+.survey-back-btn-container {
+    margin-bottom: 20px;
+}
+
+.back-to-surveys-btn {
+    background: #f1f1f1;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 8px 15px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.back-to-surveys-btn:hover {
+    background: #e1e1e1;
+}
+
+.condo360-survey-card {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+}
+
+.condo360-survey-card h3 {
+    margin-top: 0;
+}
+
+.survey-question {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 3px;
+    border: 1px solid #eee;
+}
+
+.survey-question h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+}
+
+.survey-option {
+    margin: 8px 0;
+    padding: 5px 0;
+}
+
+.survey-option label {
+    font-weight: normal;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.survey-option input[type="radio"] {
+    margin-right: 10px;
+}
+
+.survey-actions {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+
+.survey-submit-btn {
+    background: #0073aa;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s ease;
+}
+
+.survey-submit-btn:hover:not(:disabled) {
     background: #005a87;
 }
 
 .survey-submit-btn:disabled {
     background: #ccc;
     cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .survey-message {
     margin-top: 15px;
     padding: 10px;
     border-radius: 3px;
+    text-align: center;
 }
 
 .survey-message.success {

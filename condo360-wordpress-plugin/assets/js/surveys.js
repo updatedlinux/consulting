@@ -1,4 +1,30 @@
 jQuery(document).ready(function($) {
+    // Handle survey selection
+    $('.condo360-surveys-container').on('click', '.select-survey-btn', function() {
+        var surveyItem = $(this).closest('.survey-item');
+        var surveyId = surveyItem.data('survey-id');
+        
+        // Hide selection view and show detail view
+        $('.survey-selection-view').hide();
+        $('.survey-detail-view').show();
+        
+        // Load survey details
+        loadSurveyDetails(surveyId);
+    });
+    
+    // Handle back to surveys list
+    $('.condo360-surveys-container').on('click', '.back-to-surveys-btn', function() {
+        $('.survey-detail-view').hide();
+        $('.survey-selection-view').show();
+        $('.selected-survey-content').empty();
+    });
+    
+    // Handle radio button changes to enable/disable submit button
+    $('.condo360-surveys-container').on('change', 'input[type="radio"]', function() {
+        var form = $(this).closest('.condo360-survey-form');
+        checkAllQuestionsAnswered(form);
+    });
+    
     // Handle survey form submission
     $('.condo360-surveys-container').on('submit', '.condo360-survey-form', function(e) {
         e.preventDefault();
@@ -58,4 +84,51 @@ jQuery(document).ready(function($) {
             }
         });
     });
+    
+    // Function to load survey details
+    function loadSurveyDetails(surveyId) {
+        // In a real implementation, we would make an AJAX call to get the survey details
+        // For now, we'll simulate this by getting the data from the existing surveys array
+        // In the PHP code, we'll need to pass the surveys data to JavaScript
+        
+        // Show loading message
+        $('.selected-survey-content').html('<p>Cargando detalles de la Carta Consulta...</p>');
+        
+        // Make AJAX call to get survey details
+        $.ajax({
+            url: condo360_surveys_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'condo360_get_survey_details',
+                survey_id: surveyId,
+                nonce: condo360_surveys_ajax.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('.selected-survey-content').html(response.data.html);
+                } else {
+                    $('.selected-survey-content').html('<p>Error al cargar los detalles de la Carta Consulta.</p>');
+                }
+            },
+            error: function() {
+                $('.selected-survey-content').html('<p>Error al cargar los detalles de la Carta Consulta.</p>');
+            }
+        });
+    }
+    
+    // Function to check if all questions are answered
+    function checkAllQuestionsAnswered(form) {
+        var allAnswered = true;
+        var submitBtn = form.find('.survey-submit-btn');
+        
+        form.find('.survey-question').each(function() {
+            var answered = $(this).find('input[type="radio"]:checked').length > 0;
+            if (!answered) {
+                allAnswered = false;
+                return false; // Break the loop
+            }
+        });
+        
+        submitBtn.prop('disabled', !allAnswered);
+    }
 });

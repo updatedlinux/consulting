@@ -31,6 +31,8 @@ class Condo360_Surveys {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
         add_action('wp_ajax_condo360_submit_survey', array($this, 'handle_survey_submission'));
         add_action('wp_ajax_nopriv_condo360_submit_survey', array($this, 'handle_survey_submission'));
+        add_action('wp_ajax_condo360_get_survey_details', array($this, 'get_survey_details'));
+        add_action('wp_ajax_nopriv_condo360_get_survey_details', array($this, 'get_survey_details'));
         add_shortcode('condo360_surveys', array($this, 'render_surveys_shortcode'));
     }
     
@@ -124,6 +126,49 @@ class Condo360_Surveys {
     }
     
     /**
+     * Get survey details via AJAX
+     */
+    public function get_survey_details() {
+        // Verify nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'condo360_surveys_nonce')) {
+            wp_die('Security check failed');
+        }
+        
+        // Get survey ID
+        $survey_id = intval($_POST['survey_id']);
+        
+        // Get all surveys from API
+        $api_url = 'https://api.bonaventurecclub.com/polls/surveys';
+        $response = wp_remote_get($api_url, array('timeout' => 30));
+        
+        if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+            $surveys = json_decode(wp_remote_retrieve_body($response), true);
+            
+            // Find the requested survey
+            $requested_survey = null;
+            foreach ($surveys as $survey) {
+                if ($survey['id'] == $survey_id) {
+                    $requested_survey = $survey;
+                    break;
+                }
+            }
+            
+            if ($requested_survey) {
+                // Load template
+                ob_start();
+                include plugin_dir_path(__FILE__) . '../templates/survey-detail.php';
+                $html = ob_get_clean();
+                
+                wp_send_json_success(array('html' => $html, 'survey' => $requested_survey));
+            } else {
+                wp_send_json_error(array('message' => __('Carta Consulta no encontrada.', 'condo360-surveys')));
+            }
+        } else {
+            wp_send_json_error(array('message' => __('Error al obtener los detalles de la Carta Consulta.', 'condo360-surveys')));
+        }
+    }
+    
+    /**
      * Render the surveys shortcode
      */
     public function render_surveys_shortcode($atts) {
@@ -135,22 +180,12 @@ class Condo360_Surveys {
         $api_url = 'https://api.bonaventurecclub.com/polls/surveys';
         $response = wp_remote_get($api_url, array('timeout' => 30));
         
-        // Depuración: Mostrar información sobre la respuesta
-        error_log('API Response: ' . print_r($response, true));
-        
         $surveys = array();
         if (!is_wp_error($response)) {
             $response_code = wp_remote_retrieve_response_code($response);
-            error_log('API Response Code: ' . $response_code);
-            
             if ($response_code === 200) {
                 $surveys = json_decode(wp_remote_retrieve_body($response), true);
-                error_log('API Surveys Data: ' . print_r($surveys, true));
-            } else {
-                error_log('API Error: ' . wp_remote_retrieve_body($response));
             }
-        } else {
-            error_log('WP Error: ' . $response->get_error_message());
         }
         
         // Load template
