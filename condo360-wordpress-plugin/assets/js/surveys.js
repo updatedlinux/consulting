@@ -59,47 +59,17 @@ jQuery(document).ready(function($) {
         });
     });
     
-    // Add pagination functionality
-    // Hide all surveys except the first one initially
-    var surveys = $('.condo360-survey-card');
-    if (surveys.length > 1) {
-        // Hide all surveys except the first one
-        surveys.hide().first().show();
+    // Handle navigation between surveys
+    $('.condo360-surveys-container').on('click', '.survey-nav-btn', function(e) {
+        e.preventDefault();
         
-        // Add navigation buttons
-        surveys.each(function(index) {
-            var survey = $(this);
-            var navContainer = $('<div class="survey-navigation"></div>');
-            
-            if (index > 0) {
-                var prevBtn = $('<button type="button" class="survey-nav-btn prev-btn">← Anterior Carta Consulta</button>');
-                navContainer.append(prevBtn);
-            }
-            
-            if (index < surveys.length - 1) {
-                var nextBtn = $('<button type="button" class="survey-nav-btn next-btn">Siguiente Carta Consulta →</button>');
-                navContainer.append(nextBtn);
-            }
-            
-            if (navContainer.children().length > 0) {
-                survey.find('.survey-actions').append(navContainer);
-            }
-        });
+        var currentCard = $(this).closest('.condo360-survey-card');
+        var currentIndex = parseInt(currentCard.data('survey-index'));
+        var direction = $(this).hasClass('next-btn') ? 1 : -1;
+        var targetIndex = currentIndex + direction;
         
-        // Handle navigation
-        $('.condo360-surveys-container').on('click', '.survey-nav-btn', function(e) {
-            e.preventDefault();
-            
-            var currentSurvey = $(this).closest('.condo360-survey-card');
-            var currentIndex = surveys.index(currentSurvey);
-            
-            if ($(this).hasClass('next-btn')) {
-                currentSurvey.hide();
-                surveys.eq(currentIndex + 1).show();
-            } else if ($(this).hasClass('prev-btn')) {
-                currentSurvey.hide();
-                surveys.eq(currentIndex - 1).show();
-            }
-        });
-    }
+        // Hide current card and show target card
+        currentCard.hide();
+        $('.condo360-survey-card[data-survey-index="' + targetIndex + '"]').show();
+    });
 });

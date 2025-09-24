@@ -12,11 +12,6 @@
     padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: box-shadow 0.2s ease;
-}
-
-.condo360-survey-card:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .condo360-survey-card h3 {
@@ -131,7 +126,9 @@
 .survey-navigation {
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
     gap: 10px;
 }
 
@@ -144,6 +141,7 @@
     cursor: pointer;
     font-size: 0.9em;
     transition: background 0.2s ease;
+    flex: 1;
 }
 
 .survey-nav-btn:hover {
