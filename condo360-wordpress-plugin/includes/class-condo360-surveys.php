@@ -135,12 +135,22 @@ class Condo360_Surveys {
         $api_url = 'https://api.bonaventurecclub.com/polls/surveys';
         $response = wp_remote_get($api_url, array('timeout' => 30));
         
+        // Depuración: Mostrar información sobre la respuesta
+        error_log('API Response: ' . print_r($response, true));
+        
         $surveys = array();
         if (!is_wp_error($response)) {
             $response_code = wp_remote_retrieve_response_code($response);
+            error_log('API Response Code: ' . $response_code);
+            
             if ($response_code === 200) {
                 $surveys = json_decode(wp_remote_retrieve_body($response), true);
+                error_log('API Surveys Data: ' . print_r($surveys, true));
+            } else {
+                error_log('API Error: ' . wp_remote_retrieve_body($response));
             }
+        } else {
+            error_log('WP Error: ' . $response->get_error_message());
         }
         
         // Load template

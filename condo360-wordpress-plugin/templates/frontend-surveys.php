@@ -5,11 +5,15 @@
 ?>
 
 <div class="condo360-surveys-container">
+    <h2>Prueba de Cartas Consulta</h2>
+    <p>Si ves este mensaje, el shortcode está funcionando.</p>
+    
     <?php if (empty($surveys)): ?>
         <div class="condo360-survey-message info">
             <?php _e('No hay Cartas Consulta activas en este momento.', 'condo360-surveys'); ?>
         </div>
     <?php else: ?>
+        <p>Hay <?php echo count($surveys); ?> Cartas Consulta disponibles.</p>
         <?php foreach ($surveys as $survey): ?>
             <div class="condo360-survey-card">
                 <h3><?php echo esc_html($survey['title']); ?></h3>
