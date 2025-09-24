@@ -123,11 +123,16 @@ class Condo360_Surveys_Admin {
         $api_url = 'https://api.bonaventurecclub.com/polls/surveys';
         $response = wp_remote_get($api_url, array('timeout' => 30));
         
-        if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
-            $surveys = json_decode(wp_remote_retrieve_body($response), true);
-            wp_send_json_success(array('surveys' => $surveys));
+        if (!is_wp_error($response)) {
+            $response_code = wp_remote_retrieve_response_code($response);
+            if ($response_code === 200) {
+                $surveys = json_decode(wp_remote_retrieve_body($response), true);
+                wp_send_json_success(array('surveys' => $surveys));
+            } else {
+                wp_send_json_error(array('message' => 'Error al obtener las Cartas Consulta. Código: ' . $response_code));
+            }
         } else {
-            wp_send_json_error(array('message' => 'Error al obtener las Cartas Consulta.'));
+            wp_send_json_error(array('message' => 'Error de conexión: ' . $response->get_error_message()));
         }
     }
     
@@ -176,20 +181,21 @@ class Condo360_Surveys_Admin {
             'timeout' => 30
         ));
         
-        if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 201) {
-            $result = json_decode(wp_remote_retrieve_body($response), true);
-            wp_send_json_success(array('message' => 'Carta Consulta creada exitosamente.', 'survey' => $result));
-        } else {
-            $error_message = 'Error al crear la Carta Consulta.';
-            if (is_wp_error($response)) {
-                $error_message = $response->get_error_message();
+        if (!is_wp_error($response)) {
+            $response_code = wp_remote_retrieve_response_code($response);
+            if ($response_code === 201) {
+                $result = json_decode(wp_remote_retrieve_body($response), true);
+                wp_send_json_success(array('message' => 'Carta Consulta creada exitosamente.', 'survey' => $result));
             } else {
+                $error_message = 'Error al crear la Carta Consulta. Código: ' . $response_code;
                 $response_body = json_decode(wp_remote_retrieve_body($response), true);
                 if (isset($response_body['error'])) {
                     $error_message = $response_body['error'];
                 }
+                wp_send_json_error(array('message' => $error_message));
             }
-            wp_send_json_error(array('message' => $error_message));
+        } else {
+            wp_send_json_error(array('message' => 'Error de conexión: ' . $response->get_error_message()));
         }
     }
     
@@ -212,10 +218,15 @@ class Condo360_Surveys_Admin {
             'timeout' => 30
         ));
         
-        if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
-            wp_send_json_success(array('message' => 'Carta Consulta cerrada exitosamente.'));
+        if (!is_wp_error($response)) {
+            $response_code = wp_remote_retrieve_response_code($response);
+            if ($response_code === 200) {
+                wp_send_json_success(array('message' => 'Carta Consulta cerrada exitosamente.'));
+            } else {
+                wp_send_json_error(array('message' => 'Error al cerrar la Carta Consulta. Código: ' . $response_code));
+            }
         } else {
-            wp_send_json_error(array('message' => 'Error al cerrar la Carta Consulta.'));
+            wp_send_json_error(array('message' => 'Error de conexión: ' . $response->get_error_message()));
         }
     }
     
@@ -231,25 +242,43 @@ class Condo360_Surveys_Admin {
         // Get survey ID
         $survey_id = intval($_POST['survey_id']);
         
-        // Get survey details from API
-        $survey_api_url = 'https://api.bonaventurecclub.com/polls/surveys/' . $survey_id;
-        $survey_response = wp_remote_get($survey_api_url, array('timeout' => 30));
+        // Get results from API
+        $api_url = 'https://api.bonaventurecclub.com/polls/surveys/' . $survey_id . '/results?admin=true';
+        $response = wp_remote_get($api_url, array('timeout' => 30));
         
-        if (!is_wp_error($survey_response) && wp_remote_retrieve_response_code($survey_response) === 200) {
-            $survey = json_decode(wp_remote_retrieve_body($survey_response), true);
-            
-            // Get results from API
-            $results_api_url = 'https://api.bonaventurecclub.com/polls/surveys/' . $survey_id . '/results';
-            $results_response = wp_remote_get($results_api_url, array('timeout' => 30));
-            
-            if (!is_wp_error($results_response) && wp_remote_retrieve_response_code($results_response) === 200) {
-                $results = json_decode(wp_remote_retrieve_body($results_response), true);
-                wp_send_json_success(array('results' => array('survey' => $survey, 'results' => $results)));
+        if (!is_wp_error($response)) {
+            $response_code = wp_remote_retrieve_response_code($response);
+            if ($response_code === 200) {
+                $results_data = json_decode(wp_remote_retrieve_body($response), true);
+                
+                // Calculate percentages
+                if (isset($results_data['questions'])) {
+                    $total_votes = 0;
+                    
+                    // Calculate total votes from first question (assuming all questions have same number of responses)
+                    if (!empty($results_data['questions'][0]['options'])) {
+                        foreach ($results_data['questions'][0]['options'] as $option) {
+                            $total_votes += $option['response_count'];
+                        }
+                    }
+                    
+                    // Add percentage to each option
+                    foreach ($results_data['questions'] as &$question) {
+                        foreach ($question['options'] as &$option) {
+                            $option['percentage'] = $total_votes > 0 ? ($option['response_count'] / $total_votes) * 100 : 0;
+                        }
+                    }
+                    
+                    $results_data['total_votes'] = $total_votes;
+                }
+                
+                wp_send_json_success(array('results' => $results_data));
             } else {
-                wp_send_json_error(array('message' => 'Error al obtener los resultados de la Carta Consulta.'));
+                $error_body = wp_remote_retrieve_body($response);
+                wp_send_json_error(array('message' => 'Error al obtener los resultados de la Carta Consulta. Código: ' . $response_code . ' - ' . $error_body));
             }
         } else {
-            wp_send_json_error(array('message' => 'Error al obtener los detalles de la Carta Consulta.'));
+            wp_send_json_error(array('message' => 'Error de conexión: ' . $response->get_error_message()));
         }
     }
 }

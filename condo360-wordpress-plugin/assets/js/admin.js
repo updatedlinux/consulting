@@ -127,8 +127,8 @@ jQuery(document).ready(function($) {
                     showMessage(messageDiv, response.data.message, 'error');
                 }
             },
-            error: function() {
-                showMessage(messageDiv, 'Error al crear la Carta Consulta. Por favor intente de nuevo.', 'error');
+            error: function(xhr, status, error) {
+                showMessage(messageDiv, 'Error al crear la Carta Consulta. Por favor intente de nuevo. (' + error + ')', 'error');
             },
             complete: function() {
                 submitBtn.prop('disabled', false).text('Crear Carta Consulta');
@@ -142,7 +142,7 @@ jQuery(document).ready(function($) {
         var loadingMessage = container.find('.loading-message');
         var surveysList = container.find('.surveys-list');
         
-        loadingMessage.show();
+        loadingMessage.show().text('Cargando Cartas Consulta...');
         surveysList.hide();
         
         $.ajax({
@@ -154,23 +154,35 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    // Load template
-                    $.post(condo360_admin_ajax.ajax_url, {
-                        action: 'condo360_admin_load_template',
-                        template: 'admin-surveys-list',
-                        nonce: condo360_admin_ajax.nonce,
-                        surveys: response.data.surveys
-                    }, function(html) {
-                        surveysList.html(html);
-                        loadingMessage.hide();
-                        surveysList.show();
+                    // Load template via AJAX
+                    $.ajax({
+                        url: condo360_admin_ajax.ajax_url,
+                        type: 'POST',
+                        data: {
+                            action: 'condo360_admin_load_template',
+                            template: 'admin-surveys-list',
+                            nonce: condo360_admin_ajax.nonce,
+                            surveys: response.data.surveys
+                        },
+                        success: function(templateResponse) {
+                            if (templateResponse.success) {
+                                surveysList.html(templateResponse.data.html);
+                                loadingMessage.hide();
+                                surveysList.show();
+                            } else {
+                                loadingMessage.text('Error al cargar la plantilla: ' + templateResponse.data.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            loadingMessage.text('Error al cargar la plantilla: ' + error);
+                        }
                     });
                 } else {
-                    loadingMessage.text('Error al cargar las Cartas Consulta.');
+                    loadingMessage.text('Error al cargar las Cartas Consulta: ' + response.data.message);
                 }
             },
-            error: function() {
-                loadingMessage.text('Error al cargar las Cartas Consulta.');
+            error: function(xhr, status, error) {
+                loadingMessage.text('Error de conexión al cargar las Cartas Consulta: ' + error);
             }
         });
     }
@@ -195,11 +207,11 @@ jQuery(document).ready(function($) {
                     });
                     select.html(options);
                 } else {
-                    select.html('<option value="">Error al cargar las Cartas Consulta</option>');
+                    select.html('<option value="">Error al cargar las Cartas Consulta: ' + response.data.message + '</option>');
                 }
             },
-            error: function() {
-                select.html('<option value="">Error al cargar las Cartas Consulta</option>');
+            error: function(xhr, status, error) {
+                select.html('<option value="">Error de conexión: ' + error + '</option>');
             }
         });
     }
@@ -234,8 +246,8 @@ jQuery(document).ready(function($) {
                     button.prop('disabled', false).text(originalText);
                 }
             },
-            error: function() {
-                alert('Error al cerrar la Carta Consulta. Por favor intente de nuevo.');
+            error: function(xhr, status, error) {
+                alert('Error al cerrar la Carta Consulta. Por favor intente de nuevo. (' + error + ')');
                 button.prop('disabled', false).text(originalText);
             }
         });
@@ -265,22 +277,33 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    // Load template
-                    $.post(condo360_admin_ajax.ajax_url, {
-                        action: 'condo360_admin_load_template',
-                        template: 'admin-survey-results',
-                        nonce: condo360_admin_ajax.nonce,
-                        survey: response.data.results.survey,
-                        results: response.data.results
-                    }, function(html) {
-                        $('.survey-results').html(html);
+                    // Load template via AJAX
+                    $.ajax({
+                        url: condo360_admin_ajax.ajax_url,
+                        type: 'POST',
+                        data: {
+                            action: 'condo360_admin_load_template',
+                            template: 'admin-survey-results',
+                            nonce: condo360_admin_ajax.nonce,
+                            results: response.data.results
+                        },
+                        success: function(templateResponse) {
+                            if (templateResponse.success) {
+                                $('.survey-results').html(templateResponse.data.html);
+                            } else {
+                                $('.survey-results').html('<p>Error al cargar la plantilla de resultados: ' + templateResponse.data.message + '</p>');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            $('.survey-results').html('<p>Error al cargar la plantilla de resultados: ' + error + '</p>');
+                        }
                     });
                 } else {
                     $('.survey-results').html('<p>Error al cargar los resultados: ' + response.data.message + '</p>');
                 }
             },
-            error: function() {
-                $('.survey-results').html('<p>Error al cargar los resultados. Por favor intente de nuevo.</p>');
+            error: function(xhr, status, error) {
+                $('.survey-results').html('<p>Error de conexión al cargar los resultados: ' + error + '</p>');
             }
         });
     });
@@ -294,5 +317,7 @@ jQuery(document).ready(function($) {
     }
     
     // Initialize with surveys list
-    loadSurveysList();
+    if ($('.tab-content.active').attr('id') === 'surveys-list-tab') {
+        loadSurveysList();
+    }
 });
