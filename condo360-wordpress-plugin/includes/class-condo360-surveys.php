@@ -31,8 +31,6 @@ class Condo360_Surveys {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
         add_action('wp_ajax_condo360_submit_survey', array($this, 'handle_survey_submission'));
         add_action('wp_ajax_nopriv_condo360_submit_survey', array($this, 'handle_survey_submission'));
-        add_action('wp_ajax_condo360_get_survey_detail', array($this, 'get_survey_detail'));
-        add_action('wp_ajax_nopriv_condo360_get_survey_detail', array($this, 'get_survey_detail'));
         add_shortcode('condo360_surveys', array($this, 'render_surveys_shortcode'));
     }
     
@@ -120,44 +118,7 @@ class Condo360_Surveys {
         if ($response_code === 200) {
             wp_send_json_success(array('message' => __('Voto registrado exitosamente', 'condo360-surveys')));
         } else {
-            $error_message = isset($response_body['error']) ? $response_body['error'] : __('Error al enviar la encuesta.', 'condo360-surveys');
-            wp_send_json_error(array('message' => $error_message));
-        }
-    }
-    
-    /**
-     * Get survey detail via AJAX
-     */
-    public function get_survey_detail() {
-        // Verify nonce
-        if (!wp_verify_nonce($_POST['nonce'], 'condo360_surveys_nonce')) {
-            wp_die('Security check failed');
-        }
-        
-        // Get survey ID
-        $survey_id = intval($_POST['survey_id']);
-        
-        // Make API call to get survey details
-        $api_url = 'http://localhost:3000/polls/surveys/' . $survey_id;
-        $response = wp_remote_get($api_url, array('timeout' => 30));
-        
-        if (is_wp_error($response)) {
-            wp_send_json_error(array('message' => __('Error de conexión con el servidor.', 'condo360-surveys')));
-        }
-        
-        $response_code = wp_remote_retrieve_response_code($response);
-        $response_body = json_decode(wp_remote_retrieve_body($response), true);
-        
-        if ($response_code === 200) {
-            // Load the survey detail template
-            ob_start();
-            $survey = $response_body;
-            include plugin_dir_path(__FILE__) . 'templates/frontend-survey-detail.php';
-            $html = ob_get_clean();
-            
-            wp_send_json_success(array('html' => $html));
-        } else {
-            $error_message = isset($response_body['error']) ? $response_body['error'] : __('Encuesta no encontrada.', 'condo360-surveys');
+            $error_message = isset($response_body['error']) ? $response_body['error'] : __('Error al enviar la Carta Consulta.', 'condo360-surveys');
             wp_send_json_error(array('message' => $error_message));
         }
     }

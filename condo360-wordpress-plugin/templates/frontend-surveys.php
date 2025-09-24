@@ -5,37 +5,55 @@
 ?>
 
 <div class="condo360-surveys-container">
-    <div class="condo360-surveys-list" id="surveys-list">
-        <?php if (empty($surveys)): ?>
-            <div class="condo360-survey-message info">
-                <?php _e('No hay encuestas activas en este momento.', 'condo360-surveys'); ?>
-            </div>
-        <?php else: ?>
-            <h3><?php _e('Encuestas Disponibles', 'condo360-surveys'); ?></h3>
-            <?php foreach ($surveys as $survey): ?>
-                <div class="condo360-survey-card" data-survey-id="<?php echo esc_attr($survey['id']); ?>">
-                    <h4><?php echo esc_html($survey['title']); ?></h4>
-                    <?php if (!empty($survey['description'])): ?>
-                        <p class="survey-description"><?php echo esc_html($survey['description']); ?></p>
-                    <?php endif; ?>
-                    
-                    <div class="survey-dates">
-                        <?php 
-                        $start_date = date_i18n(get_option('date_format'), strtotime($survey['start_date']));
-                        $end_date = date_i18n(get_option('date_format'), strtotime($survey['end_date']));
-                        printf(__('Disponible desde %s hasta %s', 'condo360-surveys'), $start_date, $end_date);
-                        ?>
-                    </div>
-                    
-                    <button type="button" class="survey-select-btn" data-survey-id="<?php echo esc_attr($survey['id']); ?>">
-                        <?php _e('Responder Encuesta', 'condo360-surveys'); ?>
-                    </button>
+    <?php if (empty($surveys)): ?>
+        <div class="condo360-survey-message info">
+            <?php _e('No hay Cartas Consulta activas en este momento.', 'condo360-surveys'); ?>
+        </div>
+    <?php else: ?>
+        <?php foreach ($surveys as $survey): ?>
+            <div class="condo360-survey-card" id="survey-<?php echo esc_attr($survey['id']); ?>">
+                <h3><?php echo esc_html($survey['title']); ?></h3>
+                <?php if (!empty($survey['description'])): ?>
+                    <p class="survey-description"><?php echo esc_html($survey['description']); ?></p>
+                <?php endif; ?>
+                
+                <div class="survey-dates">
+                    <?php 
+                    $start_date = date_i18n(get_option('date_format'), strtotime($survey['start_date']));
+                    $end_date = date_i18n(get_option('date_format'), strtotime($survey['end_date']));
+                    printf(__('Disponible desde %s hasta %s', 'condo360-surveys'), $start_date, $end_date);
+                    ?>
                 </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </div>
-    
-    <div class="condo360-survey-detail" id="survey-detail" style="display: none;">
-        <!-- Aquí se cargará dinámicamente el contenido de la encuesta seleccionada -->
-    </div>
+                
+                <form class="condo360-survey-form" data-survey-id="<?php echo esc_attr($survey['id']); ?>">
+                    <?php foreach ($survey['questions'] as $question): ?>
+                        <div class="survey-question">
+                            <h4><?php echo esc_html($question['question_text']); ?></h4>
+                            <div class="survey-options">
+                                <?php foreach ($question['options'] as $option): ?>
+                                    <div class="survey-option">
+                                        <label>
+                                            <input type="radio" 
+                                                   name="question_<?php echo esc_attr($question['id']); ?>" 
+                                                   value="<?php echo esc_attr($option['id']); ?>" 
+                                                   required>
+                                            <?php echo esc_html($option['option_text']); ?>
+                                        </label>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                    
+                    <div class="survey-actions">
+                        <button type="submit" class="survey-submit-btn">
+                            <?php _e('Enviar Carta Consulta', 'condo360-surveys'); ?>
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="survey-message" style="display: none;"></div>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
 </div>

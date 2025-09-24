@@ -1,63 +1,11 @@
 jQuery(document).ready(function($) {
-    var surveysContainer = $('.condo360-surveys-container');
-    var surveysList = $('#surveys-list');
-    var surveyDetail = $('#survey-detail');
-    
-    // Handle survey selection
-    surveysContainer.on('click', '.survey-select-btn', function(e) {
-        e.preventDefault();
-        
-        var surveyId = $(this).data('survey-id');
-        var button = $(this);
-        var originalText = button.text();
-        
-        // Show loading state
-        button.prop('disabled', true).text('Cargando...');
-        
-        // Get survey detail via AJAX
-        $.ajax({
-            url: condo360_surveys_ajax.ajax_url,
-            type: 'POST',
-            data: {
-                action: 'condo360_get_survey_detail',
-                survey_id: surveyId,
-                nonce: condo360_surveys_ajax.nonce
-            },
-            success: function(response) {
-                if (response.success) {
-                    // Hide survey list and show survey detail
-                    surveysList.hide();
-                    surveyDetail.html(response.data.html).show();
-                } else {
-                    alert(response.data.message || 'Error al cargar la encuesta.');
-                }
-            },
-            error: function() {
-                alert('Error de conexión. Por favor intente de nuevo.');
-            },
-            complete: function() {
-                button.prop('disabled', false).text(originalText);
-            }
-        });
-    });
-    
-    // Handle back to surveys list
-    surveysContainer.on('click', '.survey-back-btn', function(e) {
-        e.preventDefault();
-        
-        // Hide survey detail and show survey list
-        surveyDetail.hide();
-        surveysList.show();
-    });
-    
     // Handle survey form submission
-    surveysContainer.on('submit', '.condo360-survey-form', function(e) {
+    $('.condo360-surveys-container').on('submit', '.condo360-survey-form', function(e) {
         e.preventDefault();
         
         var form = $(this);
         var surveyId = form.data('survey-id');
         var submitBtn = form.find('.survey-submit-btn');
-        var backBtn = form.find('.survey-back-btn');
         var messageDiv = form.siblings('.survey-message');
         
         // Collect responses
@@ -81,9 +29,8 @@ jQuery(document).ready(function($) {
             return;
         }
         
-        // Disable buttons
+        // Disable submit button
         submitBtn.prop('disabled', true).text('Enviando...');
-        backBtn.prop('disabled', true);
         
         // Send AJAX request
         $.ajax({
@@ -100,16 +47,59 @@ jQuery(document).ready(function($) {
                     messageDiv.removeClass('error').addClass('success').text(response.data.message || 'Voto registrado exitosamente').show();
                     form.hide();
                 } else {
-                    messageDiv.removeClass('success').addClass('error').text(response.data.message || 'Error al enviar la encuesta. Por favor intente de nuevo.').show();
+                    messageDiv.removeClass('success').addClass('error').text(response.data.message || 'Error al enviar la Carta Consulta. Por favor intente de nuevo.').show();
                 }
             },
             error: function() {
-                messageDiv.removeClass('success').addClass('error').text('Error al enviar la encuesta. Por favor intente de nuevo.').show();
+                messageDiv.removeClass('success').addClass('error').text('Error al enviar la Carta Consulta. Por favor intente de nuevo.').show();
             },
             complete: function() {
-                submitBtn.prop('disabled', false).text('Enviar Encuesta');
-                backBtn.prop('disabled', false);
+                submitBtn.prop('disabled', false).text('Enviar Carta Consulta');
             }
         });
     });
+    
+    // Add pagination functionality
+    // Hide all surveys except the first one initially
+    var surveys = $('.condo360-survey-card');
+    if (surveys.length > 1) {
+        // Hide all surveys except the first one
+        surveys.hide().first().show();
+        
+        // Add navigation buttons
+        surveys.each(function(index) {
+            var survey = $(this);
+            var navContainer = $('<div class="survey-navigation"></div>');
+            
+            if (index > 0) {
+                var prevBtn = $('<button type="button" class="survey-nav-btn prev-btn">← Anterior Carta Consulta</button>');
+                navContainer.append(prevBtn);
+            }
+            
+            if (index < surveys.length - 1) {
+                var nextBtn = $('<button type="button" class="survey-nav-btn next-btn">Siguiente Carta Consulta →</button>');
+                navContainer.append(nextBtn);
+            }
+            
+            if (navContainer.children().length > 0) {
+                survey.find('.survey-actions').append(navContainer);
+            }
+        });
+        
+        // Handle navigation
+        $('.condo360-surveys-container').on('click', '.survey-nav-btn', function(e) {
+            e.preventDefault();
+            
+            var currentSurvey = $(this).closest('.condo360-survey-card');
+            var currentIndex = surveys.index(currentSurvey);
+            
+            if ($(this).hasClass('next-btn')) {
+                currentSurvey.hide();
+                surveys.eq(currentIndex + 1).show();
+            } else if ($(this).hasClass('prev-btn')) {
+                currentSurvey.hide();
+                surveys.eq(currentIndex - 1).show();
+            }
+        });
+    }
 });
