@@ -10,7 +10,7 @@
             <div class="survey-header">
                 <h4><?php echo esc_html($survey['title']); ?></h4>
                 <span class="survey-status <?php echo esc_attr($survey['status']); ?>">
-                    <?php echo $survey['status'] === 'active' ? 'Activa' : 'Cerrada'; ?>
+                    <?php echo $survey['status'] === 'open' ? 'Activa' : 'Cerrada'; ?>
                 </span>
             </div>
             
@@ -27,7 +27,7 @@
             </div>
             
             <div class="survey-actions">
-                <?php if ($survey['status'] === 'active'): ?>
+                <?php if ($survey['status'] === 'open'): ?>
                     <button class="close-survey-btn" data-survey-id="<?php echo esc_attr($survey['id']); ?>">
                         Cerrar Carta Consulta
                     </button>
