@@ -7,7 +7,7 @@
 <div class="condo360-surveys-container">
     <?php if (empty($surveys)): ?>
         <div class="condo360-survey-message info">
-            <?php _e('No active surveys at this time.', 'condo360-surveys'); ?>
+            <?php _e('No hay encuestas activas en este momento.', 'condo360-surveys'); ?>
         </div>
     <?php else: ?>
         <?php foreach ($surveys as $survey): ?>
@@ -21,7 +21,7 @@
                     <?php 
                     $start_date = date_i18n(get_option('date_format'), strtotime($survey['start_date']));
                     $end_date = date_i18n(get_option('date_format'), strtotime($survey['end_date']));
-                    printf(__('Available from %s to %s', 'condo360-surveys'), $start_date, $end_date);
+                    printf(__('Disponible desde %s hasta %s', 'condo360-surveys'), $start_date, $end_date);
                     ?>
                 </div>
                 
@@ -47,7 +47,7 @@
                     
                     <div class="survey-actions">
                         <button type="submit" class="survey-submit-btn">
-                            <?php _e('Submit Survey', 'condo360-surveys'); ?>
+                            <?php _e('Enviar Encuesta', 'condo360-surveys'); ?>
                         </button>
                     </div>
                 </form>

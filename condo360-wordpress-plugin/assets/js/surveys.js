@@ -25,12 +25,12 @@ jQuery(document).ready(function($) {
         // Validate all questions answered
         var totalQuestions = form.find('.survey-question').length;
         if (responses.length !== totalQuestions) {
-            messageDiv.removeClass('success').addClass('error').text('Please answer all questions.').show();
+            messageDiv.removeClass('success').addClass('error').text('Por favor responda todas las preguntas.').show();
             return;
         }
         
         // Disable submit button
-        submitBtn.prop('disabled', true).text('Submitting...');
+        submitBtn.prop('disabled', true).text('Enviando...');
         
         // Send AJAX request
         $.ajax({
@@ -44,17 +44,17 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    messageDiv.removeClass('error').addClass('success').text(response.data.message).show();
+                    messageDiv.removeClass('error').addClass('success').text(response.data.message || 'Voto registrado exitosamente').show();
                     form.hide();
                 } else {
-                    messageDiv.removeClass('success').addClass('error').text(response.data.message).show();
+                    messageDiv.removeClass('success').addClass('error').text(response.data.message || 'Error al enviar la encuesta. Por favor intente de nuevo.').show();
                 }
             },
             error: function() {
-                messageDiv.removeClass('success').addClass('error').text('Error submitting survey. Please try again.').show();
+                messageDiv.removeClass('success').addClass('error').text('Error al enviar la encuesta. Por favor intente de nuevo.').show();
             },
             complete: function() {
-                submitBtn.prop('disabled', false).text('Submit Survey');
+                submitBtn.prop('disabled', false).text('Enviar Encuesta');
             }
         });
     });

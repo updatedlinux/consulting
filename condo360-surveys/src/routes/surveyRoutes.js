@@ -250,17 +250,23 @@ router.get('/surveys/:id', SurveyController.getSurveyById);
  *         description: Survey ID
  *       - in: query
  *         name: admin
- *         required: false
  *         schema:
- *           type: string
- *         description: Set to "true" to bypass result availability checks
+ *           type: boolean
+ *         description: Admin access to view results before survey ends
  *     responses:
  *       200:
  *         description: Survey results
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SurveyResult'
+ *               type: object
+ *               properties:
+ *                 survey:
+ *                   $ref: '#/components/schemas/Survey'
+ *                 questions:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/QuestionWithResponses'
  *       400:
  *         description: Bad request
  *         content:
@@ -293,9 +299,9 @@ router.get('/surveys/:id', SurveyController.getSurveyById);
 /**
  * @swagger
  * /surveys/{id}/close:
- *   put:
+ *   post:
  *     summary: Close a survey
- *     description: Manually close a survey
+ *     description: Close a survey to prevent further voting
  *     parameters:
  *       - in: path
  *         name: id
@@ -344,6 +350,6 @@ router.get('/surveys/:id', SurveyController.getSurveyById);
 
 router.post('/surveys/:id/vote', SurveyController.voteInSurvey);
 router.get('/surveys/:id/results', SurveyController.getSurveyResults);
-router.put('/surveys/:id/close', SurveyController.closeSurvey);
+router.post('/surveys/:id/close', SurveyController.closeSurvey);
 
 module.exports = router;
