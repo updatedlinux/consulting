@@ -342,7 +342,7 @@ class SurveyModel {
     
     // Get vote count for each survey
     for (let survey of surveys) {
-      const hasVotes = await this.hasVotes(survey.id);
+      const hasVotes = await SurveyModel.hasVotes(survey.id);
       survey.has_votes = hasVotes;
     }
     
