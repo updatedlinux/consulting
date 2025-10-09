@@ -242,11 +242,11 @@ Genera un reporte PDF completo con estadísticas de votantes, lista de participa
 - Información de la encuesta (título, descripción, fechas, estado)
 - Estadísticas de participación (propietarios habilitados, votos recibidos, porcentaje)
 - Barra visual de participación centrada
+- Resultados por pregunta con gráficos de torta (pie charts) profesionales
 - Lista detallada de votantes con fechas
-- Resultados por pregunta con gráficos de barras centrados y proporcionales
 - Conteo de votos y porcentajes para cada opción
 
-**Nota:** Utiliza PDFKit para generar PDFs sin dependencias del sistema operativo. El logo se descarga automáticamente desde la URL proporcionada.
+**Nota:** Utiliza PDFKit para generar PDFs sin dependencias del sistema operativo. El logo se descarga automáticamente desde la URL proporcionada. Los gráficos de torta se generan usando Chart.js.
 
 ### Obtener Estado de Cola de Emails
 **GET** `/polls/email-queue-status`

@@ -2,6 +2,7 @@ const PDFDocument = require('pdfkit');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
 
 class PDFGenerator {
   static async generateSurveyResultsPDF(survey, votersData) {
@@ -126,64 +127,108 @@ class PDFGenerator {
         
         doc.moveDown(3);
 
-        // Survey Results Section (moved before voters list)
+        // Survey Results Section with Pie Charts
         if (votersData.questions && votersData.questions.length > 0) {
           doc.fontSize(14)
              .fillColor('#2c3e50')
              .text('Resultados por Pregunta', { underline: true });
           
-          doc.moveDown(0.5);
+          doc.moveDown(1);
 
-          votersData.questions.forEach((question, questionIndex) => {
-            // Question title - explicitly left aligned
+          const chartCanvas = new ChartJSNodeCanvas({ width: 400, height: 300 });
+
+          for (const [questionIndex, question] of votersData.questions.entries()) {
+            // Question title
             doc.fontSize(13)
                .fillColor('#007cba')
-               .text(`${questionIndex + 1}. ${question.question_text}`, 50, doc.y);
+               .text(`${questionIndex + 1}. ${question.question_text}`, { align: 'left' });
             
             doc.moveDown(0.5);
 
             // Calculate total votes for this question
             const totalVotes = question.options.reduce((sum, option) => sum + option.response_count, 0);
 
-            // Options with results
+            // List all options with vote counts
             question.options.forEach((option, optionIndex) => {
-              const barWidth = 300;
-              const barHeight = 20;
               const percentage = totalVotes > 0 ? (option.response_count / totalVotes) * 100 : 0;
-              const fillWidth = (barWidth * percentage) / 100;
-
-              // Option text and vote count - explicitly left aligned
+              
               doc.fontSize(11)
                  .fillColor('#333333')
-                 .text(`${option.option_text}: ${option.response_count} votos (${percentage.toFixed(1)}%)`, 50, doc.y);
-              
-              // Add more spacing between text and bar
-              doc.moveDown(0.8);
-              
-              // Bar chart representation - centered
-              const startY = doc.y + 10;
-              const barX = (doc.page.width - doc.page.margins.left - doc.page.margins.right - barWidth) / 2 + doc.page.margins.left;
-              
-              // Background bar
-              doc.rect(barX, startY, barWidth, barHeight)
-                 .fillColor('#e9ecef')
-                 .fill();
-              
-              // Filled bar
-              if (fillWidth > 0) {
-                doc.rect(barX, startY, fillWidth, barHeight)
-                   .fillColor(this.getBarColor(optionIndex))
-                   .fill();
-              }
-              
-              // Border
-              doc.rect(barX, startY, barWidth, barHeight)
-                 .strokeColor('#dee2e6')
-                 .stroke();
-              
-              // Add more spacing after bar
-              doc.moveDown(1.8);
+                 .text(`• ${option.option_text}: ${option.response_count} votos (${percentage.toFixed(1)}%)`, { align: 'left' });
             });
+
+            doc.moveDown(1);
+
+            // Generate pie chart if there are votes
+            if (totalVotes > 0) {
+              try {
+                const labels = question.options.map(o => o.option_text);
+                const data = question.options.map(o => o.response_count);
+                const backgroundColors = [
+                  '#007cba',  // Blue
+                  '#28a745',  // Green
+                  '#ffc107',  // Yellow
+                  '#dc3545',  // Red
+                  '#6f42c1',  // Purple
+                  '#fd7e14',  // Orange
+                  '#20c997',  // Teal
+                  '#e83e8c'   // Pink
+                ];
+
+                const configuration = {
+                  type: 'pie',
+                  data: {
+                    labels: labels,
+                    datasets: [{
+                      data: data,
+                      backgroundColor: backgroundColors.slice(0, labels.length),
+                      borderWidth: 2,
+                      borderColor: '#ffffff'
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    plugins: {
+                      legend: {
+                        position: 'bottom',
+                        labels: {
+                          padding: 20,
+                          usePointStyle: true,
+                          font: {
+                            size: 10
+                          }
+                        }
+                      },
+                      title: {
+                        display: false
+                      }
+                    }
+                  }
+                };
+
+                const dataUrl = await chartCanvas.renderToDataURL(configuration);
+                
+                // Add chart to PDF - centered
+                const chartWidth = 300;
+                const chartHeight = 200;
+                const chartX = (doc.page.width - doc.page.margins.left - doc.page.margins.right - chartWidth) / 2 + doc.page.margins.left;
+                
+                doc.image(dataUrl, chartX, doc.y, { width: chartWidth, height: chartHeight });
+                
+                doc.moveDown(2.5);
+              } catch (chartError) {
+                console.log('Error generating chart:', chartError.message);
+                doc.fontSize(10)
+                   .fillColor('#666666')
+                   .text('Gráfico no disponible', { align: 'center' });
+                doc.moveDown(1);
+              }
+            } else {
+              doc.fontSize(10)
+                 .fillColor('#666666')
+                 .text('Sin votos registrados', { align: 'center' });
+              doc.moveDown(1);
+            }
 
             doc.moveDown(1);
           });
