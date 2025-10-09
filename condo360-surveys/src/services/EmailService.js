@@ -85,7 +85,7 @@ class EmailService {
     
     const mailOptions = {
       from: process.env.MAIL_FROM || 'solicitudes@bonaventurecclub.com',
-      to: recipient.email,
+      to: recipient.user_email,
       subject: `Nueva Carta Consulta: ${surveyData.title}`,
       html: this.generateEmailHTML(surveyData, recipient)
     };
@@ -94,9 +94,9 @@ class EmailService {
     
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`Email sent to: ${recipient.email}`);
+      console.log(`Email sent to: ${recipient.user_email}`);
     } catch (error) {
-      console.error(`Failed to send email to ${recipient.email}:`, error);
+      console.error(`Failed to send email to ${recipient.user_email}:`, error);
       throw error;
     }
   }
