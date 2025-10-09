@@ -63,13 +63,16 @@ jQuery(document).ready(function($) {
     });
     
     // Edit survey form submission
-    $('#edit-survey-form').on('submit', function(e) {
+    $(document).on('submit', '#edit-survey-form', function(e) {
         e.preventDefault();
+        console.log('Edit form submitted!'); // Debug log
         
         var form = $(this);
         var surveyId = form.data('survey-id');
         var submitBtn = form.find('.submit-btn');
         var messageDiv = $('#edit-survey-message');
+        
+        console.log('Form data survey ID:', surveyId); // Debug log
         
         // Collect form data
         var surveyData = {
@@ -79,6 +82,8 @@ jQuery(document).ready(function($) {
             end_date: $('#edit-survey-end-date').val(),
             questions: []
         };
+        
+        console.log('Basic form data collected:', surveyData); // Debug log
         
         // Collect questions and options
         $('.question-item').each(function() {
@@ -100,11 +105,16 @@ jQuery(document).ready(function($) {
             }
         });
         
+        console.log('Complete survey data:', surveyData); // Debug log
+        
         // Validate form
         if (surveyData.title.trim() === '' || surveyData.description.trim() === '' || surveyData.questions.length === 0) {
+            console.log('Form validation failed'); // Debug log
             showMessage(messageDiv, 'Por favor complete todos los campos requeridos.', 'error');
             return;
         }
+        
+        console.log('Form validation passed, sending to API...'); // Debug log
         
         // Disable submit button
         submitBtn.prop('disabled', true).text('Actualizando...');
@@ -112,6 +122,7 @@ jQuery(document).ready(function($) {
         // Send to API
         console.log('Sending survey data:', surveyData);
         console.log('Survey ID:', surveyId);
+        console.log('API URL:', 'https://api.bonaventurecclub.com/polls/surveys/' + surveyId); // Debug log
         
         $.ajax({
             url: 'https://api.bonaventurecclub.com/polls/surveys/' + surveyId,
@@ -129,6 +140,7 @@ jQuery(document).ready(function($) {
             },
             error: function(xhr, status, error) {
                 console.log('Update error:', xhr, status, error);
+                console.log('Error response:', xhr.responseText); // Debug log
                 var errorMessage = 'Error al actualizar la Carta Consulta.';
                 if (xhr.responseJSON && xhr.responseJSON.error) {
                     errorMessage = xhr.responseJSON.error;

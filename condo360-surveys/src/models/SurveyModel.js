@@ -284,15 +284,15 @@ class SurveyModel {
     );
     
     // Delete existing questions and options
-    await db.execute('DELETE FROM condo360_survey_options WHERE question_id IN (SELECT id FROM condo360_survey_questions WHERE survey_id = ?)', [surveyId]);
-    await db.execute('DELETE FROM condo360_survey_questions WHERE survey_id = ?', [surveyId]);
+    await db.execute('DELETE FROM condo360_question_options WHERE question_id IN (SELECT id FROM condo360_questions WHERE survey_id = ?)', [surveyId]);
+    await db.execute('DELETE FROM condo360_questions WHERE survey_id = ?', [surveyId]);
     
     // Insert new questions and options
     for (let i = 0; i < surveyData.questions.length; i++) {
       const question = surveyData.questions[i];
       
       const [questionResult] = await db.execute(
-        'INSERT INTO condo360_survey_questions (survey_id, question_text, question_order) VALUES (?, ?, ?)',
+        'INSERT INTO condo360_questions (survey_id, question_text, question_order) VALUES (?, ?, ?)',
         [surveyId, question.question_text, i + 1]
       );
       
@@ -301,7 +301,7 @@ class SurveyModel {
       for (let j = 0; j < question.options.length; j++) {
         const option = question.options[j];
         await db.execute(
-          'INSERT INTO condo360_survey_options (question_id, option_text, option_order) VALUES (?, ?, ?)',
+          'INSERT INTO condo360_question_options (question_id, option_text, option_order) VALUES (?, ?, ?)',
           [questionId, option.option_text, j + 1]
         );
       }
