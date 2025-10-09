@@ -1,20 +1,20 @@
 jQuery(document).ready(function($) {
-    // Handle resident tab switching
-    $('.resident-tab-btn').on('click', function() {
-        var tab = $(this).data('tab');
-        
-        // Update active tab button
-        $('.resident-tab-btn').removeClass('active');
-        $(this).addClass('active');
-        
-        // Show active tab content
-        $('.resident-tab-content').removeClass('active');
-        $('#' + tab + '-tab').addClass('active');
-        
-        // Load data based on tab
-        if (tab === 'survey-results') {
-            loadSurveysForResidentResults();
+    // Handle view results button click
+    $('.view-results-btn').on('click', function() {
+        $('#results-modal').show();
+        loadSurveysForModal();
+    });
+    
+    // Handle modal close
+    $('.close-modal, #results-modal').on('click', function(e) {
+        if (e.target === this) {
+            $('#results-modal').hide();
         }
+    });
+    
+    // Prevent modal content clicks from closing modal
+    $('.modal-content').on('click', function(e) {
+        e.stopPropagation();
     });
     
     // Handle survey selection
@@ -150,9 +150,9 @@ jQuery(document).ready(function($) {
         submitBtn.prop('disabled', !allAnswered);
     }
     
-    // Load surveys for resident results
-    function loadSurveysForResidentResults() {
-        var select = $('#select-survey-results-resident');
+    // Load surveys for modal results
+    function loadSurveysForModal() {
+        var select = $('#select-survey-results-modal');
         select.html('<option value="">Cargando Cartas Consulta...</option>');
         
         // Use the /all endpoint to get all surveys including closed ones
@@ -174,38 +174,50 @@ jQuery(document).ready(function($) {
         });
     }
     
-    // Load resident survey results
-    $('#select-survey-results-resident').on('change', function() {
+    // Handle survey selection in modal
+    $('#select-survey-results-modal').on('change', function() {
         var surveyId = $(this).val();
-        var resultsContainer = $('.resident-results-container');
-        var messageDiv = $('#resident-results-message');
+        var downloadBtn = $('#download-pdf-btn');
+        var modalActions = $('.modal-actions');
+        var messageDiv = $('#modal-message');
         
         if (!surveyId) {
-            resultsContainer.hide();
+            downloadBtn.prop('disabled', true);
+            modalActions.hide();
+            messageDiv.hide();
             return;
         }
         
-        resultsContainer.show();
-        $('.resident-survey-results').html('<div class="loading-message">Cargando resultados...</div>');
+        downloadBtn.prop('disabled', false);
+        modalActions.show();
+        messageDiv.hide();
+    });
+    
+    // Handle PDF download
+    $('#download-pdf-btn').on('click', function() {
+        var surveyId = $('#select-survey-results-modal').val();
+        var messageDiv = $('#modal-message');
         
-        $.ajax({
-            url: condo360_surveys_ajax.ajax_url,
-            type: 'POST',
-            data: {
-                action: 'condo360_get_resident_results',
-                survey_id: surveyId,
-                nonce: condo360_surveys_ajax.nonce
-            },
-            success: function(response) {
-                if (response.success) {
-                    $('.resident-survey-results').html(response.data.html);
-                } else {
-                    $('.resident-survey-results').html('<p>Error al cargar los resultados: ' + response.data.message + '</p>');
-                }
-            },
-            error: function(xhr, status, error) {
-                $('.resident-survey-results').html('<p>Error de conexión al cargar los resultados: ' + error + '</p>');
-            }
-        });
+        if (!surveyId) {
+            messageDiv.removeClass('success').addClass('error').text('Por favor seleccione una Carta Consulta.').show();
+            return;
+        }
+        
+        // Show loading message
+        messageDiv.removeClass('error').addClass('info').text('Generando PDF...').show();
+        
+        // Create download link
+        var downloadUrl = 'https://api.bonaventurecclub.com/polls/surveys/' + surveyId + '/pdf';
+        
+        // Create temporary link element for download
+        var link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = 'resultados-carta-consulta-' + surveyId + '.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Show success message
+        messageDiv.removeClass('info error').addClass('success').text('PDF generado exitosamente. La descarga debería comenzar automáticamente.').show();
     });
 });

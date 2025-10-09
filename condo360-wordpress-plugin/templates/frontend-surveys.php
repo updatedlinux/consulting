@@ -5,14 +5,8 @@
 ?>
 
 <div class="condo360-surveys-container">
-    <!-- Tabs para residentes -->
-    <div class="resident-tabs">
-        <button class="resident-tab-btn active" data-tab="surveys-list">Cartas Consulta Disponibles</button>
-        <button class="resident-tab-btn" data-tab="survey-results">Ver Resultados</button>
-    </div>
-    
-    <!-- Surveys List Tab -->
-    <div class="resident-tab-content active" id="surveys-list-tab">
+    <!-- Surveys List -->
+    <div class="surveys-main-content">
         <?php if (empty($surveys)): ?>
             <div class="condo360-survey-message info">
                 <?php _e('No hay Cartas Consulta activas en este momento.', 'condo360-surveys'); ?>
@@ -21,6 +15,14 @@
             <!-- Lista de encuestas disponibles -->
             <div class="survey-selection-view">
                 <h2><?php _e('Cartas Consulta Disponibles', 'condo360-surveys'); ?></h2>
+                
+                <!-- Botón para visualizar resultados -->
+                <div class="view-results-button-container">
+                    <button class="view-results-btn" type="button">
+                        <?php _e('Visualizar Resultados', 'condo360-surveys'); ?>
+                    </button>
+                </div>
+                
                 <div class="survey-list">
                     <?php foreach ($surveys as $survey): ?>
                         <div class="survey-item" data-survey-id="<?php echo esc_attr($survey['id']); ?>">
@@ -57,24 +59,29 @@
         <?php endif; ?>
     </div>
     
-    <!-- Survey Results Tab -->
-    <div class="resident-tab-content" id="survey-results-tab">
-        <div class="resident-section">
-            <h3>Resultados de Cartas Consulta</h3>
-            <div class="form-group">
-                <label for="select-survey-results-resident">Seleccionar Carta Consulta:</label>
-                <select id="select-survey-results-resident" name="survey_id">
-                    <option value="">Cargando Cartas Consulta...</option>
-                </select>
+    <!-- Modal para visualizar resultados -->
+    <div id="results-modal" class="results-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><?php _e('Visualizar Resultados', 'condo360-surveys'); ?></h3>
+                <span class="close-modal">&times;</span>
             </div>
-            
-            <div class="resident-results-container" style="display: none;">
-                <div class="resident-survey-results">
-                    <!-- Results will be loaded here dynamically -->
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="select-survey-results-modal">Seleccionar Carta Consulta:</label>
+                    <select id="select-survey-results-modal" name="survey_id">
+                        <option value="">Cargando Cartas Consulta...</option>
+                    </select>
                 </div>
+                
+                <div class="modal-actions" style="display: none;">
+                    <button id="download-pdf-btn" class="download-pdf-btn" type="button" disabled>
+                        <?php _e('Descargar PDF de Resultados', 'condo360-surveys'); ?>
+                    </button>
+                </div>
+                
+                <div class="modal-message" id="modal-message" style="display: none;"></div>
             </div>
-            
-            <div class="resident-message" id="resident-results-message" style="display: none;"></div>
         </div>
     </div>
 </div>
