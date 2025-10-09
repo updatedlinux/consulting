@@ -233,7 +233,17 @@ class SurveyModel {
     return results;
   }
   
-  // Update survey (only for active surveys)
+  // Check if survey has votes
+  static async hasVotes(surveyId) {
+    const [result] = await db.execute(
+      'SELECT COUNT(*) as vote_count FROM condo360_survey_participants WHERE survey_id = ?',
+      [surveyId]
+    );
+    
+    return result[0].vote_count > 0;
+  }
+  
+  // Update survey (only for active surveys without votes)
   static async updateSurvey(surveyId, surveyData) {
     // First check if survey exists and is active
     const [surveys] = await db.execute(
@@ -247,6 +257,12 @@ class SurveyModel {
     
     if (surveys[0].status !== 'open') {
       throw new Error('Only active surveys can be edited');
+    }
+    
+    // Check if survey has votes
+    const hasVotes = await this.hasVotes(surveyId);
+    if (hasVotes) {
+      throw new Error('Cannot edit survey that has votes');
     }
     
     // Update survey basic info
@@ -308,6 +324,19 @@ class SurveyModel {
     return surveys;
   }
   
+  // Get all surveys with vote status
+  static async getAllSurveysWithVoteStatus() {
+    const surveys = await this.getAllSurveys();
+    
+    // Get vote count for each survey
+    for (let survey of surveys) {
+      const hasVotes = await this.hasVotes(survey.id);
+      survey.has_votes = hasVotes;
+    }
+    
+    return surveys;
+  }
+  
   // Get voters details for a survey with pagination
   static async getSurveyVoters(surveyId, page = 1, limit = 10) {
     const offset = (page - 1) * limit;
@@ -336,7 +365,7 @@ class SurveyModel {
       WHERE sp.survey_id = ?
       ORDER BY sp.participated_at DESC
       LIMIT ? OFFSET ?
-    `, [surveyId, limit, offset]);
+    `, [surveyId, parseInt(limit), parseInt(offset)]);
     
     // Get survey details
     const [surveys] = await db.execute(
@@ -374,8 +403,8 @@ class SurveyModel {
         voted_at: voter.participated_at
       })),
       pagination: {
-        current_page: page,
-        per_page: limit,
+        current_page: parseInt(page),
+        per_page: parseInt(limit),
         total_voters: totalVoters[0].total_voters,
         total_pages: Math.ceil(totalVoters[0].total_voters / limit)
       }

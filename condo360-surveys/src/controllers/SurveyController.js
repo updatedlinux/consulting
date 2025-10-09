@@ -341,6 +341,9 @@ class SurveyController {
       if (error.message === 'Only active surveys can be edited') {
         return res.status(400).json({ error: 'Solo las encuestas activas pueden ser editadas' });
       }
+      if (error.message === 'Cannot edit survey that has votes') {
+        return res.status(400).json({ error: 'No se puede editar una encuesta que ya tiene votos registrados' });
+      }
       res.status(500).json({ error: 'Error al actualizar la encuesta' });
     }
   }
@@ -348,7 +351,7 @@ class SurveyController {
   // Get all surveys for admin panel
   static async getAllSurveys(req, res) {
     try {
-      const surveys = await SurveyModel.getAllSurveys();
+      const surveys = await SurveyModel.getAllSurveysWithVoteStatus();
       res.status(200).json(surveys);
     } catch (error) {
       console.error('Error fetching all surveys:', error);
