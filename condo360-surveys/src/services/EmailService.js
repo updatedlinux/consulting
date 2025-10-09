@@ -183,7 +183,7 @@ class EmailService {
         .cta-button {
             display: inline-block;
             background: #007cba;
-            color: white;
+            color: white !important;
             padding: 15px 30px;
             text-decoration: none;
             border-radius: 6px;
@@ -220,7 +220,7 @@ class EmailService {
 <body>
     <div class="email-container">
         <div class="header">
-            <img src="https://bonaventurecclub.com/wp-content/uploads/2025/09/2-e1759267603471.png" alt="Bonaventure Country Club" class="logo">
+            <img src="https://bonaventurecclub.com/wp-content/uploads/2025/09/cropped-1-1.png" alt="Bonaventure Country Club" class="logo">
             <h1>Nueva Carta Consulta Disponible</h1>
         </div>
         
@@ -255,7 +255,7 @@ class EmailService {
         </div>
         
         <div class="footer">
-            <p>Este es un mensaje automático del sistema Condo360 Surveys</p>
+            <p>Este es un mensaje automático del sistema Condominio360</p>
             <p>Por favor, no responda a este correo electrónico</p>
             <p>Si no desea recibir estas notificaciones, contacte a la administración</p>
         </div>
