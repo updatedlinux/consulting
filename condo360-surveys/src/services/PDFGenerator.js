@@ -157,6 +157,9 @@ class PDFGenerator {
                  .fillColor('#333333')
                  .text(`${option.option_text}: ${option.response_count} votos (${percentage.toFixed(1)}%)`, 50, doc.y);
               
+              // Add spacing between text and bar
+              doc.moveDown(0.3);
+              
               // Bar chart representation - centered
               const startY = doc.y + 5;
               const barX = (doc.page.width - doc.page.margins.left - doc.page.margins.right - barWidth) / 2 + doc.page.margins.left;
@@ -178,7 +181,8 @@ class PDFGenerator {
                  .strokeColor('#dee2e6')
                  .stroke();
               
-              doc.moveDown(1.5);
+              // Add spacing after bar
+              doc.moveDown(1.2);
             });
 
             doc.moveDown(1);
