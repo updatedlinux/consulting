@@ -28,7 +28,15 @@
             
             <div class="survey-actions">
                 <?php if ($survey['status'] === 'open'): ?>
-                    <?php if (!$survey['has_votes']): ?>
+                    <?php 
+                    // Debug: mostrar el valor de has_votes
+                    $hasVotes = $survey['has_votes'];
+                    $hasVotesBool = filter_var($hasVotes, FILTER_VALIDATE_BOOLEAN);
+                    ?>
+                    <!-- Debug info (remover después) -->
+                    <small style="color: #666;">Debug: has_votes = <?php echo var_export($hasVotes, true); ?>, bool = <?php echo var_export($hasVotesBool, true); ?></small><br>
+                    
+                    <?php if (!$hasVotesBool): ?>
                         <button class="edit-survey-btn" data-survey-id="<?php echo esc_attr($survey['id']); ?>">
                             ✏️ Editar Carta Consulta
                         </button>
