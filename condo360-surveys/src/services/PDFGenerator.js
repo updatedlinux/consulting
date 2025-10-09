@@ -1,8 +1,11 @@
 const PDFDocument = require('pdfkit');
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 
 class PDFGenerator {
   static async generateSurveyResultsPDF(survey, votersData) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
         const doc = new PDFDocument({
           size: 'A4',
@@ -21,13 +24,31 @@ class PDFGenerator {
           resolve(pdfBuffer);
         });
 
-        // Header with logo
-        doc.image('https://bonaventurecclub.com/wp-content/uploads/2025/09/cropped-1-1.png', {
-          fit: [281, 94],
-          align: 'center'
-        });
-        
-        doc.moveDown(0.5);
+        // Download and add logo
+        try {
+          const logoUrl = 'https://bonaventurecclub.com/wp-content/uploads/2025/09/cropped-1-1.png';
+          const logoResponse = await axios.get(logoUrl, { 
+            responseType: 'arraybuffer',
+            timeout: 5000 // 5 second timeout
+          });
+          const logoBuffer = Buffer.from(logoResponse.data);
+          
+          // Add logo to PDF
+          doc.image(logoBuffer, {
+            fit: [281, 94],
+            align: 'center'
+          });
+          
+          doc.moveDown(0.5);
+        } catch (logoError) {
+          console.log('Logo not available, continuing without logo:', logoError.message);
+          // Add a text-based header instead
+          doc.fontSize(18)
+             .fillColor('#007cba')
+             .text('Bonaventure Country Club', { align: 'center' });
+          
+          doc.moveDown(0.3);
+        }
         
         // Title
         doc.fontSize(20)
