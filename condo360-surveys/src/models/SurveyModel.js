@@ -272,7 +272,7 @@ class SurveyModel {
     }
     
     // Check if survey has votes
-    const hasVotes = await this.hasVotes(surveyId);
+    const hasVotes = await SurveyModel.hasVotes(surveyId);
     if (hasVotes) {
       throw new Error('Cannot edit survey that has votes');
     }
@@ -318,6 +318,16 @@ class SurveyModel {
     );
     
     return result.length > 0;
+  }
+  
+  // Check if survey has votes
+  static async hasVotes(surveyId) {
+    const [result] = await db.execute(
+      'SELECT COUNT(*) as vote_count FROM condo360_survey_participants WHERE survey_id = ?',
+      [surveyId]
+    );
+    
+    return result[0].vote_count > 0;
   }
   
   // Get all surveys for admin panel
