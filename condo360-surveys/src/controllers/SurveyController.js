@@ -342,12 +342,23 @@ class SurveyController {
       // Get survey voters data (includes statistics and voters list)
       const votersData = await SurveyModel.getSurveyVoters(id);
       
+      // Get survey results data (includes questions and response counts)
+      const resultsData = await SurveyModel.getSurveyResults(id, true);
+      
+      // Combine both datasets
+      const combinedData = {
+        survey: votersData.survey,
+        statistics: votersData.statistics,
+        voters: votersData.voters,
+        questions: resultsData.questions
+      };
+      
       // Generate PDF
-      const pdfBuffer = await PDFGenerator.generateSurveyResultsPDF(votersData.survey, votersData);
+      const pdfBuffer = await PDFGenerator.generateSurveyResultsPDF(combinedData.survey, combinedData);
       
       // Set headers for PDF download
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="resultados-${votersData.survey.title.replace(/[^a-zA-Z0-9]/g, '-')}.pdf"`);
+      res.setHeader('Content-Disposition', `attachment; filename="resultados-${combinedData.survey.title.replace(/[^a-zA-Z0-9]/g, '-')}.pdf"`);
       res.setHeader('Content-Length', pdfBuffer.length);
       
       res.send(pdfBuffer);

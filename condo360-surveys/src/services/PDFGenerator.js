@@ -150,6 +150,66 @@ class PDFGenerator {
 
         doc.moveDown(2);
 
+        // Survey Results Section
+        if (votersData.questions && votersData.questions.length > 0) {
+          doc.fontSize(14)
+             .fillColor('#2c3e50')
+             .text('Resultados por Pregunta', { underline: true });
+          
+          doc.moveDown(0.5);
+
+          votersData.questions.forEach((question, questionIndex) => {
+            // Question title
+            doc.fontSize(13)
+               .fillColor('#007cba')
+               .text(`${questionIndex + 1}. ${question.question_text}`);
+            
+            doc.moveDown(0.3);
+
+            // Calculate total votes for this question
+            const totalVotes = question.options.reduce((sum, option) => sum + option.response_count, 0);
+
+            // Options with results
+            question.options.forEach((option, optionIndex) => {
+              const barWidth = 200;
+              const barHeight = 15;
+              const percentage = totalVotes > 0 ? (option.response_count / totalVotes) * 100 : 0;
+              const fillWidth = (barWidth * percentage) / 100;
+
+              // Option text and vote count
+              doc.fontSize(11)
+                 .fillColor('#333333')
+                 .text(`${option.option_text}: ${option.response_count} votos (${percentage.toFixed(1)}%)`);
+              
+              // Bar chart representation
+              const startY = doc.y;
+              
+              // Background bar
+              doc.rect(50, startY, barWidth, barHeight)
+                 .fillColor('#e9ecef')
+                 .fill();
+              
+              // Filled bar
+              if (fillWidth > 0) {
+                doc.rect(50, startY, fillWidth, barHeight)
+                   .fillColor(this.getBarColor(optionIndex))
+                   .fill();
+              }
+              
+              // Border
+              doc.rect(50, startY, barWidth, barHeight)
+                 .strokeColor('#dee2e6')
+                 .stroke();
+              
+              doc.moveDown(1.2);
+            });
+
+            doc.moveDown(0.5);
+          });
+        }
+
+        doc.moveDown(2);
+
         // Footer
         doc.fontSize(10)
            .fillColor('#6c757d')
