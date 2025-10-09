@@ -349,6 +349,7 @@ jQuery(document).ready(function($) {
     
     // Load survey for editing
     function loadSurveyForEdit(surveyId) {
+        console.log('loadSurveyForEdit called with surveyId:', surveyId);
         var container = $('.surveys-list-container');
         var loadingMessage = container.find('.loading-message');
         var surveysList = container.find('.surveys-list');
@@ -361,6 +362,7 @@ jQuery(document).ready(function($) {
             url: 'https://api.bonaventurecclub.com/polls/surveys/' + surveyId,
             type: 'GET',
             success: function(survey) {
+                console.log('Survey data received:', survey);
                 // Load edit template via AJAX
                 $.ajax({
                     url: condo360_admin_ajax.ajax_url,
@@ -372,6 +374,7 @@ jQuery(document).ready(function($) {
                         survey: survey
                     },
                     success: function(templateResponse) {
+                        console.log('Template response:', templateResponse);
                         if (templateResponse.success) {
                             surveysList.html(templateResponse.data.html);
                             loadingMessage.hide();
@@ -381,11 +384,13 @@ jQuery(document).ready(function($) {
                         }
                     },
                     error: function(xhr, status, error) {
+                        console.log('Template error:', xhr, status, error);
                         loadingMessage.text('Error al cargar la plantilla de edición: ' + error);
                     }
                 });
             },
             error: function(xhr, status, error) {
+                console.log('Survey fetch error:', xhr, status, error);
                 loadingMessage.text('Error al cargar los datos de la Carta Consulta: ' + error);
             }
         });
