@@ -19,7 +19,7 @@
                 <!-- Botón para visualizar resultados -->
                 <div class="view-results-button-container">
                     <button class="view-results-btn" type="button">
-                        <?php _e('Visualizar Resultados', 'condo360-surveys'); ?>
+                        <?php _e('Visualizar Resultados de Cartas Consulta Anteriores', 'condo360-surveys'); ?>
                     </button>
                 </div>
                 
@@ -63,7 +63,7 @@
     <div id="results-modal" class="results-modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h3><?php _e('Visualizar Resultados', 'condo360-surveys'); ?></h3>
+                <h3><?php _e('Visualizar Resultados de Cartas Consulta Anteriores', 'condo360-surveys'); ?></h3>
                 <span class="close-modal">&times;</span>
             </div>
             <div class="modal-body">
