@@ -3,8 +3,17 @@ const db = require('../config/database');
 
 class EmailService {
   constructor() {
+    console.log('Initializing EmailService...');
+    console.log('SMTP Config:', {
+      host: process.env.SMTP_HOST || 'mail.meycotravel.com',
+      port: parseInt(process.env.SMTP_PORT) || 465,
+      secure: process.env.SMTP_SECURE === 'true' || true,
+      user: process.env.SMTP_USER || 'solicitudes@bonaventurecclub.com',
+      from: process.env.MAIL_FROM || 'solicitudes@bonaventurecclub.com'
+    });
+    
     // Initialize email transporter
-    this.transporter = nodemailer.createTransporter({
+    this.transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'mail.meycotravel.com',
       port: parseInt(process.env.SMTP_PORT) || 465,
       secure: process.env.SMTP_SECURE === 'true' || true,
@@ -16,6 +25,8 @@ class EmailService {
         rejectUnauthorized: process.env.SMTP_TLS_REJECT_UNAUTHORIZED === 'true' || true
       }
     });
+    
+    console.log('EmailService initialized successfully');
     
     // Email queue management
     this.emailQueue = [];
@@ -252,6 +263,8 @@ class EmailService {
   
   async sendSurveyNotification(surveyData) {
     try {
+      console.log('sendSurveyNotification called with surveyData:', surveyData);
+      
       // Get all subscribers (WordPress users with subscriber role)
       const [subscribers] = await db.execute(`
         SELECT u.ID, u.user_login, u.user_email, u.display_name
@@ -262,6 +275,8 @@ class EmailService {
         AND u.user_email IS NOT NULL
         AND u.user_email != ''
       `);
+      
+      console.log('Database query executed, subscribers found:', subscribers.length);
       
       if (subscribers.length === 0) {
         console.log('No subscribers found to notify');
