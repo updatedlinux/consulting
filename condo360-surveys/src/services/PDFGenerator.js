@@ -124,7 +124,7 @@ class PDFGenerator {
            .strokeColor('#dee2e6')
            .stroke();
         
-        doc.moveDown(2);
+        doc.moveDown(3);
 
         // Survey Results Section (moved before voters list)
         if (votersData.questions && votersData.questions.length > 0) {
@@ -157,11 +157,11 @@ class PDFGenerator {
                  .fillColor('#333333')
                  .text(`${option.option_text}: ${option.response_count} votos (${percentage.toFixed(1)}%)`, 50, doc.y);
               
-              // Add spacing between text and bar
-              doc.moveDown(0.3);
+              // Add more spacing between text and bar
+              doc.moveDown(0.8);
               
               // Bar chart representation - centered
-              const startY = doc.y + 5;
+              const startY = doc.y + 10;
               const barX = (doc.page.width - doc.page.margins.left - doc.page.margins.right - barWidth) / 2 + doc.page.margins.left;
               
               // Background bar
@@ -181,8 +181,8 @@ class PDFGenerator {
                  .strokeColor('#dee2e6')
                  .stroke();
               
-              // Add spacing after bar
-              doc.moveDown(1.2);
+              // Add more spacing after bar
+              doc.moveDown(1.8);
             });
 
             doc.moveDown(1);
