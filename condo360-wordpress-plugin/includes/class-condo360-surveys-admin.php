@@ -32,6 +32,7 @@ class Condo360_Surveys_Admin {
         add_action('wp_ajax_condo360_admin_create_survey', array($this, 'create_survey'));
         add_action('wp_ajax_condo360_admin_close_survey', array($this, 'close_survey'));
         add_action('wp_ajax_condo360_admin_get_survey_results', array($this, 'get_survey_results'));
+        add_action('wp_ajax_condo360_admin_get_survey_voters', array($this, 'get_survey_voters'));
         add_action('wp_ajax_condo360_admin_load_template', array($this, 'load_template'));
         add_shortcode('condo360_admin_surveys', array($this, 'render_admin_shortcode'));
     }
@@ -276,6 +277,38 @@ class Condo360_Surveys_Admin {
             } else {
                 $error_body = wp_remote_retrieve_body($response);
                 wp_send_json_error(array('message' => 'Error al obtener los resultados de la Carta Consulta. Código: ' . $response_code . ' - ' . $error_body));
+            }
+        } else {
+            wp_send_json_error(array('message' => 'Error de conexión: ' . $response->get_error_message()));
+        }
+    }
+    
+    /**
+     * Get survey voters via AJAX
+     */
+    public function get_survey_voters() {
+        // Verify nonce and permissions
+        if (!wp_verify_nonce($_POST['nonce'], 'condo360_admin_nonce') || !current_user_can('manage_options')) {
+            wp_die('Security check failed');
+        }
+        
+        // Get survey ID
+        $survey_id = intval($_POST['survey_id']);
+        
+        // Get voters from API
+        $api_url = 'https://api.bonaventurecclub.com/polls/surveys/' . $survey_id . '/voters';
+        $response = wp_remote_get($api_url, array('timeout' => 30));
+        
+        if (!is_wp_error($response)) {
+            $response_code = wp_remote_retrieve_response_code($response);
+            if ($response_code === 200) {
+                $voters_data = json_decode(wp_remote_retrieve_body($response), true);
+                
+                // Load template via AJAX
+                wp_send_json_success(array('votersData' => $voters_data));
+            } else {
+                $error_body = wp_remote_retrieve_body($response);
+                wp_send_json_error(array('message' => 'Error al obtener los votantes de la Carta Consulta. Código: ' . $response_code . ' - ' . $error_body));
             }
         } else {
             wp_send_json_error(array('message' => 'Error de conexión: ' . $response->get_error_message()));

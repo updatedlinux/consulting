@@ -1,16 +1,16 @@
-# API Endpoints Documentation
+# Documentación de Endpoints de la API
 
-## Base URL
-All endpoints are prefixed with `/polls`
+## URL Base
+Todos los endpoints tienen el prefijo `/polls`
 
-## Survey Management Endpoints
+## Endpoints de Gestión de Encuestas
 
-### Create a New Survey
+### Crear Nueva Encuesta
 **POST** `/polls/surveys`
 
-Creates a new survey with questions and options.
+Crea una nueva encuesta con preguntas y opciones.
 
-**Request Body:**
+**Cuerpo de la Solicitud:**
 ```json
 {
   "title": "string",
@@ -20,7 +20,7 @@ Creates a new survey with questions and options.
   "questions": [
     {
       "question_text": "string",
-      "question_order": "integer (optional, default: 1)",
+      "question_order": "integer (opcional, por defecto: 1)",
       "options": [
         {
           "option_text": "string"
@@ -31,23 +31,23 @@ Creates a new survey with questions and options.
 }
 ```
 
-**Response:**
+**Respuesta:**
 ```json
 {
-  "message": "Survey created successfully",
+  "message": "Encuesta creada exitosamente",
   "survey_id": "integer"
 }
 ```
 
-**Validation:**
-- All fields except description are required
-- End date must be after start date
-- Each question must have at least one option
+**Validación:**
+- Todos los campos excepto description son requeridos
+- La fecha de fin debe ser posterior a la fecha de inicio
+- Cada pregunta debe tener al menos una opción
 
-### Get Active Surveys
+### Obtener Encuestas Activas
 **GET** `/polls/surveys`
 
-Retrieves all surveys that are currently active (open status and within date range).
+Recupera todas las encuestas que están actualmente activas (estado abierto y dentro del rango de fechas).
 
 **Response:**
 ```json
@@ -195,42 +195,101 @@ Retrieves all surveys for admin panel with participation statistics.
 ]
 ```
 
-## Error Responses
+### Obtener Detalles de Votantes de Encuesta
+**GET** `/polls/surveys/:id/voters`
 
-All endpoints may return the following error responses:
+Recupera información detallada sobre quién votó en una encuesta.
+
+**Respuesta:**
+```json
+{
+  "survey": {
+    "id": "integer",
+    "title": "string",
+    "description": "string",
+    "status": "open|closed",
+    "start_date": "datetime",
+    "end_date": "datetime"
+  },
+  "statistics": {
+    "total_eligible_voters": "integer",
+    "actual_voters": "integer",
+    "participation_percentage": "string"
+  },
+  "voters": [
+    {
+      "id": "integer",
+      "username": "string",
+      "email": "string",
+      "display_name": "string",
+      "voted_at": "datetime"
+    }
+  ]
+}
+```
+
+### Generar Reporte PDF
+**GET** `/polls/surveys/:id/pdf`
+
+Genera un reporte PDF con gráficos y resultados detallados para una encuesta.
+
+**Respuesta:**
+- Content-Type: `application/pdf`
+- Descarga de archivo con resultados de encuesta y gráficos
+
+### Obtener Estado de Cola de Emails
+**GET** `/polls/email-queue-status`
+
+Recupera el estado actual de la cola de notificaciones por email.
+
+**Respuesta:**
+```json
+{
+  "waiting": "integer",
+  "active": "integer",
+  "completed": "integer",
+  "failed": "integer"
+}
+```
+
+**Nota:** El sistema de cola utiliza Node.js nativo sin Redis. Los emails se procesan en lotes de 30 cada 2 minutos.
+
+## Respuestas de Error
+
+Todos los endpoints pueden devolver las siguientes respuestas de error:
 
 **400 Bad Request**
 ```json
 {
-  "error": "Description of the error"
+  "error": "Descripción del error"
 }
 ```
 
 **404 Not Found**
 ```json
 {
-  "error": "Resource not found"
+  "error": "Recurso no encontrado"
 }
 ```
 
 **500 Internal Server Error**
 ```json
 {
-  "error": "Something went wrong!"
+  "error": "¡Algo salió mal!"
 }
 ```
 
-## Authentication
+## Autenticación
 
-The API does not implement authentication itself. Instead:
-- WordPress user IDs are passed in request bodies
-- WordPress handles user authentication
-- The API validates that user IDs exist in the wp_users table
+La API no implementa autenticación por sí misma. En su lugar:
+- Los IDs de usuario de WordPress se pasan en los cuerpos de las solicitudes
+- WordPress maneja la autenticación de usuarios
+- La API valida que los IDs de usuario existan en la tabla wp_users
 
-## Rate Limiting
+## Limitación de Velocidad
 
-No rate limiting is implemented in the API. If needed, this should be handled at the server level (nginx, Apache, etc.).
+No se implementa limitación de velocidad en la API. Si es necesario, esto debe manejarse a nivel de servidor (nginx, Apache, etc.).
 
 ## CORS
 
-CORS is enabled for all origins to allow requests from the WordPress frontend.
+CORS está habilitado para todos los orígenes para permitir solicitudes desde el frontend de WordPress.

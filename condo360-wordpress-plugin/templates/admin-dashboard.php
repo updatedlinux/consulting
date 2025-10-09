@@ -12,6 +12,7 @@
         <button class="tab-btn active" data-tab="surveys-list">Lista de Cartas Consulta</button>
         <button class="tab-btn" data-tab="create-survey">Crear Nueva Carta Consulta</button>
         <button class="tab-btn" data-tab="survey-results">Ver Resultados</button>
+        <button class="tab-btn" data-tab="voters-detail">Detalle de Resultados</button>
     </div>
     
     <!-- Surveys List Tab -->
@@ -96,6 +97,30 @@
             </div>
             
             <div class="admin-message" id="results-message" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <!-- Voters Detail Tab -->
+    <div class="tab-content" id="voters-detail-tab">
+        <div class="admin-section">
+            <h3>Detalle de Resultados - Votantes</h3>
+            <div class="form-group">
+                <label for="select-survey-voters">Seleccionar Carta Consulta:</label>
+                <select id="select-survey-voters" name="survey_id">
+                    <option value="">Cargando Cartas Consulta...</option>
+                </select>
+            </div>
+            
+            <div class="voters-container" style="display: none;">
+                <div class="voters-summary">
+                    <!-- Summary will be loaded here dynamically -->
+                </div>
+                <div class="voters-list">
+                    <!-- Voters list will be loaded here dynamically -->
+                </div>
+            </div>
+            
+            <div class="admin-message" id="voters-message" style="display: none;"></div>
         </div>
     </div>
 </div>

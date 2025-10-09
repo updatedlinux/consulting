@@ -268,6 +268,64 @@ class SurveyModel {
     
     return surveys;
   }
+  
+  // Get voters details for a survey
+  static async getSurveyVoters(surveyId) {
+    // Get total eligible voters (WordPress subscribers)
+    const [eligibleVoters] = await db.execute(`
+      SELECT COUNT(*) as total_eligible
+      FROM wp_users u
+      INNER JOIN wp_usermeta um ON u.ID = um.user_id
+      WHERE um.meta_key = 'wp_capabilities'
+      AND um.meta_value LIKE '%subscriber%'
+    `);
+    
+    // Get actual voters for this survey
+    const [voters] = await db.execute(`
+      SELECT u.ID, u.user_login, u.user_email, u.display_name, sp.participated_at
+      FROM condo360_survey_participants sp
+      INNER JOIN wp_users u ON sp.wp_user_id = u.ID
+      WHERE sp.survey_id = ?
+      ORDER BY sp.participated_at DESC
+    `, [surveyId]);
+    
+    // Get survey details
+    const [surveys] = await db.execute(
+      'SELECT * FROM condo360_surveys WHERE id = ?',
+      [surveyId]
+    );
+    
+    if (surveys.length === 0) {
+      throw new Error('Survey not found');
+    }
+    
+    const survey = surveys[0];
+    
+    return {
+      survey: {
+        id: survey.id,
+        title: survey.title,
+        description: survey.description,
+        status: survey.status,
+        start_date: survey.start_date,
+        end_date: survey.end_date
+      },
+      statistics: {
+        total_eligible_voters: eligibleVoters[0].total_eligible,
+        actual_voters: voters.length,
+        participation_percentage: eligibleVoters[0].total_eligible > 0 
+          ? ((voters.length / eligibleVoters[0].total_eligible) * 100).toFixed(2)
+          : 0
+      },
+      voters: voters.map(voter => ({
+        id: voter.ID,
+        username: voter.user_login,
+        email: voter.user_email,
+        display_name: voter.display_name,
+        voted_at: voter.participated_at
+      }))
+    };
+  }
 }
 
 module.exports = SurveyModel;

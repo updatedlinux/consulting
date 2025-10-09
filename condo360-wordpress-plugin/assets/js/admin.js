@@ -16,6 +16,8 @@ jQuery(document).ready(function($) {
             loadSurveysList();
         } else if (tab === 'survey-results') {
             loadSurveysForResults();
+        } else if (tab === 'voters-detail') {
+            loadSurveysForVoters();
         }
     });
     
@@ -211,6 +213,30 @@ jQuery(document).ready(function($) {
         });
     }
     
+    // Load ALL surveys for voters dropdown (including closed ones)
+    function loadSurveysForVoters() {
+        var select = $('#select-survey-voters');
+        select.html('<option value="">Cargando Cartas Consulta...</option>');
+        
+        // Use the /all endpoint to get all surveys including closed ones
+        $.ajax({
+            url: 'https://api.bonaventurecclub.com/polls/surveys/all',
+            type: 'GET',
+            success: function(surveys) {
+                var options = '<option value="">Seleccione una Carta Consulta</option>';
+                // Show all surveys (both open and closed) for voters
+                $.each(surveys, function(index, survey) {
+                    var statusText = survey.status === 'open' ? ' (Activa)' : ' (Cerrada)';
+                    options += `<option value="${survey.id}">${survey.title}${statusText}</option>`;
+                });
+                select.html(options);
+            },
+            error: function(xhr, status, error) {
+                select.html('<option value="">Error de conexión: ' + error + '</option>');
+            }
+        });
+    }
+    
     // Close survey
     $(document).on('click', '.close-survey-btn', function() {
         var surveyId = $(this).data('survey-id');
@@ -301,6 +327,87 @@ jQuery(document).ready(function($) {
                 $('.survey-results').html('<p>Error de conexión al cargar los resultados: ' + error + '</p>');
             }
         });
+    });
+    
+    // Load survey voters
+    $('#select-survey-voters').on('change', function() {
+        var surveyId = $(this).val();
+        var votersContainer = $('.voters-container');
+        var messageDiv = $('#voters-message');
+        
+        if (!surveyId) {
+            votersContainer.hide();
+            return;
+        }
+        
+        votersContainer.show();
+        $('.voters-summary').html('<div class="loading-message">Cargando detalles de votantes...</div>');
+        $('.voters-list').html('');
+        
+        $.ajax({
+            url: condo360_admin_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'condo360_admin_get_survey_voters',
+                nonce: condo360_admin_ajax.nonce,
+                survey_id: surveyId
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Load template via AJAX
+                    $.ajax({
+                        url: condo360_admin_ajax.ajax_url,
+                        type: 'POST',
+                        data: {
+                            action: 'condo360_admin_load_template',
+                            template: 'admin-voters-detail',
+                            nonce: condo360_admin_ajax.nonce,
+                            votersData: response.data.votersData
+                        },
+                        success: function(templateResponse) {
+                            if (templateResponse.success) {
+                                $('.voters-summary').html(templateResponse.data.html);
+                            } else {
+                                $('.voters-summary').html('<p>Error al cargar la plantilla de votantes: ' + templateResponse.data.message + '</p>');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            $('.voters-summary').html('<p>Error al cargar la plantilla de votantes: ' + error + '</p>');
+                        }
+                    });
+                } else {
+                    $('.voters-summary').html('<p>Error al cargar los votantes: ' + response.data.message + '</p>');
+                }
+            },
+            error: function(xhr, status, error) {
+                $('.voters-summary').html('<p>Error de conexión al cargar los votantes: ' + error + '</p>');
+            }
+        });
+    });
+    
+    // Download PDF
+    $(document).on('click', '.download-pdf-btn', function() {
+        var surveyId = $(this).data('survey-id');
+        var button = $(this);
+        var originalText = button.text();
+        
+        button.prop('disabled', true).text('Generando PDF...');
+        
+        // Create a temporary link to download the PDF
+        var downloadUrl = 'https://api.bonaventurecclub.com/polls/surveys/' + surveyId + '/pdf';
+        
+        // Create a temporary anchor element to trigger download
+        var link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = 'resultados-encuesta-' + surveyId + '.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Reset button after a short delay
+        setTimeout(function() {
+            button.prop('disabled', false).text(originalText);
+        }, 2000);
     });
     
     // Show message function

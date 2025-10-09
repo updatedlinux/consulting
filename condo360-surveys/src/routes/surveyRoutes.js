@@ -298,6 +298,133 @@ router.get('/surveys/:id', SurveyController.getSurveyById);
 
 /**
  * @swagger
+ * /surveys/{id}/voters:
+ *   get:
+ *     summary: Get survey voters details
+ *     description: Get detailed information about who voted in a survey
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Survey ID
+ *     responses:
+ *       200:
+ *         description: Survey voters details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 survey:
+ *                   $ref: '#/components/schemas/Survey'
+ *                 statistics:
+ *                   type: object
+ *                   properties:
+ *                     total_eligible_voters:
+ *                       type: integer
+ *                     actual_voters:
+ *                       type: integer
+ *                     participation_percentage:
+ *                       type: string
+ *                 voters:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       username:
+ *                         type: string
+ *                       email:
+ *                         type: string
+ *                       display_name:
+ *                         type: string
+ *                       voted_at:
+ *                         type: string
+ *                         format: date-time
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       404:
+ *         description: Survey not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ */
+
+/**
+ * @swagger
+ * /surveys/{id}/pdf:
+ *   get:
+ *     summary: Generate PDF report for survey results
+ *     description: Generate a PDF report with charts and detailed results for a survey
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Survey ID
+ *     responses:
+ *       200:
+ *         description: PDF file generated successfully
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       404:
+ *         description: Survey not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ */
+
+/**
+ * @swagger
  * /surveys/{id}/close:
  *   post:
  *     summary: Close a survey
@@ -350,6 +477,9 @@ router.get('/surveys/:id', SurveyController.getSurveyById);
 
 router.post('/surveys/:id/vote', SurveyController.voteInSurvey);
 router.get('/surveys/:id/results', SurveyController.getSurveyResults);
+router.get('/surveys/:id/voters', SurveyController.getSurveyVoters);
+router.get('/surveys/:id/pdf', SurveyController.generateSurveyPDF);
 router.post('/surveys/:id/close', SurveyController.closeSurvey);
+router.get('/email-queue-status', SurveyController.getEmailQueueStatus);
 
 module.exports = router;

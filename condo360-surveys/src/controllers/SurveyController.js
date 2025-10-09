@@ -1,4 +1,6 @@
 const SurveyModel = require('../models/SurveyModel');
+const PDFGenerator = require('../services/PDFGenerator');
+const EmailService = require('../services/EmailService');
 
 // Mensajes en español
 const MESSAGES = {
@@ -81,6 +83,24 @@ class SurveyController {
         end_date,
         questions
       });
+      
+      // Send email notifications to subscribers
+      try {
+        const emailService = new EmailService();
+        const surveyData = {
+          id: surveyId,
+          title,
+          description,
+          start_date,
+          end_date
+        };
+        
+        const emailResult = await emailService.sendSurveyNotification(surveyData);
+        console.log('Email notification result:', emailResult);
+      } catch (emailError) {
+        console.error('Error sending email notifications:', emailError);
+        // Don't fail the survey creation if email fails
+      }
       
       res.status(201).json({ 
         message: 'Encuesta creada exitosamente', 
@@ -287,6 +307,69 @@ class SurveyController {
     } catch (error) {
       console.error('Error fetching all surveys:', error);
       res.status(500).json({ error: MESSAGES.FAILED_FETCH_SURVEYS });
+    }
+  }
+  
+  // Get survey voters details
+  static async getSurveyVoters(req, res) {
+    try {
+      const { id } = req.params;
+      
+      if (!id || isNaN(id)) {
+        return res.status(400).json({ error: MESSAGES.INVALID_SURVEY_ID });
+      }
+      
+      const votersData = await SurveyModel.getSurveyVoters(id);
+      res.status(200).json(votersData);
+    } catch (error) {
+      console.error('Error fetching survey voters:', error);
+      if (error.message === 'Survey not found') {
+        return res.status(404).json({ error: MESSAGES.SURVEY_NOT_FOUND });
+      }
+      res.status(500).json({ error: 'Error al obtener los votantes de la encuesta' });
+    }
+  }
+  
+  // Generate PDF for survey results
+  static async generateSurveyPDF(req, res) {
+    try {
+      const { id } = req.params;
+      
+      if (!id || isNaN(id)) {
+        return res.status(400).json({ error: MESSAGES.INVALID_SURVEY_ID });
+      }
+      
+      // Get survey results
+      const resultsData = await SurveyModel.getSurveyResults(id, true);
+      
+      // Generate PDF
+      const pdfBuffer = await PDFGenerator.generateSurveyResultsPDF(resultsData.survey, resultsData);
+      
+      // Set headers for PDF download
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="resultados-${resultsData.survey.title.replace(/[^a-zA-Z0-9]/g, '-')}.pdf"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      if (error.message === 'Survey not found') {
+        return res.status(404).json({ error: MESSAGES.SURVEY_NOT_FOUND });
+      }
+      res.status(500).json({ error: 'Error al generar el PDF de resultados' });
+    }
+  }
+  
+  // Get email queue status
+  static async getEmailQueueStatus(req, res) {
+    try {
+      const emailService = new EmailService();
+      const status = await emailService.getQueueStatus();
+      
+      res.status(200).json(status);
+    } catch (error) {
+      console.error('Error getting email queue status:', error);
+      res.status(500).json({ error: 'Error al obtener el estado de la cola de emails' });
     }
   }
 }

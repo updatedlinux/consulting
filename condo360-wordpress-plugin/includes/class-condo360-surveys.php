@@ -33,6 +33,8 @@ class Condo360_Surveys {
         add_action('wp_ajax_nopriv_condo360_submit_survey', array($this, 'handle_survey_submission'));
         add_action('wp_ajax_condo360_get_survey_details', array($this, 'get_survey_details'));
         add_action('wp_ajax_nopriv_condo360_get_survey_details', array($this, 'get_survey_details'));
+        add_action('wp_ajax_condo360_get_resident_results', array($this, 'get_resident_results'));
+        add_action('wp_ajax_nopriv_condo360_get_resident_results', array($this, 'get_resident_results'));
         add_shortcode('condo360_surveys', array($this, 'render_surveys_shortcode'));
     }
     
@@ -165,6 +167,62 @@ class Condo360_Surveys {
             }
         } else {
             wp_send_json_error(array('message' => __('Error al obtener los detalles de la Carta Consulta.', 'condo360-surveys')));
+        }
+    }
+    
+    /**
+     * Get survey results for residents via AJAX
+     */
+    public function get_resident_results() {
+        // Verify nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'condo360_surveys_nonce')) {
+            wp_die('Security check failed');
+        }
+        
+        // Get survey ID
+        $survey_id = intval($_POST['survey_id']);
+        
+        // Get results from API
+        $api_url = 'https://api.bonaventurecclub.com/polls/surveys/' . $survey_id . '/results';
+        $response = wp_remote_get($api_url, array('timeout' => 30));
+        
+        if (!is_wp_error($response)) {
+            $response_code = wp_remote_retrieve_response_code($response);
+            if ($response_code === 200) {
+                $results_data = json_decode(wp_remote_retrieve_body($response), true);
+                
+                // Calculate percentages
+                if (isset($results_data['questions'])) {
+                    $total_votes = 0;
+                    
+                    // Calculate total votes from first question (assuming all questions have same number of responses)
+                    if (!empty($results_data['questions'][0]['options'])) {
+                        foreach ($results_data['questions'][0]['options'] as $option) {
+                            $total_votes += $option['response_count'];
+                        }
+                    }
+                    
+                    // Add percentage to each option
+                    foreach ($results_data['questions'] as &$question) {
+                        foreach ($question['options'] as &$option) {
+                            $option['percentage'] = $total_votes > 0 ? ($option['response_count'] / $total_votes) * 100 : 0;
+                        }
+                    }
+                    
+                    $results_data['total_votes'] = $total_votes;
+                }
+                
+                // Load template
+                ob_start();
+                include plugin_dir_path(__FILE__) . '../templates/resident-survey-results.php';
+                $html = ob_get_clean();
+                
+                wp_send_json_success(array('html' => $html, 'results' => $results_data));
+            } else {
+                wp_send_json_error(array('message' => __('Error al obtener los resultados de la Carta Consulta.', 'condo360-surveys')));
+            }
+        } else {
+            wp_send_json_error(array('message' => __('Error de conexión al obtener los resultados.', 'condo360-surveys')));
         }
     }
     

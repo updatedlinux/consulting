@@ -1,60 +1,68 @@
-# Condo360 Surveys WordPress Plugin
+# Plugin de WordPress Condo360 Surveys
 
-WordPress plugin for managing condominium surveys with resident voting capabilities.
+Plugin de WordPress para gestionar encuestas de condominio con capacidades de votación de residentes.
 
-## Features
+## Características
 
-- Resident survey voting through shortcode
-- Admin dashboard for survey management
-- Survey creation interface
-- Results visualization
-- Integration with WordPress user system
+- Votación de encuestas de residentes a través de shortcode
+- Panel de administración para gestión de encuestas
+- Interfaz de creación de encuestas
+- Visualización de resultados
+- Integración con el sistema de usuarios de WordPress
+- Notificaciones por email automáticas
+- Descarga de reportes PDF
+- Vista detallada de votantes
 
-## Installation
+## Instalación
 
-1. Upload the plugin folder to `/wp-content/plugins/condo360-surveys`
-2. Activate the plugin through the WordPress plugins screen
-3. Configure the API URL in your theme's `functions.php`:
+1. Sube la carpeta del plugin a `/wp-content/plugins/condo360-surveys`
+2. Activa el plugin a través de la pantalla de plugins de WordPress
+3. Configura la URL de la API en el `functions.php` de tu tema:
    ```php
    define('CONDO360_SURVEYS_API_URL', 'http://your-domain.com:3000/polls');
    ```
 
-## Usage
+## Uso
 
 ### Frontend
 
-Use the shortcode `[condo360_surveys]` to display available surveys to residents.
+Usa el shortcode `[condo360_surveys]` para mostrar las encuestas disponibles a los residentes.
 
-### Admin
+### Administración
 
-Access the "Cartas Consulta" menu in the WordPress admin to:
-- View all surveys
-- Create new surveys
-- View survey results
+Accede al menú "Cartas Consulta" en la administración de WordPress para:
+- Ver todas las encuestas
+- Crear nuevas encuestas
+- Ver resultados de encuestas
+- Ver detalles de votantes
+- Descargar reportes PDF
 
-## Requirements
+## Requisitos
 
-- WordPress 5.0 or higher
-- Node.js API backend running
-- MySQL database (shared with WordPress)
+- WordPress 5.0 o superior
+- API backend de Node.js ejecutándose
+- Base de datos MySQL (compartida con WordPress)
+- Servidor SMTP configurado para notificaciones
 
-## Templates
+## Plantillas
 
-The plugin includes customizable templates in the `/templates` folder:
-- `frontend-surveys.php` - Resident survey display
-- `admin-dashboard.php` - Admin survey overview
-- `admin-create-survey.php` - Survey creation form
-- `admin-select-survey.php` - Survey selection for results
-- `admin-survey-results.php` - Survey results display
+El plugin incluye plantillas personalizables en la carpeta `/templates`:
+- `frontend-surveys.php` - Visualización de encuestas para residentes
+- `admin-dashboard.php` - Panel de administración de encuestas
+- `admin-create-survey.php` - Formulario de creación de encuestas
+- `admin-select-survey.php` - Selección de encuestas para resultados
+- `admin-survey-results.php` - Visualización de resultados de encuestas
+- `admin-voters-detail.php` - Detalles de votantes
+- `resident-survey-results.php` - Resultados para residentes
 
-## Styles
+## Estilos
 
-The plugin includes CSS files in `/assets/css`:
-- `surveys.css` - Frontend styles (compatible with Astra theme)
-- `admin.css` - Admin interface styles
+El plugin incluye archivos CSS en `/assets/css`:
+- `surveys.css` - Estilos del frontend (compatible con el tema Astra)
+- `admin.css` - Estilos de la interfaz de administración
 
 ## JavaScript
 
-The plugin includes JavaScript files in `/assets/js`:
-- `surveys.js` - Frontend survey interaction
-- `admin.js` - Admin dynamic form functionality
+El plugin incluye archivos JavaScript en `/assets/js`:
+- `surveys.js` - Interacción de encuestas del frontend
+- `admin.js` - Funcionalidad dinámica de formularios de administración

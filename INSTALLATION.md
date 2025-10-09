@@ -6,6 +6,7 @@
 - MySQL database (same as WordPress)
 - WordPress installation
 - npm or yarn package manager
+- SMTP server access
 
 ## Backend Installation (Node.js API)
 
@@ -20,8 +21,9 @@
    ```
 
 3. Configure environment variables:
-   - Copy `.env.example` to `.env`
+   - Copy `env.example` to `.env`
    - Update database credentials to match your WordPress database
+   - Configure SMTP settings for email notifications
    - Set the desired port (default is 3000)
 
 4. Initialize the database:
@@ -87,7 +89,21 @@ All tables are created by running the `init-db.sql` script.
 - Only logged-in WordPress users can participate in surveys
 - Survey results are only visible to admins for active surveys
 
-## Customization
+## Email Notifications
+
+The system automatically sends email notifications to all WordPress subscribers when a new survey is created:
+
+- **SMTP Configuration**: Configure your SMTP settings in the `.env` file
+- **Email Queue**: Uses Node.js built-in queue system for reliable email delivery
+- **Batch Processing**: Sends emails in batches of 30 every 2 minutes to avoid overwhelming the SMTP server
+- **Template**: Professional HTML email template with survey details and voting link
+
+### Email Features:
+- Automatic notification to all subscribers when surveys are created
+- Professional HTML email design compatible with Astra theme
+- Batch processing to prevent SMTP server overload
+- Queue status monitoring via API endpoint
+- Retry mechanism for failed email deliveries
 
 ### Frontend Styling
 - Modify `/assets/css/surveys.css` in the plugin directory to change resident survey appearance

@@ -22,6 +22,11 @@
     <div class="results-summary">
         <h4>Resumen</h4>
         <p>Total de votos: <?php echo esc_html($results['total_votes']); ?></p>
+        <div class="pdf-download-section">
+            <button class="download-pdf-btn" data-survey-id="<?php echo esc_attr($results['survey']['id']); ?>">
+                📄 Descargar PDF de Resultados
+            </button>
+        </div>
     </div>
     
     <div class="questions-results">

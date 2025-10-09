@@ -1,4 +1,22 @@
 jQuery(document).ready(function($) {
+    // Handle resident tab switching
+    $('.resident-tab-btn').on('click', function() {
+        var tab = $(this).data('tab');
+        
+        // Update active tab button
+        $('.resident-tab-btn').removeClass('active');
+        $(this).addClass('active');
+        
+        // Show active tab content
+        $('.resident-tab-content').removeClass('active');
+        $('#' + tab + '-tab').addClass('active');
+        
+        // Load data based on tab
+        if (tab === 'survey-results') {
+            loadSurveysForResidentResults();
+        }
+    });
+    
     // Handle survey selection
     $('.condo360-surveys-container').on('click', '.select-survey-btn', function() {
         var surveyItem = $(this).closest('.survey-item');
@@ -131,4 +149,63 @@ jQuery(document).ready(function($) {
         
         submitBtn.prop('disabled', !allAnswered);
     }
+    
+    // Load surveys for resident results
+    function loadSurveysForResidentResults() {
+        var select = $('#select-survey-results-resident');
+        select.html('<option value="">Cargando Cartas Consulta...</option>');
+        
+        // Use the /all endpoint to get all surveys including closed ones
+        $.ajax({
+            url: 'https://api.bonaventurecclub.com/polls/surveys/all',
+            type: 'GET',
+            success: function(surveys) {
+                var options = '<option value="">Seleccione una Carta Consulta</option>';
+                // Show all surveys (both open and closed) for results
+                $.each(surveys, function(index, survey) {
+                    var statusText = survey.status === 'open' ? ' (Activa)' : ' (Cerrada)';
+                    options += `<option value="${survey.id}">${survey.title}${statusText}</option>`;
+                });
+                select.html(options);
+            },
+            error: function(xhr, status, error) {
+                select.html('<option value="">Error de conexión: ' + error + '</option>');
+            }
+        });
+    }
+    
+    // Load resident survey results
+    $('#select-survey-results-resident').on('change', function() {
+        var surveyId = $(this).val();
+        var resultsContainer = $('.resident-results-container');
+        var messageDiv = $('#resident-results-message');
+        
+        if (!surveyId) {
+            resultsContainer.hide();
+            return;
+        }
+        
+        resultsContainer.show();
+        $('.resident-survey-results').html('<div class="loading-message">Cargando resultados...</div>');
+        
+        $.ajax({
+            url: condo360_surveys_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'condo360_get_resident_results',
+                survey_id: surveyId,
+                nonce: condo360_surveys_ajax.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('.resident-survey-results').html(response.data.html);
+                } else {
+                    $('.resident-survey-results').html('<p>Error al cargar los resultados: ' + response.data.message + '</p>');
+                }
+            },
+            error: function(xhr, status, error) {
+                $('.resident-survey-results').html('<p>Error de conexión al cargar los resultados: ' + error + '</p>');
+            }
+        });
+    });
 });
