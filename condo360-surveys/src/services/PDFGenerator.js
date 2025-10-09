@@ -231,7 +231,7 @@ class PDFGenerator {
             }
 
             doc.moveDown(1);
-          });
+          }
         }
 
         doc.moveDown(2);
