@@ -231,11 +231,17 @@ Recupera información detallada sobre quién votó en una encuesta.
 ### Generar Reporte PDF
 **GET** `/polls/surveys/:id/pdf`
 
-Genera un reporte PDF con gráficos de barras y resultados detallados para una encuesta.
+Genera un reporte PDF con estadísticas de votantes y lista detallada de participantes.
 
 **Respuesta:**
 - Content-Type: `application/pdf`
-- Descarga de archivo con resultados de encuesta y gráficos de barras
+- Descarga de archivo con estadísticas de participación y lista de votantes
+
+**Contenido del PDF:**
+- Información de la encuesta (título, descripción, fechas, estado)
+- Estadísticas de participación (propietarios habilitados, votos recibidos, porcentaje)
+- Barra visual de participación
+- Lista detallada de votantes con fechas
 
 **Nota:** Utiliza PDFKit para generar PDFs sin dependencias del sistema operativo.
 

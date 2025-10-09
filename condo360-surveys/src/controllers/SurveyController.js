@@ -339,15 +339,15 @@ class SurveyController {
         return res.status(400).json({ error: MESSAGES.INVALID_SURVEY_ID });
       }
       
-      // Get survey results
-      const resultsData = await SurveyModel.getSurveyResults(id, true);
+      // Get survey voters data (includes statistics and voters list)
+      const votersData = await SurveyModel.getSurveyVoters(id);
       
       // Generate PDF
-      const pdfBuffer = await PDFGenerator.generateSurveyResultsPDF(resultsData.survey, resultsData);
+      const pdfBuffer = await PDFGenerator.generateSurveyResultsPDF(votersData.survey, votersData);
       
       // Set headers for PDF download
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="resultados-${resultsData.survey.title.replace(/[^a-zA-Z0-9]/g, '-')}.pdf"`);
+      res.setHeader('Content-Disposition', `attachment; filename="resultados-${votersData.survey.title.replace(/[^a-zA-Z0-9]/g, '-')}.pdf"`);
       res.setHeader('Content-Length', pdfBuffer.length);
       
       res.send(pdfBuffer);
