@@ -7,7 +7,15 @@ jQuery(document).ready(function($) {
     // Handle view results button click
     $('.view-results-btn').on('click', function() {
         console.log('View results button clicked');
-        $('#results-modal').addClass('show');
+        var modal = $('#results-modal');
+        
+        // Try both approaches
+        modal.addClass('show');
+        modal.show();
+        
+        console.log('Modal classes after adding show:', modal.attr('class'));
+        console.log('Modal computed display:', modal.css('display'));
+        console.log('Modal is visible:', modal.is(':visible'));
         loadSurveysForModal();
     });
     
@@ -16,14 +24,23 @@ jQuery(document).ready(function($) {
         console.log('View results button clicked (delegated)');
         var modal = $('#results-modal');
         console.log('Modal element found:', modal.length);
+        
+        // Try both approaches
         modal.addClass('show');
+        modal.show();
+        
+        console.log('Modal classes after adding show (delegated):', modal.attr('class'));
+        console.log('Modal computed display (delegated):', modal.css('display'));
+        console.log('Modal is visible (delegated):', modal.is(':visible'));
         loadSurveysForModal();
     });
     
     // Handle modal close
     $('.close-modal, #results-modal').on('click', function(e) {
         if (e.target === this) {
-            $('#results-modal').removeClass('show');
+            var modal = $('#results-modal');
+            modal.removeClass('show');
+            modal.hide();
         }
     });
     
