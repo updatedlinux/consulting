@@ -233,14 +233,26 @@ class SurveyModel {
     return results;
   }
   
-  // Check if survey has votes
-  static async hasVotes(surveyId) {
-    const [result] = await db.execute(
-      'SELECT COUNT(*) as vote_count FROM condo360_survey_participants WHERE survey_id = ?',
-      [surveyId]
-    );
+  // Test method to debug SQL issues
+  static async testGetVoters(surveyId) {
+    console.log('Testing getVoters with surveyId:', surveyId);
     
-    return result[0].vote_count > 0;
+    try {
+      // Simple query without pagination first
+      const [voters] = await db.execute(`
+        SELECT u.ID, u.user_login, u.user_email, u.display_name, sp.participated_at
+        FROM condo360_survey_participants sp
+        INNER JOIN wp_users u ON sp.wp_user_id = u.ID
+        WHERE sp.survey_id = ?
+        ORDER BY sp.participated_at DESC
+      `, [parseInt(surveyId)]);
+      
+      console.log('Simple query successful, found voters:', voters.length);
+      return voters;
+    } catch (error) {
+      console.error('Simple query failed:', error);
+      throw error;
+    }
   }
   
   // Update survey (only for active surveys without votes)
@@ -337,14 +349,27 @@ class SurveyModel {
     return surveys;
   }
   
-  // Get voters details for a survey with pagination
+  // Get voters details for a survey with pagination (simplified version)
   static async getSurveyVoters(surveyId, page = 1, limit = 10) {
-    const offset = (page - 1) * limit;
+    console.log('SurveyModel.getSurveyVoters called with:', { surveyId, page, limit });
     
-    // Ensure all parameters are numbers
+    // Ensure all parameters are valid numbers
     const surveyIdNum = parseInt(surveyId);
-    const limitNum = parseInt(limit);
-    const offsetNum = parseInt(offset);
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 10;
+    
+    console.log('Converted parameters:', { surveyIdNum, pageNum, limitNum });
+    
+    // Validate parameters
+    if (isNaN(surveyIdNum) || surveyIdNum <= 0) {
+      throw new Error('Invalid survey ID');
+    }
+    if (isNaN(pageNum) || pageNum < 1) {
+      throw new Error('Invalid page number');
+    }
+    if (isNaN(limitNum) || limitNum < 1) {
+      throw new Error('Invalid limit');
+    }
     
     // Get total eligible voters (WordPress subscribers)
     const [eligibleVoters] = await db.execute(`
@@ -362,15 +387,18 @@ class SurveyModel {
       WHERE sp.survey_id = ?
     `, [surveyIdNum]);
     
-    // Get paginated actual voters for this survey
-    const [voters] = await db.execute(`
+    // Get ALL voters first, then paginate in JavaScript
+    const [allVoters] = await db.execute(`
       SELECT u.ID, u.user_login, u.user_email, u.display_name, sp.participated_at
       FROM condo360_survey_participants sp
       INNER JOIN wp_users u ON sp.wp_user_id = u.ID
       WHERE sp.survey_id = ?
       ORDER BY sp.participated_at DESC
-      LIMIT ? OFFSET ?
-    `, [surveyIdNum, limitNum, offsetNum]);
+    `, [surveyIdNum]);
+    
+    // Paginate in JavaScript
+    const offset = (pageNum - 1) * limitNum;
+    const voters = allVoters.slice(offset, offset + limitNum);
     
     // Get survey details
     const [surveys] = await db.execute(
@@ -408,7 +436,7 @@ class SurveyModel {
         voted_at: voter.participated_at
       })),
       pagination: {
-        current_page: parseInt(page),
+        current_page: pageNum,
         per_page: limitNum,
         total_voters: totalVoters[0].total_voters,
         total_pages: Math.ceil(totalVoters[0].total_voters / limitNum)

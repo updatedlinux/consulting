@@ -536,6 +536,7 @@ router.get('/surveys/:id', SurveyController.getSurveyById);
 router.post('/surveys/:id/vote', SurveyController.voteInSurvey);
 router.get('/surveys/:id/results', SurveyController.getSurveyResults);
 router.get('/surveys/:id/voters', SurveyController.getSurveyVoters);
+router.get('/surveys/:id/test-voters', SurveyController.testGetVoters);
 router.get('/surveys/:id/pdf', SurveyController.generateSurveyPDF);
 router.post('/surveys/:id/close', SurveyController.closeSurvey);
 router.put('/surveys/:id', SurveyController.updateSurvey);

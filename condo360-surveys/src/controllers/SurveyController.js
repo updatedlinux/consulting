@@ -359,11 +359,31 @@ class SurveyController {
     }
   }
   
+  // Test endpoint for debugging
+  static async testGetVoters(req, res) {
+    try {
+      const { id } = req.params;
+      console.log('Test endpoint called with id:', id);
+      
+      const voters = await SurveyModel.testGetVoters(id);
+      res.status(200).json({ 
+        message: 'Test successful', 
+        voters: voters,
+        count: voters.length 
+      });
+    } catch (error) {
+      console.error('Test endpoint error:', error);
+      res.status(500).json({ error: 'Test failed: ' + error.message });
+    }
+  }
+  
   // Get survey voters details with pagination
   static async getSurveyVoters(req, res) {
     try {
       const { id } = req.params;
       const { page = 1, limit = 10 } = req.query;
+      
+      console.log('getSurveyVoters called with:', { id, page, limit });
       
       if (!id || isNaN(id)) {
         return res.status(400).json({ error: MESSAGES.INVALID_SURVEY_ID });
@@ -371,6 +391,8 @@ class SurveyController {
       
       const pageNum = parseInt(page);
       const limitNum = parseInt(limit);
+      
+      console.log('Parsed parameters:', { pageNum, limitNum });
       
       if (pageNum < 1 || limitNum < 1 || limitNum > 100) {
         return res.status(400).json({ error: 'Parámetros de paginación inválidos' });
