@@ -215,7 +215,9 @@ jQuery(document).ready(function($) {
     
     // Load ALL surveys for voters dropdown (including closed ones)
     function loadSurveysForVoters() {
+        console.log('loadSurveysForVoters called');
         var select = $('#select-survey-voters');
+        console.log('Voters select element found:', select.length);
         select.html('<option value="">Cargando Cartas Consulta...</option>');
         
         // Use the /all endpoint to get all surveys including closed ones
@@ -223,6 +225,7 @@ jQuery(document).ready(function($) {
             url: 'https://api.bonaventurecclub.com/polls/surveys/all',
             type: 'GET',
             success: function(surveys) {
+                console.log('Surveys loaded for voters:', surveys.length);
                 var options = '<option value="">Seleccione una Carta Consulta</option>';
                 // Show all surveys (both open and closed) for voters
                 $.each(surveys, function(index, survey) {
@@ -230,8 +233,10 @@ jQuery(document).ready(function($) {
                     options += `<option value="${survey.id}">${survey.title}${statusText}</option>`;
                 });
                 select.html(options);
+                console.log('Voters select options updated');
             },
             error: function(xhr, status, error) {
+                console.log('Error loading surveys for voters:', error);
                 select.html('<option value="">Error de conexión: ' + error + '</option>');
             }
         });
@@ -391,10 +396,19 @@ jQuery(document).ready(function($) {
         var button = $(this);
         var originalText = button.text();
         
+        console.log('PDF download clicked, survey ID:', surveyId);
+        
+        if (!surveyId) {
+            console.log('No survey ID found');
+            alert('Error: No se pudo obtener el ID de la encuesta');
+            return;
+        }
+        
         button.prop('disabled', true).text('Generando PDF...');
         
         // Create a temporary link to download the PDF
         var downloadUrl = 'https://api.bonaventurecclub.com/polls/surveys/' + surveyId + '/pdf';
+        console.log('Download URL:', downloadUrl);
         
         // Create a temporary anchor element to trigger download
         var link = document.createElement('a');

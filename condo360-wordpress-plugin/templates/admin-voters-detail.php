@@ -5,39 +5,51 @@
 ?>
 
 <div class="voters-detail-content">
-    <h3>Detalle de Votantes: <?php echo esc_html($votersData['survey']['title']); ?></h3>
+    <h3><?php echo esc_html($votersData['survey']['title']); ?></h3>
     
     <?php if (!empty($votersData['survey']['description'])): ?>
         <p class="survey-description"><?php echo esc_html($votersData['survey']['description']); ?></p>
     <?php endif; ?>
     
-    <div class="survey-dates">
-        <?php 
-        $start_date = date_i18n(get_option('date_format'), strtotime($votersData['survey']['start_date']));
-        $end_date = date_i18n(get_option('date_format'), strtotime($votersData['survey']['end_date']));
-        printf('Disponible desde %s hasta %s', $start_date, $end_date);
-        ?>
+    <div class="survey-info-section">
+        <h4>Estatus de la Carta</h4>
+        <p><strong>Estado:</strong> <?php echo $votersData['survey']['status'] === 'open' ? 'Activa' : 'Cerrada'; ?></p>
+        
+        <h4>Fecha de Inicio y Fin</h4>
+        <p>
+            <strong>Inicio:</strong> <?php echo date_i18n(get_option('date_format'), strtotime($votersData['survey']['start_date'])); ?><br>
+            <strong>Fin:</strong> <?php echo date_i18n(get_option('date_format'), strtotime($votersData['survey']['end_date'])); ?>
+        </p>
     </div>
     
-    <div class="voters-summary-stats">
+    <div class="participation-stats-section">
         <h4>Estadísticas de Participación</h4>
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div class="stat-number"><?php echo esc_html($votersData['statistics']['total_eligible_voters']); ?></div>
-                <div class="stat-label">Total Propietarios Habilitados</div>
+        
+        <div class="stats-display">
+            <div class="stat-row">
+                <span class="stat-label">Propietarios Habilitados:</span>
+                <span class="stat-value"><?php echo esc_html($votersData['statistics']['total_eligible_voters']); ?></span>
             </div>
-            <div class="stat-item">
-                <div class="stat-number"><?php echo esc_html($votersData['statistics']['actual_voters']); ?></div>
-                <div class="stat-label">Propietarios que Votaron</div>
+            
+            <div class="stat-row">
+                <span class="stat-label">Votos Recibidos:</span>
+                <span class="stat-value"><?php echo esc_html($votersData['statistics']['actual_voters']); ?></span>
             </div>
-            <div class="stat-item">
-                <div class="stat-number"><?php echo esc_html($votersData['statistics']['participation_percentage']); ?>%</div>
-                <div class="stat-label">Porcentaje de Participación</div>
+            
+            <div class="stat-row">
+                <span class="stat-label">Porcentaje de Participación:</span>
+                <span class="stat-value"><?php echo esc_html($votersData['statistics']['participation_percentage']); ?>%</span>
             </div>
         </div>
         
-        <div class="participation-bar">
-            <div class="participation-bar-fill" style="width: <?php echo esc_attr($votersData['statistics']['participation_percentage']); ?>%"></div>
+        <div class="participation-bar-section">
+            <h5>Barra de Participación:</h5>
+            <div class="participation-bar-container">
+                <div class="participation-bar">
+                    <div class="participation-bar-fill" style="width: <?php echo esc_attr($votersData['statistics']['participation_percentage']); ?>%"></div>
+                </div>
+                <div class="participation-percentage-text"><?php echo esc_html($votersData['statistics']['participation_percentage']); ?>%</div>
+            </div>
         </div>
     </div>
     

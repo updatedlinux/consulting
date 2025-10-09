@@ -515,3 +515,186 @@
     cursor: not-allowed;
     transform: none;
 }
+
+/* Voters Detail Styles */
+.voters-detail-content {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.voters-detail-content h3 {
+    margin-top: 0;
+    color: #0073aa;
+    border-bottom: 2px solid #0073aa;
+    padding-bottom: 10px;
+}
+
+.survey-info-section {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    border-left: 4px solid #0073aa;
+}
+
+.survey-info-section h4 {
+    margin-top: 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.survey-info-section p {
+    margin: 8px 0;
+    color: #555;
+}
+
+.participation-stats-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+}
+
+.participation-stats-section h4 {
+    margin-top: 0;
+    color: #333;
+    font-size: 18px;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 10px;
+}
+
+.stats-display {
+    margin-bottom: 20px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #0073aa;
+    font-size: 16px;
+}
+
+.participation-bar-section {
+    margin-top: 20px;
+}
+
+.participation-bar-section h5 {
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 14px;
+}
+
+.participation-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.participation-bar {
+    flex: 1;
+    height: 20px;
+    background: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.participation-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0073aa, #005a87);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+    min-width: 2px;
+}
+
+.participation-percentage-text {
+    font-weight: bold;
+    color: #0073aa;
+    font-size: 14px;
+    min-width: 50px;
+    text-align: right;
+}
+
+.voters-list-section {
+    margin-top: 25px;
+}
+
+.voters-list-section h4 {
+    margin-top: 0;
+    color: #333;
+    font-size: 16px;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 10px;
+}
+
+.voters-table-container {
+    overflow-x: auto;
+    margin-top: 15px;
+}
+
+.voters-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.voters-table th {
+    background: #0073aa;
+    color: white;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.voters-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 14px;
+    color: #333;
+}
+
+.voters-table tr:hover {
+    background: #f8f9fa;
+}
+
+.voters-table tr:last-child td {
+    border-bottom: none;
+}
+
+.no-voters-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    background: #f8f9fa;
+    border-radius: 5px;
+    border: 1px dashed #ccc;
+}
+
+.no-voters-message p {
+    margin: 0;
+    font-size: 16px;
+}
