@@ -238,11 +238,12 @@ Genera un reporte PDF completo con estadísticas de votantes, lista de participa
 - Descarga de archivo con estadísticas de participación, lista de votantes y resultados de preguntas
 
 **Contenido del PDF:**
+- Logo de Bonaventure Country Club en el header (281x94px)
 - Información de la encuesta (título, descripción, fechas, estado)
 - Estadísticas de participación (propietarios habilitados, votos recibidos, porcentaje)
-- Barra visual de participación
+- Barra visual de participación centrada
 - Lista detallada de votantes con fechas
-- Resultados por pregunta con gráficos de barras proporcionales
+- Resultados por pregunta con gráficos de barras centrados y proporcionales
 - Conteo de votos y porcentajes para cada opción
 
 **Nota:** Utiliza PDFKit para generar PDFs sin dependencias del sistema operativo.

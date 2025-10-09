@@ -21,7 +21,15 @@ class PDFGenerator {
           resolve(pdfBuffer);
         });
 
-        // Header
+        // Header with logo
+        doc.image('https://bonaventurecclub.com/wp-content/uploads/2025/09/cropped-1-1.png', {
+          fit: [281, 94],
+          align: 'center'
+        });
+        
+        doc.moveDown(0.5);
+        
+        // Title
         doc.fontSize(20)
            .fillColor('#2c3e50')
            .text('Resultados de la Carta Consulta', { align: 'center' });
@@ -164,15 +172,15 @@ class PDFGenerator {
                .fillColor('#007cba')
                .text(`${questionIndex + 1}. ${question.question_text}`);
             
-            doc.moveDown(0.3);
+            doc.moveDown(0.5);
 
             // Calculate total votes for this question
             const totalVotes = question.options.reduce((sum, option) => sum + option.response_count, 0);
 
             // Options with results
             question.options.forEach((option, optionIndex) => {
-              const barWidth = 200;
-              const barHeight = 15;
+              const barWidth = 300;
+              const barHeight = 20;
               const percentage = totalVotes > 0 ? (option.response_count / totalVotes) * 100 : 0;
               const fillWidth = (barWidth * percentage) / 100;
 
@@ -181,30 +189,31 @@ class PDFGenerator {
                  .fillColor('#333333')
                  .text(`${option.option_text}: ${option.response_count} votos (${percentage.toFixed(1)}%)`);
               
-              // Bar chart representation
-              const startY = doc.y;
+              // Bar chart representation - centered
+              const startY = doc.y + 5;
+              const barX = (doc.page.width - doc.page.margins.left - doc.page.margins.right - barWidth) / 2 + doc.page.margins.left;
               
               // Background bar
-              doc.rect(50, startY, barWidth, barHeight)
+              doc.rect(barX, startY, barWidth, barHeight)
                  .fillColor('#e9ecef')
                  .fill();
               
               // Filled bar
               if (fillWidth > 0) {
-                doc.rect(50, startY, fillWidth, barHeight)
+                doc.rect(barX, startY, fillWidth, barHeight)
                    .fillColor(this.getBarColor(optionIndex))
                    .fill();
               }
               
               // Border
-              doc.rect(50, startY, barWidth, barHeight)
+              doc.rect(barX, startY, barWidth, barHeight)
                  .strokeColor('#dee2e6')
                  .stroke();
               
-              doc.moveDown(1.2);
+              doc.moveDown(1.5);
             });
 
-            doc.moveDown(0.5);
+            doc.moveDown(1);
           });
         }
 
