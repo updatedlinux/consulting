@@ -82,32 +82,40 @@ class Condo360_Surveys_Admin {
      * Load template via AJAX
      */
     public function load_template() {
-        // Verify nonce and permissions
-        if (!wp_verify_nonce($_POST['nonce'], 'condo360_admin_nonce') || !current_user_can('manage_options')) {
-            wp_die('Security check failed');
-        }
-        
-        $template = sanitize_text_field($_POST['template']);
-        $template_path = plugin_dir_path(__FILE__) . '../templates/' . $template . '.php';
-        
-        if (file_exists($template_path)) {
-            // Extract variables if provided
-            if (isset($_POST['surveys'])) {
-                $surveys = $_POST['surveys'];
-            }
-            if (isset($_POST['survey'])) {
-                $survey = $_POST['survey'];
-            }
-            if (isset($_POST['results'])) {
-                $results = $_POST['results'];
+        try {
+            // Verify nonce and permissions
+            if (!wp_verify_nonce($_POST['nonce'], 'condo360_admin_nonce') || !current_user_can('manage_options')) {
+                wp_die('Security check failed');
             }
             
-            ob_start();
-            include $template_path;
-            $html = ob_get_clean();
-            wp_send_json_success(array('html' => $html));
-        } else {
-            wp_send_json_error(array('message' => 'Template not found.'));
+            $template = sanitize_text_field($_POST['template']);
+            $template_path = plugin_dir_path(__FILE__) . '../templates/' . $template . '.php';
+            
+            if (file_exists($template_path)) {
+                // Extract variables if provided
+                if (isset($_POST['surveys'])) {
+                    $surveys = $_POST['surveys'];
+                }
+                if (isset($_POST['survey'])) {
+                    $survey = $_POST['survey'];
+                }
+                if (isset($_POST['results'])) {
+                    $results = $_POST['results'];
+                }
+                if (isset($_POST['votersData'])) {
+                    $votersData = $_POST['votersData'];
+                }
+                
+                ob_start();
+                include $template_path;
+                $html = ob_get_clean();
+                wp_send_json_success(array('html' => $html));
+            } else {
+                wp_send_json_error(array('message' => 'Template not found: ' . $template));
+            }
+        } catch (Exception $e) {
+            error_log('Condo360 Admin Template Error: ' . $e->getMessage());
+            wp_send_json_error(array('message' => 'Error interno del servidor: ' . $e->getMessage()));
         }
     }
     
@@ -287,31 +295,46 @@ class Condo360_Surveys_Admin {
      * Get survey voters via AJAX
      */
     public function get_survey_voters() {
-        // Verify nonce and permissions
-        if (!wp_verify_nonce($_POST['nonce'], 'condo360_admin_nonce') || !current_user_can('manage_options')) {
-            wp_die('Security check failed');
-        }
-        
-        // Get survey ID
-        $survey_id = intval($_POST['survey_id']);
-        
-        // Get voters from API
-        $api_url = 'https://api.bonaventurecclub.com/polls/surveys/' . $survey_id . '/voters';
-        $response = wp_remote_get($api_url, array('timeout' => 30));
-        
-        if (!is_wp_error($response)) {
-            $response_code = wp_remote_retrieve_response_code($response);
-            if ($response_code === 200) {
-                $voters_data = json_decode(wp_remote_retrieve_body($response), true);
-                
-                // Load template via AJAX
-                wp_send_json_success(array('votersData' => $voters_data));
-            } else {
-                $error_body = wp_remote_retrieve_body($response);
-                wp_send_json_error(array('message' => 'Error al obtener los votantes de la Carta Consulta. Código: ' . $response_code . ' - ' . $error_body));
+        try {
+            // Verify nonce and permissions
+            if (!wp_verify_nonce($_POST['nonce'], 'condo360_admin_nonce') || !current_user_can('manage_options')) {
+                wp_die('Security check failed');
             }
-        } else {
-            wp_send_json_error(array('message' => 'Error de conexión: ' . $response->get_error_message()));
+            
+            // Get survey ID
+            $survey_id = intval($_POST['survey_id']);
+            
+            if (!$survey_id) {
+                wp_send_json_error(array('message' => 'ID de encuesta inválido'));
+                return;
+            }
+            
+            // Get voters from API
+            $api_url = 'https://api.bonaventurecclub.com/polls/surveys/' . $survey_id . '/voters';
+            $response = wp_remote_get($api_url, array('timeout' => 30));
+            
+            if (!is_wp_error($response)) {
+                $response_code = wp_remote_retrieve_response_code($response);
+                if ($response_code === 200) {
+                    $voters_data = json_decode(wp_remote_retrieve_body($response), true);
+                    
+                    if (!$voters_data) {
+                        wp_send_json_error(array('message' => 'Error al decodificar los datos de votantes'));
+                        return;
+                    }
+                    
+                    // Load template via AJAX
+                    wp_send_json_success(array('votersData' => $voters_data));
+                } else {
+                    $error_body = wp_remote_retrieve_body($response);
+                    wp_send_json_error(array('message' => 'Error al obtener los votantes de la Carta Consulta. Código: ' . $response_code . ' - ' . $error_body));
+                }
+            } else {
+                wp_send_json_error(array('message' => 'Error de conexión: ' . $response->get_error_message()));
+            }
+        } catch (Exception $e) {
+            error_log('Condo360 Admin Voters Error: ' . $e->getMessage());
+            wp_send_json_error(array('message' => 'Error interno del servidor: ' . $e->getMessage()));
         }
     }
 }
