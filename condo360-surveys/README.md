@@ -9,7 +9,7 @@ Sistema de gestión de encuestas para residentes de condominio construido con No
 - Cierre automático de encuestas
 - Documentación Swagger
 - Notificaciones por email automáticas
-- Generación de reportes PDF
+- Generación de reportes PDF (con PDFKit)
 - Sistema de cola de emails nativo
 - Vista detallada de votantes
 

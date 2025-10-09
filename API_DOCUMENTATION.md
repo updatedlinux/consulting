@@ -231,11 +231,13 @@ Recupera información detallada sobre quién votó en una encuesta.
 ### Generar Reporte PDF
 **GET** `/polls/surveys/:id/pdf`
 
-Genera un reporte PDF con gráficos y resultados detallados para una encuesta.
+Genera un reporte PDF con gráficos de barras y resultados detallados para una encuesta.
 
 **Respuesta:**
 - Content-Type: `application/pdf`
-- Descarga de archivo con resultados de encuesta y gráficos
+- Descarga de archivo con resultados de encuesta y gráficos de barras
+
+**Nota:** Utiliza PDFKit para generar PDFs sin dependencias del sistema operativo.
 
 ### Obtener Estado de Cola de Emails
 **GET** `/polls/email-queue-status`
