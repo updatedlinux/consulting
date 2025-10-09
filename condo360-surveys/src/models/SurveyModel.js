@@ -341,6 +341,11 @@ class SurveyModel {
   static async getSurveyVoters(surveyId, page = 1, limit = 10) {
     const offset = (page - 1) * limit;
     
+    // Ensure all parameters are numbers
+    const surveyIdNum = parseInt(surveyId);
+    const limitNum = parseInt(limit);
+    const offsetNum = parseInt(offset);
+    
     // Get total eligible voters (WordPress subscribers)
     const [eligibleVoters] = await db.execute(`
       SELECT COUNT(*) as total_eligible
@@ -355,7 +360,7 @@ class SurveyModel {
       SELECT COUNT(*) as total_voters
       FROM condo360_survey_participants sp
       WHERE sp.survey_id = ?
-    `, [surveyId]);
+    `, [surveyIdNum]);
     
     // Get paginated actual voters for this survey
     const [voters] = await db.execute(`
@@ -365,12 +370,12 @@ class SurveyModel {
       WHERE sp.survey_id = ?
       ORDER BY sp.participated_at DESC
       LIMIT ? OFFSET ?
-    `, [surveyId, parseInt(limit), parseInt(offset)]);
+    `, [surveyIdNum, limitNum, offsetNum]);
     
     // Get survey details
     const [surveys] = await db.execute(
       'SELECT * FROM condo360_surveys WHERE id = ?',
-      [surveyId]
+      [surveyIdNum]
     );
     
     if (surveys.length === 0) {
@@ -404,9 +409,9 @@ class SurveyModel {
       })),
       pagination: {
         current_page: parseInt(page),
-        per_page: parseInt(limit),
+        per_page: limitNum,
         total_voters: totalVoters[0].total_voters,
-        total_pages: Math.ceil(totalVoters[0].total_voters / limit)
+        total_pages: Math.ceil(totalVoters[0].total_voters / limitNum)
       }
     };
   }
