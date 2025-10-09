@@ -246,7 +246,7 @@ class EmailService {
             </div>
             
             <div style="text-align: center;">
-                <a href="${process.env.WORDPRESS_SITE_URL || 'https://bonaventurecclub.com'}/cartas-consulta" class="cta-button">
+                <a href="https://bonaventurecclub.com/polls/" class="cta-button">
                     🗳️ Participar en la Carta Consulta
                 </a>
             </div>
