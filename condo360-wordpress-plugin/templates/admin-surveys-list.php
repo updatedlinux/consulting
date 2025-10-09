@@ -28,6 +28,9 @@
             
             <div class="survey-actions">
                 <?php if ($survey['status'] === 'open'): ?>
+                    <button class="edit-survey-btn" data-survey-id="<?php echo esc_attr($survey['id']); ?>">
+                        ✏️ Editar Carta Consulta
+                    </button>
                     <button class="close-survey-btn" data-survey-id="<?php echo esc_attr($survey['id']); ?>">
                         Cerrar Carta Consulta
                     </button>

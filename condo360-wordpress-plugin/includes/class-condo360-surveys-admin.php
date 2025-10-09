@@ -301,16 +301,18 @@ class Condo360_Surveys_Admin {
                 wp_die('Security check failed');
             }
             
-            // Get survey ID
+            // Get survey ID and pagination parameters
             $survey_id = intval($_POST['survey_id']);
+            $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
+            $limit = isset($_POST['limit']) ? intval($_POST['limit']) : 10;
             
             if (!$survey_id) {
                 wp_send_json_error(array('message' => 'ID de encuesta inválido'));
                 return;
             }
             
-            // Get voters from API
-            $api_url = 'https://api.bonaventurecclub.com/polls/surveys/' . $survey_id . '/voters';
+            // Get voters from API with pagination
+            $api_url = 'https://api.bonaventurecclub.com/polls/surveys/' . $survey_id . '/voters?page=' . $page . '&limit=' . $limit;
             $response = wp_remote_get($api_url, array('timeout' => 30));
             
             if (!is_wp_error($response)) {

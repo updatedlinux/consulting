@@ -37,19 +37,103 @@ jQuery(document).ready(function($) {
         $('.questions-container').append(questionTemplate);
     });
     
-    // Add option
+    // Add option in edit form
     $(document).on('click', '.add-option-btn', function() {
-        var optionInput = '<input type="text" class="option-text" placeholder="Nueva opción" required>';
-        $(this).siblings('.options-container').append(optionInput);
+        var optionItem = `
+            <div class="option-item">
+                <input type="text" class="option-text" placeholder="Nueva opción" required>
+                <button type="button" class="remove-option-btn">×</button>
+            </div>
+        `;
+        $(this).siblings('.options-container').append(optionItem);
     });
     
-    // Remove question
+    // Remove option in edit form
+    $(document).on('click', '.remove-option-btn', function() {
+        $(this).closest('.option-item').remove();
+    });
+    
+    // Remove question in edit form
     $(document).on('click', '.remove-question-btn', function() {
         if ($('.question-item').length > 1) {
             $(this).closest('.question-item').remove();
         } else {
             alert('Debe haber al menos una pregunta.');
         }
+    });
+    
+    // Edit survey form submission
+    $('#edit-survey-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        var form = $(this);
+        var surveyId = form.data('survey-id');
+        var submitBtn = form.find('.submit-btn');
+        var messageDiv = $('#edit-survey-message');
+        
+        // Collect form data
+        var surveyData = {
+            title: $('#edit-survey-title').val(),
+            description: $('#edit-survey-description').val(),
+            start_date: $('#edit-survey-start-date').val(),
+            end_date: $('#edit-survey-end-date').val(),
+            questions: []
+        };
+        
+        // Collect questions and options
+        $('.question-item').each(function() {
+            var questionText = $(this).find('.question-text').val();
+            var options = [];
+            
+            $(this).find('.option-text').each(function() {
+                var optionText = $(this).val();
+                if (optionText.trim() !== '') {
+                    options.push({ option_text: optionText });
+                }
+            });
+            
+            if (questionText.trim() !== '' && options.length >= 2) {
+                surveyData.questions.push({
+                    question_text: questionText,
+                    options: options
+                });
+            }
+        });
+        
+        // Validate form
+        if (surveyData.title.trim() === '' || surveyData.description.trim() === '' || surveyData.questions.length === 0) {
+            showMessage(messageDiv, 'Por favor complete todos los campos requeridos.', 'error');
+            return;
+        }
+        
+        // Disable submit button
+        submitBtn.prop('disabled', true).text('Actualizando...');
+        
+        // Send to API
+        $.ajax({
+            url: 'https://api.bonaventurecclub.com/polls/surveys/' + surveyId,
+            type: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify(surveyData),
+            success: function(response) {
+                showMessage(messageDiv, 'Carta Consulta actualizada exitosamente.', 'success');
+                setTimeout(function() {
+                    loadSurveysList();
+                }, 2000);
+            },
+            error: function(xhr, status, error) {
+                var errorMessage = 'Error al actualizar la Carta Consulta.';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                showMessage(messageDiv, errorMessage, 'error');
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false).text('Actualizar Carta Consulta');
+            }
+        });
     });
     
     // Create survey form submission
@@ -90,7 +174,7 @@ jQuery(document).ready(function($) {
         });
         
         // Validate form
-        if (surveyData.title.trim() === '' || surveyData.questions.length === 0) {
+        if (surveyData.title.trim() === '' || surveyData.description.trim() === '' || surveyData.questions.length === 0) {
             showMessage(messageDiv, 'Por favor complete todos los campos requeridos.', 'error');
             return;
         }
@@ -242,42 +326,65 @@ jQuery(document).ready(function($) {
         });
     }
     
-    // Close survey
-    $(document).on('click', '.close-survey-btn', function() {
+    // Edit survey button click
+    $(document).on('click', '.edit-survey-btn', function() {
         var surveyId = $(this).data('survey-id');
-        var button = $(this);
-        var originalText = button.text();
+        loadSurveyForEdit(surveyId);
+    });
+    
+    // Back to list button
+    $(document).on('click', '.back-to-list-btn', function() {
+        loadSurveysList();
+    });
+    
+    // Cancel edit button
+    $(document).on('click', '.cancel-btn', function() {
+        loadSurveysList();
+    });
+    
+    // Load survey for editing
+    function loadSurveyForEdit(surveyId) {
+        var container = $('.surveys-list-container');
+        var loadingMessage = container.find('.loading-message');
+        var surveysList = container.find('.surveys-list');
         
-        if (!confirm('¿Está seguro de que desea cerrar esta Carta Consulta?')) {
-            return;
-        }
+        loadingMessage.show().text('Cargando datos de la Carta Consulta...');
+        surveysList.hide();
         
-        button.prop('disabled', true).text('Cerrando...');
-        
+        // Get survey details from API
         $.ajax({
-            url: condo360_admin_ajax.ajax_url,
-            type: 'POST',
-            data: {
-                action: 'condo360_admin_close_survey',
-                nonce: condo360_admin_ajax.nonce,
-                survey_id: surveyId
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert(response.data.message);
-                    // Reload surveys list
-                    loadSurveysList();
-                } else {
-                    alert('Error: ' + response.data.message);
-                    button.prop('disabled', false).text(originalText);
-                }
+            url: 'https://api.bonaventurecclub.com/polls/surveys/' + surveyId,
+            type: 'GET',
+            success: function(survey) {
+                // Load edit template via AJAX
+                $.ajax({
+                    url: condo360_admin_ajax.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'condo360_admin_load_template',
+                        template: 'admin-edit-survey',
+                        nonce: condo360_admin_ajax.nonce,
+                        survey: survey
+                    },
+                    success: function(templateResponse) {
+                        if (templateResponse.success) {
+                            surveysList.html(templateResponse.data.html);
+                            loadingMessage.hide();
+                            surveysList.show();
+                        } else {
+                            loadingMessage.text('Error al cargar la plantilla de edición: ' + templateResponse.data.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        loadingMessage.text('Error al cargar la plantilla de edición: ' + error);
+                    }
+                });
             },
             error: function(xhr, status, error) {
-                alert('Error al cerrar la Carta Consulta. Por favor intente de nuevo. (' + error + ')');
-                button.prop('disabled', false).text(originalText);
+                loadingMessage.text('Error al cargar los datos de la Carta Consulta: ' + error);
             }
         });
-    });
+    }
     
     // Load survey results
     $('#select-survey-results').on('change', function() {
@@ -334,9 +441,24 @@ jQuery(document).ready(function($) {
         });
     });
     
-    // Load survey voters
+    // Load survey voters with pagination
     $('#select-survey-voters').on('change', function() {
         var surveyId = $(this).val();
+        loadVotersPage(surveyId, 1);
+    });
+    
+    // Handle pagination clicks
+    $(document).on('click', '.pagination-btn', function() {
+        var page = $(this).data('page');
+        var surveyId = $('#select-survey-voters').val();
+        
+        if (page && surveyId) {
+            loadVotersPage(surveyId, page);
+        }
+    });
+    
+    // Function to load voters page
+    function loadVotersPage(surveyId, page) {
         var votersContainer = $('.voters-container');
         var messageDiv = $('#voters-message');
         
@@ -355,7 +477,9 @@ jQuery(document).ready(function($) {
             data: {
                 action: 'condo360_admin_get_survey_voters',
                 nonce: condo360_admin_ajax.nonce,
-                survey_id: surveyId
+                survey_id: surveyId,
+                page: page,
+                limit: 10
             },
             success: function(response) {
                 if (response.success) {
@@ -388,7 +512,7 @@ jQuery(document).ready(function($) {
                 $('.voters-summary').html('<p>Error de conexión al cargar los votantes: ' + error + '</p>');
             }
         });
-    });
+    }
     
     // Download PDF
     $(document).on('click', '.download-pdf-btn', function() {

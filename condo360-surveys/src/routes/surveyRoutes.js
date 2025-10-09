@@ -475,11 +475,70 @@ router.get('/surveys/:id', SurveyController.getSurveyById);
  *                   type: string
  */
 
+/**
+ * @swagger
+ * /surveys/{id}:
+ *   put:
+ *     summary: Update an active survey
+ *     description: Update an active survey's title, description, dates, questions and options
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Survey ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateSurveyRequest'
+ *     responses:
+ *       200:
+ *         description: Survey updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Bad request or survey is not active
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       404:
+ *         description: Survey not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ */
+
 router.post('/surveys/:id/vote', SurveyController.voteInSurvey);
 router.get('/surveys/:id/results', SurveyController.getSurveyResults);
 router.get('/surveys/:id/voters', SurveyController.getSurveyVoters);
 router.get('/surveys/:id/pdf', SurveyController.generateSurveyPDF);
 router.post('/surveys/:id/close', SurveyController.closeSurvey);
+router.put('/surveys/:id', SurveyController.updateSurvey);
 router.get('/email-queue-status', SurveyController.getEmailQueueStatus);
 
 module.exports = router;

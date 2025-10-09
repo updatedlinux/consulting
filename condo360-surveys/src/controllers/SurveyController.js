@@ -299,6 +299,52 @@ class SurveyController {
     }
   }
   
+  // Update survey
+  static async updateSurvey(req, res) {
+    try {
+      const { id } = req.params;
+      const { title, description, start_date, end_date, questions } = req.body;
+      
+      if (!id || isNaN(id)) {
+        return res.status(400).json({ error: MESSAGES.INVALID_SURVEY_ID });
+      }
+      
+      if (!title || !description || !start_date || !end_date || !questions || questions.length === 0) {
+        return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+      }
+      
+      // Validate questions
+      for (const question of questions) {
+        if (!question.question_text || !question.options || question.options.length < 2) {
+          return res.status(400).json({ error: 'Cada pregunta debe tener al menos 2 opciones' });
+        }
+      }
+      
+      const surveyData = {
+        title,
+        description,
+        start_date,
+        end_date,
+        questions
+      };
+      
+      await SurveyModel.updateSurvey(id, surveyData);
+      
+      res.status(200).json({ 
+        message: 'Encuesta actualizada exitosamente'
+      });
+    } catch (error) {
+      console.error('Error updating survey:', error);
+      if (error.message === 'Survey not found') {
+        return res.status(404).json({ error: MESSAGES.SURVEY_NOT_FOUND });
+      }
+      if (error.message === 'Only active surveys can be edited') {
+        return res.status(400).json({ error: 'Solo las encuestas activas pueden ser editadas' });
+      }
+      res.status(500).json({ error: 'Error al actualizar la encuesta' });
+    }
+  }
+  
   // Get all surveys for admin panel
   static async getAllSurveys(req, res) {
     try {
@@ -310,16 +356,24 @@ class SurveyController {
     }
   }
   
-  // Get survey voters details
+  // Get survey voters details with pagination
   static async getSurveyVoters(req, res) {
     try {
       const { id } = req.params;
+      const { page = 1, limit = 10 } = req.query;
       
       if (!id || isNaN(id)) {
         return res.status(400).json({ error: MESSAGES.INVALID_SURVEY_ID });
       }
       
-      const votersData = await SurveyModel.getSurveyVoters(id);
+      const pageNum = parseInt(page);
+      const limitNum = parseInt(limit);
+      
+      if (pageNum < 1 || limitNum < 1 || limitNum > 100) {
+        return res.status(400).json({ error: 'Parámetros de paginación inválidos' });
+      }
+      
+      const votersData = await SurveyModel.getSurveyVoters(id, pageNum, limitNum);
       res.status(200).json(votersData);
     } catch (error) {
       console.error('Error fetching survey voters:', error);
@@ -339,8 +393,8 @@ class SurveyController {
         return res.status(400).json({ error: MESSAGES.INVALID_SURVEY_ID });
       }
       
-      // Get survey voters data (includes statistics and voters list)
-      const votersData = await SurveyModel.getSurveyVoters(id);
+      // Get survey voters data (includes statistics and voters list) - get all voters for PDF
+      const votersData = await SurveyModel.getSurveyVoters(id, 1, 10000);
       
       // Get survey results data (includes questions and response counts)
       const resultsData = await SurveyModel.getSurveyResults(id, true);

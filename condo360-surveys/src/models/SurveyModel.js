@@ -233,14 +233,53 @@ class SurveyModel {
     return results;
   }
   
-  // Close a survey
-  static async closeSurvey(surveyId) {
-    const [result] = await db.execute(
-      'UPDATE condo360_surveys SET status = ? WHERE id = ?',
-      ['closed', surveyId]
+  // Update survey (only for active surveys)
+  static async updateSurvey(surveyId, surveyData) {
+    // First check if survey exists and is active
+    const [surveys] = await db.execute(
+      'SELECT * FROM condo360_surveys WHERE id = ?',
+      [surveyId]
     );
     
-    return result.affectedRows > 0;
+    if (surveys.length === 0) {
+      throw new Error('Survey not found');
+    }
+    
+    if (surveys[0].status !== 'open') {
+      throw new Error('Only active surveys can be edited');
+    }
+    
+    // Update survey basic info
+    await db.execute(
+      'UPDATE condo360_surveys SET title = ?, description = ?, start_date = ?, end_date = ? WHERE id = ?',
+      [surveyData.title, surveyData.description, surveyData.start_date, surveyData.end_date, surveyId]
+    );
+    
+    // Delete existing questions and options
+    await db.execute('DELETE FROM condo360_survey_options WHERE question_id IN (SELECT id FROM condo360_survey_questions WHERE survey_id = ?)', [surveyId]);
+    await db.execute('DELETE FROM condo360_survey_questions WHERE survey_id = ?', [surveyId]);
+    
+    // Insert new questions and options
+    for (let i = 0; i < surveyData.questions.length; i++) {
+      const question = surveyData.questions[i];
+      
+      const [questionResult] = await db.execute(
+        'INSERT INTO condo360_survey_questions (survey_id, question_text, question_order) VALUES (?, ?, ?)',
+        [surveyId, question.question_text, i + 1]
+      );
+      
+      const questionId = questionResult.insertId;
+      
+      for (let j = 0; j < question.options.length; j++) {
+        const option = question.options[j];
+        await db.execute(
+          'INSERT INTO condo360_survey_options (question_id, option_text, option_order) VALUES (?, ?, ?)',
+          [questionId, option.option_text, j + 1]
+        );
+      }
+    }
+    
+    return true;
   }
   
   // Check if user has participated in a survey
@@ -269,8 +308,10 @@ class SurveyModel {
     return surveys;
   }
   
-  // Get voters details for a survey
-  static async getSurveyVoters(surveyId) {
+  // Get voters details for a survey with pagination
+  static async getSurveyVoters(surveyId, page = 1, limit = 10) {
+    const offset = (page - 1) * limit;
+    
     // Get total eligible voters (WordPress subscribers)
     const [eligibleVoters] = await db.execute(`
       SELECT COUNT(*) as total_eligible
@@ -280,14 +321,22 @@ class SurveyModel {
       AND um.meta_value LIKE '%subscriber%'
     `);
     
-    // Get actual voters for this survey
+    // Get total actual voters for this survey (for pagination)
+    const [totalVoters] = await db.execute(`
+      SELECT COUNT(*) as total_voters
+      FROM condo360_survey_participants sp
+      WHERE sp.survey_id = ?
+    `, [surveyId]);
+    
+    // Get paginated actual voters for this survey
     const [voters] = await db.execute(`
       SELECT u.ID, u.user_login, u.user_email, u.display_name, sp.participated_at
       FROM condo360_survey_participants sp
       INNER JOIN wp_users u ON sp.wp_user_id = u.ID
       WHERE sp.survey_id = ?
       ORDER BY sp.participated_at DESC
-    `, [surveyId]);
+      LIMIT ? OFFSET ?
+    `, [surveyId, limit, offset]);
     
     // Get survey details
     const [surveys] = await db.execute(
@@ -312,9 +361,9 @@ class SurveyModel {
       },
       statistics: {
         total_eligible_voters: eligibleVoters[0].total_eligible,
-        actual_voters: voters.length,
+        actual_voters: totalVoters[0].total_voters,
         participation_percentage: eligibleVoters[0].total_eligible > 0 
-          ? ((voters.length / eligibleVoters[0].total_eligible) * 100).toFixed(2)
+          ? ((totalVoters[0].total_voters / eligibleVoters[0].total_eligible) * 100).toFixed(2)
           : 0
       },
       voters: voters.map(voter => ({
@@ -323,7 +372,13 @@ class SurveyModel {
         email: voter.user_email,
         display_name: voter.display_name,
         voted_at: voter.participated_at
-      }))
+      })),
+      pagination: {
+        current_page: page,
+        per_page: limit,
+        total_voters: totalVoters[0].total_voters,
+        total_pages: Math.ceil(totalVoters[0].total_voters / limit)
+      }
     };
   }
 }

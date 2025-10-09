@@ -22,10 +22,10 @@
             
             <tr>
                 <th scope="row">
-                    <label for="survey_description"><?php _e('Description', 'condo360-surveys'); ?></label>
+                    <label for="survey_description"><?php _e('Description', 'condo360-surveys'); ?> *</label>
                 </th>
                 <td>
-                    <textarea name="survey_description" id="survey_description" rows="3" class="regular-text"></textarea>
+                    <textarea name="survey_description" id="survey_description" rows="3" class="regular-text" required></textarea>
                 </td>
             </tr>
             
