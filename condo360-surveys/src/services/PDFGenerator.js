@@ -126,7 +126,68 @@ class PDFGenerator {
         
         doc.moveDown(2);
 
-        // Voters List
+        // Survey Results Section (moved before voters list)
+        if (votersData.questions && votersData.questions.length > 0) {
+          doc.fontSize(14)
+             .fillColor('#2c3e50')
+             .text('Resultados por Pregunta', { underline: true });
+          
+          doc.moveDown(0.5);
+
+          votersData.questions.forEach((question, questionIndex) => {
+            // Question title - explicitly left aligned
+            doc.fontSize(13)
+               .fillColor('#007cba')
+               .text(`${questionIndex + 1}. ${question.question_text}`, 50, doc.y);
+            
+            doc.moveDown(0.5);
+
+            // Calculate total votes for this question
+            const totalVotes = question.options.reduce((sum, option) => sum + option.response_count, 0);
+
+            // Options with results
+            question.options.forEach((option, optionIndex) => {
+              const barWidth = 300;
+              const barHeight = 20;
+              const percentage = totalVotes > 0 ? (option.response_count / totalVotes) * 100 : 0;
+              const fillWidth = (barWidth * percentage) / 100;
+
+              // Option text and vote count - explicitly left aligned
+              doc.fontSize(11)
+                 .fillColor('#333333')
+                 .text(`${option.option_text}: ${option.response_count} votos (${percentage.toFixed(1)}%)`, 50, doc.y);
+              
+              // Bar chart representation - centered
+              const startY = doc.y + 5;
+              const barX = (doc.page.width - doc.page.margins.left - doc.page.margins.right - barWidth) / 2 + doc.page.margins.left;
+              
+              // Background bar
+              doc.rect(barX, startY, barWidth, barHeight)
+                 .fillColor('#e9ecef')
+                 .fill();
+              
+              // Filled bar
+              if (fillWidth > 0) {
+                doc.rect(barX, startY, fillWidth, barHeight)
+                   .fillColor(this.getBarColor(optionIndex))
+                   .fill();
+              }
+              
+              // Border
+              doc.rect(barX, startY, barWidth, barHeight)
+                 .strokeColor('#dee2e6')
+                 .stroke();
+              
+              doc.moveDown(1.5);
+            });
+
+            doc.moveDown(1);
+          });
+        }
+
+        doc.moveDown(2);
+
+        // Voters List (moved to the end)
         doc.fontSize(14)
            .fillColor('#2c3e50')
            .text('Lista de Votantes', { underline: true });
@@ -175,67 +236,6 @@ class PDFGenerator {
           doc.fontSize(12)
              .fillColor('#666666')
              .text('No hay votantes registrados para esta encuesta.');
-        }
-
-        doc.moveDown(2);
-
-        // Survey Results Section
-        if (votersData.questions && votersData.questions.length > 0) {
-          doc.fontSize(14)
-             .fillColor('#2c3e50')
-             .text('Resultados por Pregunta', { underline: true });
-          
-          doc.moveDown(0.5);
-
-          votersData.questions.forEach((question, questionIndex) => {
-            // Question title
-            doc.fontSize(13)
-               .fillColor('#007cba')
-               .text(`${questionIndex + 1}. ${question.question_text}`);
-            
-            doc.moveDown(0.5);
-
-            // Calculate total votes for this question
-            const totalVotes = question.options.reduce((sum, option) => sum + option.response_count, 0);
-
-            // Options with results
-            question.options.forEach((option, optionIndex) => {
-              const barWidth = 300;
-              const barHeight = 20;
-              const percentage = totalVotes > 0 ? (option.response_count / totalVotes) * 100 : 0;
-              const fillWidth = (barWidth * percentage) / 100;
-
-              // Option text and vote count
-              doc.fontSize(11)
-                 .fillColor('#333333')
-                 .text(`${option.option_text}: ${option.response_count} votos (${percentage.toFixed(1)}%)`);
-              
-              // Bar chart representation - centered
-              const startY = doc.y + 5;
-              const barX = (doc.page.width - doc.page.margins.left - doc.page.margins.right - barWidth) / 2 + doc.page.margins.left;
-              
-              // Background bar
-              doc.rect(barX, startY, barWidth, barHeight)
-                 .fillColor('#e9ecef')
-                 .fill();
-              
-              // Filled bar
-              if (fillWidth > 0) {
-                doc.rect(barX, startY, fillWidth, barHeight)
-                   .fillColor(this.getBarColor(optionIndex))
-                   .fill();
-              }
-              
-              // Border
-              doc.rect(barX, startY, barWidth, barHeight)
-                 .strokeColor('#dee2e6')
-                 .stroke();
-              
-              doc.moveDown(1.5);
-            });
-
-            doc.moveDown(1);
-          });
         }
 
         doc.moveDown(2);
