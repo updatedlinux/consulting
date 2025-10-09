@@ -1,14 +1,29 @@
 jQuery(document).ready(function($) {
+    console.log('Condo360 Surveys JS loaded');
+    console.log('jQuery version:', $.fn.jquery);
+    console.log('Button elements found:', $('.view-results-btn').length);
+    console.log('Modal element found:', $('#results-modal').length);
+    
     // Handle view results button click
     $('.view-results-btn').on('click', function() {
-        $('#results-modal').show();
+        console.log('View results button clicked');
+        $('#results-modal').addClass('show');
+        loadSurveysForModal();
+    });
+    
+    // Alternative event delegation approach
+    $(document).on('click', '.view-results-btn', function() {
+        console.log('View results button clicked (delegated)');
+        var modal = $('#results-modal');
+        console.log('Modal element found:', modal.length);
+        modal.addClass('show');
         loadSurveysForModal();
     });
     
     // Handle modal close
     $('.close-modal, #results-modal').on('click', function(e) {
         if (e.target === this) {
-            $('#results-modal').hide();
+            $('#results-modal').removeClass('show');
         }
     });
     
@@ -152,7 +167,9 @@ jQuery(document).ready(function($) {
     
     // Load surveys for modal results
     function loadSurveysForModal() {
+        console.log('loadSurveysForModal called');
         var select = $('#select-survey-results-modal');
+        console.log('Select element found:', select.length);
         select.html('<option value="">Cargando Cartas Consulta...</option>');
         
         // Use the /all endpoint to get all surveys including closed ones
