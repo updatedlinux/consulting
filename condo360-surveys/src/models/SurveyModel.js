@@ -338,7 +338,7 @@ class SurveyModel {
              COUNT(DISTINCT q.id) as question_count
       FROM condo360_surveys s
       LEFT JOIN condo360_survey_participants sp ON s.id = sp.survey_id
-      LEFT JOIN condo360_questions q ON s.id = q.survey_id
+      LEFT JOIN condo360_survey_questions q ON s.id = q.survey_id
       GROUP BY s.id
       ORDER BY s.created_at DESC
     `);

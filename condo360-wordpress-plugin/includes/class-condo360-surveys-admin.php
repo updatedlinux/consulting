@@ -129,7 +129,7 @@ class Condo360_Surveys_Admin {
         }
         
         // Get surveys from API
-        $api_url = 'https://api.bonaventurecclub.com/polls/surveys';
+        $api_url = 'https://api.bonaventurecclub.com/polls/surveys/all';
         $response = wp_remote_get($api_url, array('timeout' => 30));
         
         if (!is_wp_error($response)) {

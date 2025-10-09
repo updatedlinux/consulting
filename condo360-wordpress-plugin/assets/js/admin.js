@@ -110,6 +110,9 @@ jQuery(document).ready(function($) {
         submitBtn.prop('disabled', true).text('Actualizando...');
         
         // Send to API
+        console.log('Sending survey data:', surveyData);
+        console.log('Survey ID:', surveyId);
+        
         $.ajax({
             url: 'https://api.bonaventurecclub.com/polls/surveys/' + surveyId,
             type: 'PUT',
@@ -118,12 +121,14 @@ jQuery(document).ready(function($) {
             },
             data: JSON.stringify(surveyData),
             success: function(response) {
+                console.log('Update response:', response);
                 showMessage(messageDiv, 'Carta Consulta actualizada exitosamente.', 'success');
                 setTimeout(function() {
                     loadSurveysList();
                 }, 2000);
             },
             error: function(xhr, status, error) {
+                console.log('Update error:', xhr, status, error);
                 var errorMessage = 'Error al actualizar la Carta Consulta.';
                 if (xhr.responseJSON && xhr.responseJSON.error) {
                     errorMessage = xhr.responseJSON.error;
