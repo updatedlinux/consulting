@@ -81,12 +81,16 @@ class EmailService {
   }
   
   async sendSingleEmail(surveyData, recipient) {
+    console.log('sendSingleEmail called with recipient:', recipient);
+    
     const mailOptions = {
       from: process.env.MAIL_FROM || 'solicitudes@bonaventurecclub.com',
       to: recipient.email,
       subject: `Nueva Carta Consulta: ${surveyData.title}`,
       html: this.generateEmailHTML(surveyData, recipient)
     };
+    
+    console.log('Mail options:', mailOptions);
     
     try {
       await this.transporter.sendMail(mailOptions);
@@ -284,9 +288,11 @@ class EmailService {
       }
       
       console.log(`Found ${subscribers.length} subscribers to notify`);
+      console.log('Subscribers data:', subscribers);
       
       // Add emails to queue
       subscribers.forEach(recipient => {
+        console.log('Processing recipient:', recipient);
         this.emailQueue.push({
           surveyData,
           recipient
