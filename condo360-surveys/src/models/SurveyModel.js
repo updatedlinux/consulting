@@ -68,8 +68,8 @@ class SurveyModel {
     const [surveys] = await db.execute(`
       SELECT * FROM condo360_surveys 
       WHERE status = 'open' 
-      AND start_date <= CONVERT_TZ(NOW(), '+00:00', '-04:00') 
-      AND end_date >= CONVERT_TZ(NOW(), '+00:00', '-04:00')
+      AND start_date <= UTC_TIMESTAMP() 
+      AND end_date >= UTC_TIMESTAMP()
       ORDER BY created_at DESC
     `);
     
