@@ -87,12 +87,16 @@ class SurveyController {
       // Send email notifications to subscribers
       try {
         const emailService = new EmailService();
+        
+        // Get the created survey with proper dates from database
+        const createdSurvey = await SurveyModel.getSurveyById(surveyId);
+        
         const surveyData = {
           id: surveyId,
           title,
           description,
-          start_date,
-          end_date
+          start_date: createdSurvey.start_date,
+          end_date: createdSurvey.end_date
         };
         
         const emailResult = await emailService.sendSurveyNotification(surveyData);
