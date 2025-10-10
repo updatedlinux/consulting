@@ -924,6 +924,11 @@
     }
 }
 
+/* Mobile Cards - Hidden by default */
+.voters-mobile-cards {
+    display: none;
+}
+
 /* Mobile Responsive for Tabs and Voters Detail */
 @media (max-width: 768px) {
     .condo360-admin-container {
@@ -1054,7 +1059,7 @@
     }
     
     .voters-mobile-cards {
-        display: block;
+        display: block !important;
     }
     
     .voter-card {
@@ -1120,11 +1125,11 @@
 /* Desktop - Show table, hide cards and gradients */
 @media (min-width: 769px) {
     .voters-mobile-cards {
-        display: none;
+        display: none !important;
     }
     
     .voters-table {
-        display: table;
+        display: table !important;
     }
     
     /* Hide gradient overlays on desktop */
