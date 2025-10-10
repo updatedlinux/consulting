@@ -3,13 +3,18 @@
  * Voters detail template
  */
 
+// Debug: Log what we received
+error_log('Condo360 Template: votersData received: ' . print_r($votersData, true));
+
 // Validate that votersData is available
 if (!isset($votersData) || !is_array($votersData)) {
+    error_log('Condo360 Template: votersData is not set or not an array');
     echo '<div class="voters-detail-content"><p>Error: No se encontraron datos de votantes.</p></div>';
     return;
 }
 
 if (!isset($votersData['survey']) || !is_array($votersData['survey'])) {
+    error_log('Condo360 Template: survey data is not available');
     echo '<div class="voters-detail-content"><p>Error: Datos de la encuesta no disponibles.</p></div>';
     return;
 }

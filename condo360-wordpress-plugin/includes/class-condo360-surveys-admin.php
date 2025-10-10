@@ -110,28 +110,36 @@ class Condo360_Surveys_Admin {
                 }
                 if (isset($_POST['votersData'])) {
                     $votersData = $_POST['votersData'];
-                    error_log('Condo360 Admin: votersData received: ' . print_r($votersData, true));
-                }
-                
-                // Handle transient key for voters data
-                if (isset($_POST['transient_key'])) {
-                    $transient_key = sanitize_text_field($_POST['transient_key']);
-                    $votersData = get_transient($transient_key);
-                    error_log('Condo360 Admin: Loading votersData from transient: ' . $transient_key);
+                    error_log('Condo360 Admin: votersData received in load_template: ' . print_r($votersData, true));
                     
-                    if ($votersData === false) {
-                        error_log('Condo360 Admin: Transient not found or expired: ' . $transient_key);
-                        wp_send_json_error(array('message' => 'Los datos de votantes han expirado. Por favor, inténtalo de nuevo.'));
+                    // Validate the structure
+                    if (!is_array($votersData)) {
+                        error_log('Condo360 Admin: votersData is not an array');
+                        wp_send_json_error(array('message' => 'Datos de votantes no válidos'));
                         return;
                     }
                     
-                    // Clean up transient after use
-                    delete_transient($transient_key);
+                    if (!isset($votersData['survey'])) {
+                        error_log('Condo360 Admin: survey key missing from votersData');
+                        wp_send_json_error(array('message' => 'Datos de encuesta faltantes'));
+                        return;
+                    }
+                } else {
+                    error_log('Condo360 Admin: No votersData in POST request');
+                    wp_send_json_error(array('message' => 'No se recibieron datos de votantes'));
+                    return;
                 }
                 
                 ob_start();
                 include $template_path;
                 $html = ob_get_clean();
+                
+                if (empty($html)) {
+                    error_log('Condo360 Admin: Template produced empty HTML');
+                    wp_send_json_error(array('message' => 'El template no generó contenido'));
+                    return;
+                }
+                
                 wp_send_json_success(array('html' => $html));
             } else {
                 wp_send_json_error(array('message' => 'Template not found: ' . $template));
@@ -347,19 +355,21 @@ class Condo360_Surveys_Admin {
             if (!is_wp_error($response)) {
                 $response_code = wp_remote_retrieve_response_code($response);
                 if ($response_code === 200) {
-                    $voters_data = json_decode(wp_remote_retrieve_body($response), true);
+                    $response_body = wp_remote_retrieve_body($response);
+                    error_log('Condo360 Admin: API response body: ' . $response_body);
+                    
+                    $voters_data = json_decode($response_body, true);
                     
                     if (!$voters_data) {
+                        error_log('Condo360 Admin: Failed to decode JSON response');
                         wp_send_json_error(array('message' => 'Error al decodificar los datos de votantes'));
                         return;
                     }
                     
-                    // Store voters data in transient to avoid POST size limits
-                    $transient_key = 'condo360_voters_' . $survey_id . '_' . $page . '_' . $limit . '_' . time();
-                    set_transient($transient_key, $voters_data, 300); // 5 minutes
+                    error_log('Condo360 Admin: Decoded voters data: ' . print_r($voters_data, true));
                     
-                    // Send transient key instead of full data
-                    wp_send_json_success(array('transient_key' => $transient_key));
+                    // Send voters data directly
+                    wp_send_json_success(array('votersData' => $voters_data));
                 } else {
                     $error_body = wp_remote_retrieve_body($response);
                     wp_send_json_error(array('message' => 'Error al obtener los votantes de la Carta Consulta. Código: ' . $response_code . ' - ' . $error_body));

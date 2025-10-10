@@ -538,8 +538,22 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 console.log('Condo360 Admin: Voters API response:', response);
                 if (response.success) {
-                    console.log('Condo360 Admin: Loading template with transient key:', response.data.transient_key);
-                    // Load template via AJAX using transient key
+                    console.log('Condo360 Admin: Loading template with votersData:', response.data.votersData);
+                    
+                    // Validate votersData before sending
+                    if (!response.data.votersData) {
+                        console.error('Condo360 Admin: No votersData in response');
+                        $('.voters-summary').html('<p>Error: No se recibieron datos de votantes del servidor.</p>');
+                        return;
+                    }
+                    
+                    if (!response.data.votersData.survey) {
+                        console.error('Condo360 Admin: No survey data in votersData');
+                        $('.voters-summary').html('<p>Error: Datos de encuesta faltantes.</p>');
+                        return;
+                    }
+                    
+                    // Load template via AJAX
                     $.ajax({
                         url: condo360_admin_ajax.ajax_url,
                         type: 'POST',
@@ -547,7 +561,7 @@ jQuery(document).ready(function($) {
                             action: 'condo360_admin_load_template',
                             template: 'admin-voters-detail',
                             nonce: condo360_admin_ajax.nonce,
-                            transient_key: response.data.transient_key
+                            votersData: response.data.votersData
                         },
                         success: function(templateResponse) {
                             if (templateResponse.success) {
