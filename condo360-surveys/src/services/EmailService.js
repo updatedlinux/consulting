@@ -247,7 +247,7 @@ class EmailService {
             
             <div style="text-align: center;">
                 <a href="https://bonaventurecclub.com/polls/" class="cta-button">
-                    🗳️ Participar en la Carta Consulta a partir del: ${new Date(survey.start_date).toLocaleDateString('es-VE', { 
+                    🗳️ Participar en la Carta Consulta a partir del: ${new Date(surveyData.start_date).toLocaleDateString('es-VE', { 
                         year: 'numeric', 
                         month: 'long', 
                         day: 'numeric' 
