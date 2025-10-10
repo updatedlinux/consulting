@@ -103,13 +103,14 @@ class EmailService {
   
   generateEmailHTML(surveyData, recipient) {
     // Convert UTC dates to Caracas timezone (GMT-4) for display
-    const startDate = new Date(surveyData.start_date + 'T00:00:00Z').toLocaleDateString('es-VE', {
+    // The dates come from API already in UTC format (e.g., "2025-10-11T08:00:00.000Z")
+    const startDate = new Date(surveyData.start_date).toLocaleDateString('es-VE', {
       timeZone: 'America/Caracas',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
-    const endDate = new Date(surveyData.end_date + 'T23:59:59Z').toLocaleDateString('es-VE', {
+    const endDate = new Date(surveyData.end_date).toLocaleDateString('es-VE', {
       timeZone: 'America/Caracas',
       year: 'numeric',
       month: 'long',
