@@ -166,3 +166,5 @@ if (!isset($votersData['survey']) || !is_array($votersData['survey'])) {
         <?php endif; ?>
     </div>
 </div>
+
+<!-- Debug: End of template -->

@@ -112,22 +112,20 @@ class Condo360_Surveys_Admin {
                     $votersData = $_POST['votersData'];
                     error_log('Condo360 Admin: votersData received in load_template: ' . print_r($votersData, true));
                     
-                    // Validate the structure
-                    if (!is_array($votersData)) {
-                        error_log('Condo360 Admin: votersData is not an array');
-                        wp_send_json_error(array('message' => 'Datos de votantes no válidos'));
-                        return;
+                    // Only validate votersData structure for admin-voters-detail template
+                    if ($template === 'admin-voters-detail') {
+                        if (!is_array($votersData)) {
+                            error_log('Condo360 Admin: votersData is not an array');
+                            wp_send_json_error(array('message' => 'Datos de votantes no válidos'));
+                            return;
+                        }
+                        
+                        if (!isset($votersData['survey'])) {
+                            error_log('Condo360 Admin: survey key missing from votersData');
+                            wp_send_json_error(array('message' => 'Datos de encuesta faltantes'));
+                            return;
+                        }
                     }
-                    
-                    if (!isset($votersData['survey'])) {
-                        error_log('Condo360 Admin: survey key missing from votersData');
-                        wp_send_json_error(array('message' => 'Datos de encuesta faltantes'));
-                        return;
-                    }
-                } else {
-                    error_log('Condo360 Admin: No votersData in POST request');
-                    wp_send_json_error(array('message' => 'No se recibieron datos de votantes'));
-                    return;
                 }
                 
                 ob_start();
