@@ -230,6 +230,11 @@ class Condo360_Surveys {
      * Render the surveys shortcode
      */
     public function render_surveys_shortcode($atts) {
+        // Check if user is authenticated
+        if (!is_user_logged_in()) {
+            return $this->render_auth_required_message();
+        }
+        
         // Enqueue scripts
         wp_enqueue_style($this->plugin_name);
         wp_enqueue_script($this->plugin_name);
@@ -250,5 +255,20 @@ class Condo360_Surveys {
         ob_start();
         include plugin_dir_path(__FILE__) . '../templates/frontend-surveys.php';
         return ob_get_clean();
+    }
+    
+    /**
+     * Render authentication required message
+     */
+    private function render_auth_required_message() {
+        return '
+        <div class="condo360-auth-required">
+            <div class="auth-error-tooltip">
+                <div class="auth-error-icon">⚠️</div>
+                <div class="auth-error-message">
+                    Autenticate en Condominio360 para poder votar en las Cartas Consulta
+                </div>
+            </div>
+        </div>';
     }
 }

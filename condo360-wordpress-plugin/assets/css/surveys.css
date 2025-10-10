@@ -544,3 +544,67 @@
         font-size: 0.9em;
     }
 }
+
+/* Authentication Required Message */
+.condo360-auth-required {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+.auth-error-tooltip {
+    background: #dc3545;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    display: inline-block;
+    position: relative;
+    animation: pulse 2s infinite;
+}
+
+.auth-error-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.auth-error-message {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.auth-error-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 10px solid transparent;
+    border-top-color: #dc3545;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Mobile responsive for auth message */
+@media (max-width: 768px) {
+    .auth-error-tooltip {
+        padding: 15px;
+        margin: 0 10px;
+    }
+    
+    .auth-error-message {
+        font-size: 14px;
+    }
+}
