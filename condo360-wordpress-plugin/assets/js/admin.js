@@ -11,6 +11,9 @@ jQuery(document).ready(function($) {
         $('.tab-content').removeClass('active');
         $('#' + tab + '-tab').addClass('active');
         
+        // Center active tab in mobile carousel
+        centerActiveTab();
+        
         // Load data based on tab
         if (tab === 'surveys-list') {
             loadSurveysList();
@@ -19,6 +22,35 @@ jQuery(document).ready(function($) {
         } else if (tab === 'voters-detail') {
             loadSurveysForVoters();
         }
+    });
+    
+    // Function to center active tab in mobile carousel
+    function centerActiveTab() {
+        if ($(window).width() <= 768) {
+            var $activeTab = $('.tab-btn.active');
+            var $tabsContainer = $('.admin-tabs');
+            
+            if ($activeTab.length && $tabsContainer.length) {
+                var containerWidth = $tabsContainer.width();
+                var tabOffset = $activeTab.position().left;
+                var tabWidth = $activeTab.outerWidth();
+                var scrollLeft = tabOffset - (containerWidth / 2) + (tabWidth / 2);
+                
+                $tabsContainer.animate({
+                    scrollLeft: scrollLeft
+                }, 300);
+            }
+        }
+    }
+    
+    // Center active tab on window resize
+    $(window).on('resize', function() {
+        centerActiveTab();
+    });
+    
+    // Center active tab on page load
+    $(window).on('load', function() {
+        setTimeout(centerActiveTab, 100);
     });
     
     // Add question

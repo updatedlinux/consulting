@@ -42,6 +42,13 @@
     display: flex;
     margin-bottom: 20px;
     border-bottom: 1px solid #ccc;
+    overflow-x: auto; /* Enable horizontal scrolling on desktop if needed */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.admin-tabs::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
 }
 
 .tab-btn {
@@ -54,6 +61,9 @@
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
     color: #333;
+    white-space: nowrap; /* Prevent text wrapping */
+    flex-shrink: 0; /* Prevent buttons from shrinking */
+    min-width: fit-content; /* Ensure buttons maintain their content width */
 }
 
 .tab-btn.active {
@@ -910,11 +920,79 @@
     }
 }
 
-/* Mobile Responsive for Voters Detail */
+/* Mobile Responsive for Tabs and Voters Detail */
 @media (max-width: 768px) {
     .condo360-admin-container {
         margin: 10px;
         padding: 15px;
+    }
+    
+    /* Mobile Tabs Carousel */
+    .admin-tabs {
+        display: flex;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #0073aa;
+        background: linear-gradient(90deg, #f8f9fa 0%, #f8f9fa 90%, rgba(248,249,250,0) 100%);
+        position: relative;
+    }
+    
+    .tab-btn {
+        padding: 12px 16px;
+        margin-right: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: 20px;
+        border: 2px solid transparent;
+        background: #e9ecef;
+        color: #495057;
+        transition: all 0.3s ease;
+        min-width: auto;
+        flex-shrink: 0;
+    }
+    
+    .tab-btn.active {
+        background: #0073aa;
+        color: white;
+        border-color: #0073aa;
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(0,115,170,0.3);
+    }
+    
+    .tab-btn:hover:not(.active) {
+        background: #dee2e6;
+        border-color: #adb5bd;
+        transform: scale(1.02);
+    }
+    
+    /* Add visual indicators for scrollable tabs */
+    .admin-tabs::before,
+    .admin-tabs::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 20px;
+        pointer-events: none;
+        z-index: 1;
+    }
+    
+    .admin-tabs::before {
+        left: 0;
+        background: linear-gradient(90deg, #f8f9fa, transparent);
+    }
+    
+    .admin-tabs::after {
+        right: 0;
+        background: linear-gradient(270deg, #f8f9fa, transparent);
+    }
+    
+    /* Smooth scrolling for better UX */
+    .admin-tabs {
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
     }
     
     .voters-detail-content {
