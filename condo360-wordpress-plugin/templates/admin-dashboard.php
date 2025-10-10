@@ -8,11 +8,15 @@
     <h2>Gestión de Cartas Consulta</h2>
     
     <!-- Tabs -->
-    <div class="admin-tabs">
-        <button class="tab-btn active" data-tab="surveys-list">Lista de Cartas Consulta</button>
-        <button class="tab-btn" data-tab="create-survey">Crear Nueva Carta Consulta</button>
-        <button class="tab-btn" data-tab="survey-results">Ver Resultados</button>
-        <button class="tab-btn" data-tab="voters-detail">Detalle de Resultados</button>
+    <div class="admin-tabs-container">
+        <div class="admin-tabs">
+            <button class="tab-btn active" data-tab="surveys-list">Lista de Cartas Consulta</button>
+            <button class="tab-btn" data-tab="create-survey">Crear Nueva Carta Consulta</button>
+            <button class="tab-btn" data-tab="survey-results">Ver Resultados</button>
+            <button class="tab-btn" data-tab="voters-detail">Detalle de Resultados</button>
+        </div>
+        <div class="tabs-gradient-left"></div>
+        <div class="tabs-gradient-right"></div>
     </div>
     
     <!-- Surveys List Tab -->

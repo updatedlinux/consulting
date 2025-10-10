@@ -37,10 +37,14 @@
     color: #333;
 }
 
-/* Tabs */
+/* Tabs Container */
+.admin-tabs-container {
+    position: relative;
+    margin-bottom: 20px;
+}
+
 .admin-tabs {
     display: flex;
-    margin-bottom: 20px;
     border-bottom: 1px solid #ccc;
     overflow-x: auto; /* Enable horizontal scrolling on desktop if needed */
     scrollbar-width: none; /* Firefox */
@@ -935,7 +939,6 @@
         padding-bottom: 5px;
         margin-bottom: 15px;
         border-bottom: 2px solid #0073aa;
-        background: linear-gradient(90deg, #f8f9fa 0%, #f8f9fa 90%, rgba(248,249,250,0) 100%);
         position: relative;
     }
     
@@ -967,26 +970,26 @@
         transform: scale(1.02);
     }
     
-    /* Add visual indicators for scrollable tabs */
-    .admin-tabs::before,
-    .admin-tabs::after {
-        content: '';
+    /* Fixed gradient overlays that don't move with scroll */
+    .tabs-gradient-left,
+    .tabs-gradient-right {
         position: absolute;
         top: 0;
         bottom: 0;
         width: 20px;
         pointer-events: none;
-        z-index: 1;
+        z-index: 2;
+        opacity: 0.9;
     }
     
-    .admin-tabs::before {
+    .tabs-gradient-left {
         left: 0;
-        background: linear-gradient(90deg, #f8f9fa, transparent);
+        background: linear-gradient(90deg, #f8f9fa 0%, rgba(248,249,250,0) 100%);
     }
     
-    .admin-tabs::after {
+    .tabs-gradient-right {
         right: 0;
-        background: linear-gradient(270deg, #f8f9fa, transparent);
+        background: linear-gradient(270deg, #f8f9fa 0%, rgba(248,249,250,0) 100%);
     }
     
     /* Smooth scrolling for better UX */
@@ -1114,7 +1117,7 @@
     }
 }
 
-/* Desktop - Show table, hide cards */
+/* Desktop - Show table, hide cards and gradients */
 @media (min-width: 769px) {
     .voters-mobile-cards {
         display: none;
@@ -1122,6 +1125,12 @@
     
     .voters-table {
         display: table;
+    }
+    
+    /* Hide gradient overlays on desktop */
+    .tabs-gradient-left,
+    .tabs-gradient-right {
+        display: none;
     }
 }
 
