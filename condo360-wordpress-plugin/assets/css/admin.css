@@ -5,8 +5,29 @@
     background: #f9f9f9;
     border: 1px solid #ddd;
     border-radius: 5px;
-    overflow-x: hidden; /* Prevent horizontal overflow */
-    box-sizing: border-box; /* Include padding in width calculation */
+    overflow-x: hidden !important; /* Prevent horizontal overflow */
+    box-sizing: border-box !important; /* Include padding in width calculation */
+}
+
+/* Force all child elements to stay within container */
+.condo360-admin-container * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Specific rules for tables to prevent overflow */
+.condo360-admin-container table {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+}
+
+.condo360-admin-container table td,
+.condo360-admin-container table th {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    hyphens: auto !important;
+    max-width: 0 !important;
 }
 
 .condo360-admin-container h2 {
@@ -66,6 +87,9 @@
     padding: 20px;
     margin-bottom: 20px;
     border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
 .admin-section h3 {
@@ -439,6 +463,16 @@
 /* Voters Detail */
 .voters-container {
     margin-top: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden; /* Prevent horizontal overflow */
+}
+
+.voters-summary,
+.voters-list {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
 .voters-detail-content h3 {
@@ -584,9 +618,11 @@
     padding: 20px;
     border-radius: 5px;
     border: 1px solid #ddd;
-    width: 100%;
-    box-sizing: border-box;
-    overflow-x: hidden; /* Prevent horizontal overflow */
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important; /* Prevent horizontal overflow */
+    word-wrap: break-word !important;
 }
 
 .voters-detail-content h3 {
@@ -715,20 +751,21 @@
 .voters-table-container {
     overflow-x: auto;
     margin-top: 15px;
-    width: 100%;
-    box-sizing: border-box;
-    max-width: 100%; /* Ensure it doesn't exceed container width */
+    width: 100% !important;
+    max-width: 100% !important; /* Ensure it doesn't exceed container width */
+    box-sizing: border-box !important;
 }
 
 .voters-table {
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
     border-collapse: collapse;
     background: white;
     border-radius: 5px;
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    table-layout: fixed; /* Fixed table layout for better control */
-    min-width: 600px; /* Minimum width for readability */
+    table-layout: fixed !important; /* Fixed table layout for better control */
+    box-sizing: border-box !important;
 }
 
 .voters-table th {
@@ -751,9 +788,11 @@
     border-bottom: 1px solid #e9ecef;
     font-size: 14px;
     color: #333;
-    word-wrap: break-word; /* Break long words */
-    overflow-wrap: break-word; /* Modern browsers */
-    hyphens: auto; /* Add hyphens for better word breaking */
+    word-wrap: break-word !important; /* Break long words */
+    overflow-wrap: break-word !important; /* Modern browsers */
+    hyphens: auto !important; /* Add hyphens for better word breaking */
+    max-width: 0 !important; /* Force column to respect width constraints */
+    white-space: normal !important; /* Allow text wrapping */
 }
 
 .voters-table tr:hover {
