@@ -61,6 +61,7 @@
                 <p>No hay votantes registrados para esta Carta Consulta.</p>
             </div>
         <?php else: ?>
+            <!-- Desktop Table -->
             <div class="voters-table-container">
                 <table class="voters-table">
                     <thead>
@@ -82,6 +83,28 @@
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- Mobile Cards -->
+            <div class="voters-mobile-cards">
+                <?php foreach ($votersData['voters'] as $voter): ?>
+                    <div class="voter-card">
+                        <div class="voter-card-header">
+                            <div class="voter-name"><?php echo esc_html($voter['display_name'] ?: $voter['username']); ?></div>
+                            <div class="voter-username">@<?php echo esc_html($voter['username']); ?></div>
+                        </div>
+                        <div class="voter-details">
+                            <div class="voter-detail-row">
+                                <span class="voter-detail-label">Email:</span>
+                                <span class="voter-detail-value"><?php echo esc_html($voter['email']); ?></span>
+                            </div>
+                            <div class="voter-detail-row">
+                                <span class="voter-detail-label">Fecha de Votación:</span>
+                                <span class="voter-detail-value voter-date"><?php echo date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($voter['voted_at'])); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
             </div>
             
             <!-- Pagination -->

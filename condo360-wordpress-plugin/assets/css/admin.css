@@ -842,6 +842,138 @@
     }
 }
 
+/* Mobile Responsive for Voters Detail */
+@media (max-width: 768px) {
+    .voters-detail-content {
+        padding: 15px;
+        margin: 10px;
+    }
+    
+    .survey-info-section,
+    .participation-stats-section {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .stats-display {
+        margin-bottom: 15px;
+    }
+    
+    .stat-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+        padding: 10px 0;
+    }
+    
+    .stat-label {
+        font-size: 13px;
+    }
+    
+    .stat-value {
+        font-size: 14px;
+    }
+    
+    .participation-bar-container {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+    
+    .participation-bar {
+        height: 25px;
+    }
+    
+    .participation-percentage-text {
+        text-align: center;
+        min-width: auto;
+    }
+    
+    /* Mobile Table - Convert to Cards */
+    .voters-table-container {
+        overflow: visible;
+        border: none;
+    }
+    
+    .voters-table {
+        display: none; /* Hide table on mobile */
+    }
+    
+    .voters-mobile-cards {
+        display: block;
+    }
+    
+    .voter-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .voter-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .voter-name {
+        font-weight: 600;
+        color: #0073aa;
+        font-size: 16px;
+    }
+    
+    .voter-username {
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .voter-details {
+        display: grid;
+        gap: 8px;
+    }
+    
+    .voter-detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px 0;
+    }
+    
+    .voter-detail-label {
+        font-weight: 500;
+        color: #333;
+        font-size: 13px;
+    }
+    
+    .voter-detail-value {
+        color: #666;
+        font-size: 13px;
+        text-align: right;
+        word-break: break-all;
+    }
+    
+    .voter-date {
+        color: #0073aa;
+        font-weight: 500;
+    }
+}
+
+/* Desktop - Show table, hide cards */
+@media (min-width: 769px) {
+    .voters-mobile-cards {
+        display: none;
+    }
+    
+    .voters-table {
+        display: table;
+    }
+}
+
 /* Edit Survey Styles */
 .edit-survey-content {
     background: white;

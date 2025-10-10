@@ -10,7 +10,7 @@ cron.schedule('0 * * * *', async () => {
       `UPDATE condo360_surveys 
        SET status = 'closed' 
        WHERE status = 'open' 
-       AND end_date < NOW()`
+       AND end_date < CONVERT_TZ(NOW(), '+00:00', '-04:00')`
     );
     
     if (result.affectedRows > 0) {
