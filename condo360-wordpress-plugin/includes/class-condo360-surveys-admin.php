@@ -113,6 +113,22 @@ class Condo360_Surveys_Admin {
                     error_log('Condo360 Admin: votersData received: ' . print_r($votersData, true));
                 }
                 
+                // Handle transient key for voters data
+                if (isset($_POST['transient_key'])) {
+                    $transient_key = sanitize_text_field($_POST['transient_key']);
+                    $votersData = get_transient($transient_key);
+                    error_log('Condo360 Admin: Loading votersData from transient: ' . $transient_key);
+                    
+                    if ($votersData === false) {
+                        error_log('Condo360 Admin: Transient not found or expired: ' . $transient_key);
+                        wp_send_json_error(array('message' => 'Los datos de votantes han expirado. Por favor, inténtalo de nuevo.'));
+                        return;
+                    }
+                    
+                    // Clean up transient after use
+                    delete_transient($transient_key);
+                }
+                
                 ob_start();
                 include $template_path;
                 $html = ob_get_clean();
@@ -338,8 +354,12 @@ class Condo360_Surveys_Admin {
                         return;
                     }
                     
-                    // Load template via AJAX
-                    wp_send_json_success(array('votersData' => $voters_data));
+                    // Store voters data in transient to avoid POST size limits
+                    $transient_key = 'condo360_voters_' . $survey_id . '_' . $page . '_' . $limit . '_' . time();
+                    set_transient($transient_key, $voters_data, 300); // 5 minutes
+                    
+                    // Send transient key instead of full data
+                    wp_send_json_success(array('transient_key' => $transient_key));
                 } else {
                     $error_body = wp_remote_retrieve_body($response);
                     wp_send_json_error(array('message' => 'Error al obtener los votantes de la Carta Consulta. Código: ' . $response_code . ' - ' . $error_body));

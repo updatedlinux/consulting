@@ -538,8 +538,8 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 console.log('Condo360 Admin: Voters API response:', response);
                 if (response.success) {
-                    console.log('Condo360 Admin: Loading template with votersData:', response.data.votersData);
-                    // Load template via AJAX
+                    console.log('Condo360 Admin: Loading template with transient key:', response.data.transient_key);
+                    // Load template via AJAX using transient key
                     $.ajax({
                         url: condo360_admin_ajax.ajax_url,
                         type: 'POST',
@@ -547,7 +547,7 @@ jQuery(document).ready(function($) {
                             action: 'condo360_admin_load_template',
                             template: 'admin-voters-detail',
                             nonce: condo360_admin_ajax.nonce,
-                            votersData: response.data.votersData
+                            transient_key: response.data.transient_key
                         },
                         success: function(templateResponse) {
                             if (templateResponse.success) {
