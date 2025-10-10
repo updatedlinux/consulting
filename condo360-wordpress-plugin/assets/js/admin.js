@@ -536,7 +536,9 @@ jQuery(document).ready(function($) {
                 limit: 10
             },
             success: function(response) {
+                console.log('Condo360 Admin: Voters API response:', response);
                 if (response.success) {
+                    console.log('Condo360 Admin: Loading template with votersData:', response.data.votersData);
                     // Load template via AJAX
                     $.ajax({
                         url: condo360_admin_ajax.ajax_url,
@@ -555,6 +557,8 @@ jQuery(document).ready(function($) {
                             }
                         },
                         error: function(xhr, status, error) {
+                            console.error('Condo360 Admin: Template loading error:', xhr, status, error);
+                            console.error('Condo360 Admin: Response text:', xhr.responseText);
                             $('.voters-summary').html('<p>Error al cargar la plantilla de votantes: ' + error + '</p>');
                         }
                     });

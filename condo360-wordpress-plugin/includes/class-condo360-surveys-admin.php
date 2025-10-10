@@ -83,13 +83,19 @@ class Condo360_Surveys_Admin {
      */
     public function load_template() {
         try {
+            // Debug logging
+            error_log('Condo360 Admin: load_template called with POST data: ' . print_r($_POST, true));
+            
             // Verify nonce and permissions
             if (!wp_verify_nonce($_POST['nonce'], 'condo360_admin_nonce') || !current_user_can('manage_options')) {
+                error_log('Condo360 Admin: Security check failed in load_template');
                 wp_die('Security check failed');
             }
             
             $template = sanitize_text_field($_POST['template']);
             $template_path = plugin_dir_path(__FILE__) . '../templates/' . $template . '.php';
+            
+            error_log('Condo360 Admin: Loading template: ' . $template . ' from path: ' . $template_path);
             
             if (file_exists($template_path)) {
                 // Extract variables if provided
@@ -104,6 +110,7 @@ class Condo360_Surveys_Admin {
                 }
                 if (isset($_POST['votersData'])) {
                     $votersData = $_POST['votersData'];
+                    error_log('Condo360 Admin: votersData received: ' . print_r($votersData, true));
                 }
                 
                 ob_start();
@@ -296,8 +303,12 @@ class Condo360_Surveys_Admin {
      */
     public function get_survey_voters() {
         try {
+            // Debug logging
+            error_log('Condo360 Admin: get_survey_voters called with POST data: ' . print_r($_POST, true));
+            
             // Verify nonce and permissions
             if (!wp_verify_nonce($_POST['nonce'], 'condo360_admin_nonce') || !current_user_can('manage_options')) {
+                error_log('Condo360 Admin: Security check failed');
                 wp_die('Security check failed');
             }
             
@@ -305,6 +316,8 @@ class Condo360_Surveys_Admin {
             $survey_id = intval($_POST['survey_id']);
             $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
             $limit = isset($_POST['limit']) ? intval($_POST['limit']) : 10;
+            
+            error_log('Condo360 Admin: Parsed parameters - survey_id: ' . $survey_id . ', page: ' . $page . ', limit: ' . $limit);
             
             if (!$survey_id) {
                 wp_send_json_error(array('message' => 'ID de encuesta inválido'));
