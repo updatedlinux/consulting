@@ -5,6 +5,8 @@
     background: #f9f9f9;
     border: 1px solid #ddd;
     border-radius: 5px;
+    overflow-x: hidden; /* Prevent horizontal overflow */
+    box-sizing: border-box; /* Include padding in width calculation */
 }
 
 .condo360-admin-container h2 {
@@ -48,6 +50,9 @@
 /* Tab Content */
 .tab-content {
     display: none;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
 .tab-content.active {
@@ -579,6 +584,9 @@
     padding: 20px;
     border-radius: 5px;
     border: 1px solid #ddd;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
 .voters-detail-content h3 {
@@ -707,6 +715,9 @@
 .voters-table-container {
     overflow-x: auto;
     margin-top: 15px;
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 100%; /* Ensure it doesn't exceed container width */
 }
 
 .voters-table {
@@ -716,6 +727,8 @@
     border-radius: 5px;
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    table-layout: fixed; /* Fixed table layout for better control */
+    min-width: 600px; /* Minimum width for readability */
 }
 
 .voters-table th {
@@ -725,13 +738,22 @@
     text-align: left;
     font-weight: 600;
     font-size: 14px;
+    width: 25%; /* Equal width for all columns */
 }
+
+.voters-table th:nth-child(1) { width: 30%; } /* Name - slightly wider */
+.voters-table th:nth-child(2) { width: 20%; } /* Username */
+.voters-table th:nth-child(3) { width: 30%; } /* Email */
+.voters-table th:nth-child(4) { width: 20%; } /* Date */
 
 .voters-table td {
     padding: 12px 15px;
     border-bottom: 1px solid #e9ecef;
     font-size: 14px;
     color: #333;
+    word-wrap: break-word; /* Break long words */
+    overflow-wrap: break-word; /* Modern browsers */
+    hyphens: auto; /* Add hyphens for better word breaking */
 }
 
 .voters-table tr:hover {
@@ -763,6 +785,9 @@
     background: #f8f9fa;
     border-radius: 5px;
     border: 1px solid #e9ecef;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
 .pagination-info {
@@ -778,12 +803,16 @@
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .pagination-numbers {
     display: flex;
     gap: 5px;
     margin: 0 10px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .pagination-btn {
@@ -844,9 +873,14 @@
 
 /* Mobile Responsive for Voters Detail */
 @media (max-width: 768px) {
+    .condo360-admin-container {
+        margin: 10px;
+        padding: 15px;
+    }
+    
     .voters-detail-content {
         padding: 15px;
-        margin: 10px;
+        margin: 0; /* Remove margin to stay within container */
     }
     
     .survey-info-section,
