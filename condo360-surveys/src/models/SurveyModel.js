@@ -2,7 +2,15 @@ const db = require('../config/database');
 
 // Helper function to format date for MySQL
 function formatMySQLDate(dateString) {
-  // Remove milliseconds and 'Z' suffix, then replace 'T' with space
+  // If the date string doesn't have timezone info, assume it's in GMT-4 (Caracas)
+  // and convert it to UTC for storage
+  if (!dateString.includes('T') && !dateString.includes('Z')) {
+    // It's a date-only string (YYYY-MM-DD), add timezone info
+    const date = new Date(dateString + 'T00:00:00-04:00'); // GMT-4
+    return date.toISOString().replace(/\.\d{3}Z$/, '').replace('T', ' ');
+  }
+  
+  // If it already has timezone info, just format it
   return dateString.replace(/\.\d{3}Z$/, '').replace('T', ' ');
 }
 

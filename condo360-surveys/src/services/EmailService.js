@@ -102,8 +102,19 @@ class EmailService {
   }
   
   generateEmailHTML(surveyData, recipient) {
-    const startDate = new Date(surveyData.start_date).toLocaleDateString('es-ES');
-    const endDate = new Date(surveyData.end_date).toLocaleDateString('es-ES');
+    // Convert UTC dates to Caracas timezone (GMT-4) for display
+    const startDate = new Date(surveyData.start_date + 'T00:00:00Z').toLocaleDateString('es-VE', {
+      timeZone: 'America/Caracas',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    const endDate = new Date(surveyData.end_date + 'T23:59:59Z').toLocaleDateString('es-VE', {
+      timeZone: 'America/Caracas',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
     
     return `
 <!DOCTYPE html>
@@ -247,11 +258,7 @@ class EmailService {
             
             <div style="text-align: center;">
                 <a href="https://bonaventurecclub.com/polls/" class="cta-button">
-                    🗳️ Participar en la Carta Consulta a partir del: ${new Date(surveyData.start_date).toLocaleDateString('es-VE', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                    })}
+                    🗳️ Participar en la Carta Consulta a partir del: ${startDate}
                 </a>
             </div>
             

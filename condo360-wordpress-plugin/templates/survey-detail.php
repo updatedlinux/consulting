@@ -12,8 +12,16 @@
     
     <div class="survey-dates">
         <?php 
-        $start_date = date_i18n(get_option('date_format'), strtotime($survey['start_date']));
-        $end_date = date_i18n(get_option('date_format'), strtotime($survey['end_date']));
+        // Convert UTC dates to Caracas timezone for display
+        $start_date_utc = new DateTime($survey['start_date'], new DateTimeZone('UTC'));
+        $end_date_utc = new DateTime($survey['end_date'], new DateTimeZone('UTC'));
+        
+        $start_date_utc->setTimezone(new DateTimeZone('America/Caracas'));
+        $end_date_utc->setTimezone(new DateTimeZone('America/Caracas'));
+        
+        $start_date = $start_date_utc->format('d/m/Y');
+        $end_date = $end_date_utc->format('d/m/Y');
+        
         printf(__('Disponible desde %s hasta %s', 'condo360-surveys'), $start_date, $end_date);
         ?>
     </div>
