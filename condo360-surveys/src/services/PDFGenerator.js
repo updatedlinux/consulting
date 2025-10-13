@@ -244,38 +244,34 @@ class PDFGenerator {
         doc.moveDown(0.5);
 
         if (votersData.voters && votersData.voters.length > 0) {
-          // Table header
+          // Table header (without username and email columns)
           doc.fontSize(10)
              .fillColor('#666666')
              .text('ID', 50, doc.y)
-             .text('Usuario', 100, doc.y)
-             .text('Email', 200, doc.y)
-             .text('Nombre', 350, doc.y)
-             .text('Fecha de Voto', 450, doc.y);
+             .text('Nombre', 150, doc.y)
+             .text('Fecha de Voto', 350, doc.y);
           
           // Draw line under header
           doc.moveTo(50, doc.y + 15)
-             .lineTo(550, doc.y + 15)
+             .lineTo(450, doc.y + 15)
              .strokeColor('#dee2e6')
              .stroke();
           
           doc.moveDown(0.3);
 
-          // Voters data
+          // Voters data (without username and email)
           votersData.voters.forEach((voter, index) => {
             const rowY = doc.y;
             
             doc.fontSize(9)
                .fillColor('#333333')
                .text(voter.id.toString(), 50, rowY)
-               .text(voter.username, 100, rowY)
-               .text(voter.email, 200, rowY)
-               .text(voter.display_name || 'N/A', 350, rowY)
-               .text(new Date(voter.voted_at).toLocaleDateString('es-ES'), 450, rowY);
+               .text(voter.display_name || 'N/A', 150, rowY)
+               .text(new Date(voter.voted_at).toLocaleDateString('es-ES'), 350, rowY);
             
             // Draw line under row
             doc.moveTo(50, rowY + 12)
-               .lineTo(550, rowY + 12)
+               .lineTo(450, rowY + 12)
                .strokeColor('#f8f9fa')
                .stroke();
             

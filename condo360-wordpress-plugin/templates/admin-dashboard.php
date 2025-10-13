@@ -23,6 +23,7 @@
     <div class="tab-content active" id="surveys-list-tab">
         <div class="admin-section">
             <h3>Cartas Consulta Activas</h3>
+            <div class="admin-message" id="surveys-list-message" style="display: none;"></div>
             <div class="surveys-list-container">
                 <div class="loading-message">Cargando Cartas Consulta...</div>
                 <div class="surveys-list" style="display: none;">

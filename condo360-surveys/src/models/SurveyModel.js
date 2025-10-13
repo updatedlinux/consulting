@@ -68,8 +68,8 @@ class SurveyModel {
     const [surveys] = await db.execute(`
       SELECT * FROM condo360_surveys 
       WHERE status = 'open' 
-      AND start_date <= UTC_TIMESTAMP() 
-      AND end_date >= UTC_TIMESTAMP()
+      AND start_date <= CONVERT_TZ(NOW(), '+00:00', '-04:00')
+      AND end_date >= CONVERT_TZ(NOW(), '+00:00', '-04:00')
       ORDER BY created_at DESC
     `);
     
@@ -458,6 +458,21 @@ class SurveyModel {
         total_pages: Math.ceil(totalVoters[0].total_voters / limitNum)
       }
     };
+  }
+
+  // Close a survey
+  static async closeSurvey(surveyId) {
+    try {
+      const [result] = await db.execute(
+        'UPDATE condo360_surveys SET status = ? WHERE id = ?',
+        ['closed', surveyId]
+      );
+      
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error('Error closing survey:', error);
+      throw error;
+    }
   }
 }
 

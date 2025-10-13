@@ -381,6 +381,43 @@ jQuery(document).ready(function($) {
         loadSurveyForEdit(surveyId);
     });
     
+    // Close survey button click
+    $(document).on('click', '.close-survey-btn', function() {
+        var surveyId = $(this).data('survey-id');
+        var button = $(this);
+        var originalText = button.text();
+        
+        if (!confirm('¿Está seguro de que desea cerrar esta Carta Consulta? Esta acción no se puede deshacer.')) {
+            return;
+        }
+        
+        button.prop('disabled', true).text('Cerrando...');
+        
+        $.ajax({
+            url: 'https://api.bonaventurecclub.com/polls/surveys/' + surveyId + '/close',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            success: function(response) {
+                console.log('Survey closed successfully:', response);
+                showMessage($('#surveys-list-message'), 'Carta Consulta cerrada exitosamente.', 'success');
+                setTimeout(function() {
+                    loadSurveysList();
+                }, 2000);
+            },
+            error: function(xhr, status, error) {
+                console.log('Error closing survey:', xhr, status, error);
+                var errorMessage = 'Error al cerrar la Carta Consulta.';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                showMessage($('#surveys-list-message'), errorMessage, 'error');
+                button.prop('disabled', false).text(originalText);
+            }
+        });
+    });
+    
     // Back to list button
     $(document).on('click', '.back-to-list-btn', function() {
         loadSurveysList();

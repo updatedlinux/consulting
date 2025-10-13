@@ -195,10 +195,11 @@ jQuery(document).ready(function($) {
             type: 'GET',
             success: function(surveys) {
                 var options = '<option value="">Seleccione una Carta Consulta</option>';
-                // Show all surveys (both open and closed) for results
+                // Show only closed surveys for PDF download
                 $.each(surveys, function(index, survey) {
-                    var statusText = survey.status === 'open' ? ' (Activa)' : ' (Cerrada)';
-                    options += `<option value="${survey.id}">${survey.title}${statusText}</option>`;
+                    if (survey.status === 'closed') {
+                        options += `<option value="${survey.id}">${survey.title} (Cerrada)</option>`;
+                    }
                 });
                 select.html(options);
             },
