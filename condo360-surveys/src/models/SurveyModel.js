@@ -1,17 +1,19 @@
 const db = require('../config/database');
 
-// Helper function to format date for MySQL
+// Helper function to format date for MySQL (GMT-4 America/Caracas)
+// Frontend sends dates as YYYY-MM-DD (date-only), we store them as YYYY-MM-DD 00:00:00
+// This represents midnight in GMT-4 (America/Caracas)
 function formatMySQLDate(dateString) {
-  // If the date string doesn't have timezone info, assume it's in GMT-4 (Caracas)
-  // and convert it to UTC for storage
-  if (!dateString.includes('T') && !dateString.includes('Z')) {
-    // It's a date-only string (YYYY-MM-DD), add timezone info
-    const date = new Date(dateString + 'T00:00:00-04:00'); // GMT-4
-    return date.toISOString().replace(/\.\d{3}Z$/, '').replace('T', ' ');
+  // Remove time and timezone info if present, keep only the date part
+  const dateOnly = dateString.split('T')[0].split(' ')[0];
+  
+  // Validate format (YYYY-MM-DD)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+    throw new Error('Invalid date format. Expected YYYY-MM-DD');
   }
   
-  // If it already has timezone info, just format it
-  return dateString.replace(/\.\d{3}Z$/, '').replace('T', ' ');
+  // Return as MySQL DATETIME format: YYYY-MM-DD 00:00:00 (midnight GMT-4)
+  return dateOnly + ' 00:00:00';
 }
 
 class SurveyModel {
@@ -23,13 +25,13 @@ class SurveyModel {
     try {
       await connection.beginTransaction();
       
-      // Format dates for MySQL
+      // Format dates for MySQL (GMT-4)
       const formattedStartDate = formatMySQLDate(start_date);
       const formattedEndDate = formatMySQLDate(end_date);
       
-      // Insert survey
+      // Insert survey with created_at in GMT-4
       const [surveyResult] = await connection.execute(
-        'INSERT INTO condo360_surveys (title, description, start_date, end_date) VALUES (?, ?, ?, ?)',
+        'INSERT INTO condo360_surveys (title, description, start_date, end_date, created_at) VALUES (?, ?, ?, ?, CONVERT_TZ(NOW(), \'+00:00\', \'-04:00\'))',
         [title, description, formattedStartDate, formattedEndDate]
       );
       

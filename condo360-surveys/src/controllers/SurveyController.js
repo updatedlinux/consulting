@@ -6,6 +6,7 @@ const EmailService = require('../services/EmailService');
 const MESSAGES = {
   MISSING_FIELDS: 'Faltan campos obligatorios: título, fecha de inicio, fecha de fin, preguntas',
   END_DATE_AFTER_START: 'La fecha de finalización debe ser posterior a la fecha de inicio',
+  START_DATE_MUST_BE_FUTURE: 'La fecha de inicio debe ser posterior al día actual',
   QUESTION_MISSING_FIELDS: 'Pregunta {index} faltan campos obligatorios: texto de la pregunta, opciones',
   QUESTION_MIN_OPTIONS: 'La pregunta {index} debe tener al menos una opción',
   OPTION_MISSING_TEXT: 'Pregunta {index}, Opción {optIndex} falta el texto de la opción',
@@ -48,6 +49,30 @@ class SurveyController {
       if (startDate >= endDate) {
         return res.status(400).json({ 
           error: MESSAGES.END_DATE_AFTER_START
+        });
+      }
+      
+      // Validate that start_date is in the future (GMT-4)
+      // Get current date in GMT-4 (Caracas timezone)
+      const now = new Date();
+      // Convert to GMT-4 by getting UTC time and adjusting
+      const nowGMT4 = new Date(now.getTime() - (4 * 60 * 60 * 1000));
+      // Set time to start of day (00:00:00) for comparison
+      const todayGMT4 = new Date(Date.UTC(
+        nowGMT4.getUTCFullYear(),
+        nowGMT4.getUTCMonth(),
+        nowGMT4.getUTCDate(),
+        0, 0, 0, 0
+      ));
+      
+      // Set start date to start of day for comparison
+      const startDateOnly = new Date(startDate);
+      startDateOnly.setUTCHours(0, 0, 0, 0);
+      
+      // Check if start_date is today or in the past
+      if (startDateOnly <= todayGMT4) {
+        return res.status(400).json({ 
+          error: MESSAGES.START_DATE_MUST_BE_FUTURE
         });
       }
       

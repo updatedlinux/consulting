@@ -228,6 +228,30 @@ jQuery(document).ready(function($) {
             return;
         }
         
+        // Validate dates
+        if (!surveyData.start_date || !surveyData.end_date) {
+            showMessage(messageDiv, 'Por favor seleccione las fechas de inicio y fin.', 'error');
+            return;
+        }
+        
+        // Simple date comparison (YYYY-MM-DD format)
+        if (surveyData.start_date >= surveyData.end_date) {
+            showMessage(messageDiv, 'La fecha de finalización debe ser posterior a la fecha de inicio.', 'error');
+            return;
+        }
+        
+        // Validate that start_date is in the future (compare date strings)
+        // Get current date in GMT-4 (America/Caracas) as YYYY-MM-DD
+        var now = new Date();
+        var nowGMT4 = new Date(now.getTime() - (4 * 60 * 60 * 1000)); // Subtract 4 hours to get GMT-4
+        var todayGMT4 = nowGMT4.toISOString().split('T')[0]; // Get YYYY-MM-DD
+        
+        // Check if start_date is today or in the past
+        if (surveyData.start_date <= todayGMT4) {
+            showMessage(messageDiv, 'La fecha de inicio debe ser posterior al día actual.', 'error');
+            return;
+        }
+        
         // Disable submit button
         submitBtn.prop('disabled', true).text('Creando...');
         
@@ -664,6 +688,39 @@ jQuery(document).ready(function($) {
             messageDiv.fadeOut();
         }, 5000);
     }
+    
+    // Set minimum date for start date input (tomorrow in GMT-4)
+    function setMinStartDate() {
+        var now = new Date();
+        // Get current date in GMT-4 (America/Caracas)
+        var nowGMT4 = new Date(now.getTime() - (4 * 60 * 60 * 1000));
+        // Get tomorrow's date
+        var tomorrow = new Date(nowGMT4);
+        tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+        // Format as YYYY-MM-DD
+        var tomorrowStr = tomorrow.toISOString().split('T')[0];
+        // Set min attribute
+        $('#survey-start-date').attr('min', tomorrowStr);
+    }
+    
+    // Update end date min when start date changes
+    $('#survey-start-date').on('change', function() {
+        var startDate = $(this).val();
+        if (startDate) {
+            // Set end date min to be the day after start date
+            var startDateObj = new Date(startDate + 'T00:00:00');
+            var nextDay = new Date(startDateObj);
+            nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+            var nextDayStr = nextDay.toISOString().split('T')[0];
+            $('#survey-end-date').attr('min', nextDayStr);
+        }
+    });
+    
+    // Set min date on page load and when switching to create tab
+    setMinStartDate();
+    $('.tab-btn[data-tab="create-survey"]').on('click', function() {
+        setTimeout(setMinStartDate, 100); // Small delay to ensure DOM is ready
+    });
     
     // Initialize with surveys list
     if ($('.tab-content.active').attr('id') === 'surveys-list-tab') {
