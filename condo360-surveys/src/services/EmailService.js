@@ -336,16 +336,61 @@ class EmailService {
     try {
       console.log('sendSurveyNotification called with surveyData:', surveyData);
       
-      // Get all subscribers (WordPress users with subscriber role)
-      const [subscribers] = await db.execute(`
-        SELECT u.ID, u.user_login, u.user_email, u.display_name
-        FROM wp_users u
-        INNER JOIN wp_usermeta um ON u.ID = um.user_id
-        WHERE um.meta_key = 'wp_capabilities'
-        AND um.meta_value LIKE '%subscriber%'
-        AND u.user_email IS NOT NULL
-        AND u.user_email != ''
-      `);
+      // Get survey building_id from database
+      const [surveys] = await db.execute(
+        'SELECT building_id FROM condo360_surveys WHERE id = ?',
+        [surveyData.id]
+      );
+      
+      if (surveys.length === 0) {
+        console.log('Survey not found');
+        return { success: false, message: 'Survey not found' };
+      }
+      
+      const buildingId = surveys[0].building_id;
+      console.log('Survey building_id:', buildingId);
+      
+      let subscribers;
+      
+      // If building_id is NULL, get all subscribers
+      if (buildingId === null) {
+        console.log('Getting all subscribers (all buildings)');
+        [subscribers] = await db.execute(`
+          SELECT u.ID, u.user_login, u.user_email, u.display_name
+          FROM wp_users u
+          INNER JOIN wp_usermeta um ON u.ID = um.user_id
+          WHERE um.meta_key = 'wp_capabilities'
+          AND um.meta_value LIKE '%subscriber%'
+          AND u.user_email IS NOT NULL
+          AND u.user_email != ''
+        `);
+      } else {
+        // Get building name
+        const [buildings] = await db.execute(
+          'SELECT nombre FROM wp_condo360_edificios WHERE id = ?',
+          [buildingId]
+        );
+        
+        if (buildings.length === 0) {
+          console.log('Building not found');
+          return { success: false, message: 'Building not found' };
+        }
+        
+        const buildingName = buildings[0].nombre;
+        console.log('Getting subscribers for building:', buildingName);
+        
+        // Get subscribers for specific building
+        [subscribers] = await db.execute(`
+          SELECT DISTINCT u.ID, u.user_login, u.user_email, u.display_name
+          FROM wp_users u
+          INNER JOIN wp_usermeta um_role ON u.ID = um_role.user_id AND um_role.meta_key = 'wp_capabilities'
+          INNER JOIN wp_usermeta um_building ON u.ID = um_building.user_id AND um_building.meta_key = 'edificio'
+          WHERE um_role.meta_value LIKE '%subscriber%'
+          AND um_building.meta_value = ?
+          AND u.user_email IS NOT NULL
+          AND u.user_email != ''
+        `, [buildingName]);
+      }
       
       console.log('Database query executed, subscribers found:', subscribers.length);
       

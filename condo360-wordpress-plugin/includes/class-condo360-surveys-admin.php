@@ -187,6 +187,7 @@ class Condo360_Surveys_Admin {
         $survey_data = array(
             'title' => sanitize_text_field($_POST['title']),
             'description' => sanitize_textarea_field($_POST['description']),
+            'building_id' => isset($_POST['building_id']) ? sanitize_text_field($_POST['building_id']) : 'all',
             'start_date' => sanitize_text_field($_POST['start_date']),
             'end_date' => sanitize_text_field($_POST['end_date']),
             'questions' => array()

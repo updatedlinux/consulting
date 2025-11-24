@@ -48,6 +48,14 @@
                     <textarea id="survey-description" name="description" rows="3"></textarea>
                 </div>
                 
+                <div class="form-group">
+                    <label for="survey-building">Edificio:</label>
+                    <select id="survey-building" name="building_id" required>
+                        <option value="">Cargando edificios...</option>
+                    </select>
+                    <small style="color: #6c757d;">Seleccione un edificio específico o "TODOS LOS EDIFICIOS" para incluir a todos los propietarios</small>
+                </div>
+                
                 <div class="form-row">
                     <div class="form-group">
                         <label for="survey-start-date">Fecha de Inicio:</label>

@@ -23,6 +23,14 @@
             <textarea id="edit-survey-description" name="description" rows="4" required><?php echo esc_textarea($survey['description']); ?></textarea>
         </div>
         
+        <div class="form-group">
+            <label for="edit-survey-building">Edificio:</label>
+            <select id="edit-survey-building" name="building_id" required>
+                <option value="">Cargando edificios...</option>
+            </select>
+            <small style="color: #6c757d;">Seleccione un edificio específico o "TODOS LOS EDIFICIOS" para incluir a todos los propietarios</small>
+        </div>
+        
         <div class="form-row">
             <div class="form-group">
                 <label for="edit-survey-start-date">Fecha de Inicio *</label>

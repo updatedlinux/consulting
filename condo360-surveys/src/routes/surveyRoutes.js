@@ -541,5 +541,6 @@ router.get('/surveys/:id/pdf', SurveyController.generateSurveyPDF);
 router.post('/surveys/:id/close', SurveyController.closeSurvey);
 router.put('/surveys/:id', SurveyController.updateSurvey);
 router.get('/email-queue-status', SurveyController.getEmailQueueStatus);
+router.get('/buildings', SurveyController.getAllBuildings);
 
 module.exports = router;

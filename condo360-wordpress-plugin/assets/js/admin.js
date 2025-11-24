@@ -110,10 +110,17 @@ jQuery(document).ready(function($) {
         var surveyData = {
             title: $('#edit-survey-title').val(),
             description: $('#edit-survey-description').val(),
+            building_id: $('#edit-survey-building').val(),
             start_date: $('#edit-survey-start-date').val(),
             end_date: $('#edit-survey-end-date').val(),
             questions: []
         };
+        
+        // Validate building selection
+        if (!surveyData.building_id || surveyData.building_id === '') {
+            showMessage(messageDiv, 'Por favor seleccione un edificio.', 'error');
+            return;
+        }
         
         console.log('Basic form data collected:', surveyData); // Debug log
         
@@ -197,10 +204,17 @@ jQuery(document).ready(function($) {
         var surveyData = {
             title: $('#survey-title').val(),
             description: $('#survey-description').val(),
+            building_id: $('#survey-building').val(),
             start_date: $('#survey-start-date').val(),
             end_date: $('#survey-end-date').val(),
             questions: []
         };
+        
+        // Validate building selection
+        if (!surveyData.building_id || surveyData.building_id === '') {
+            showMessage(messageDiv, 'Por favor seleccione un edificio.', 'error');
+            return;
+        }
         
         // Collect questions and options
         $('.question-item').each(function() {
@@ -264,6 +278,7 @@ jQuery(document).ready(function($) {
                 nonce: condo360_admin_ajax.nonce,
                 title: surveyData.title,
                 description: surveyData.description,
+                building_id: surveyData.building_id,
                 start_date: surveyData.start_date,
                 end_date: surveyData.end_date,
                 questions: surveyData.questions
@@ -484,6 +499,9 @@ jQuery(document).ready(function($) {
                             surveysList.html(templateResponse.data.html);
                             loadingMessage.hide();
                             surveysList.show();
+                            
+                            // Load buildings and set selected value
+                            loadBuildingsForEdit(survey.building_id);
                         } else {
                             loadingMessage.text('Error al cargar la plantilla de edición: ' + templateResponse.data.message);
                         }
@@ -497,6 +515,30 @@ jQuery(document).ready(function($) {
             error: function(xhr, status, error) {
                 console.log('Survey fetch error:', xhr, status, error);
                 loadingMessage.text('Error al cargar los datos de la Carta Consulta: ' + error);
+            }
+        });
+    }
+    
+    // Load buildings for edit form
+    function loadBuildingsForEdit(selectedBuildingId) {
+        $.ajax({
+            url: 'https://api.bonaventurecclub.com/polls/buildings',
+            type: 'GET',
+            success: function(buildings) {
+                var select = $('#edit-survey-building');
+                select.html('<option value="all">TODOS LOS EDIFICIOS</option>');
+                $.each(buildings, function(index, building) {
+                    var selected = (building.id == selectedBuildingId) ? 'selected' : '';
+                    select.append('<option value="' + building.id + '" ' + selected + '>' + building.nombre + '</option>');
+                });
+                // If no building_id or null, select "all"
+                if (!selectedBuildingId || selectedBuildingId === null) {
+                    select.val('all');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading buildings:', error);
+                $('#edit-survey-building').html('<option value="">Error al cargar edificios</option>');
             }
         });
     }
@@ -716,11 +758,40 @@ jQuery(document).ready(function($) {
         }
     });
     
+    // Load buildings for survey creation/editing
+    function loadBuildings() {
+        $.ajax({
+            url: 'https://api.bonaventurecclub.com/polls/buildings',
+            type: 'GET',
+            success: function(buildings) {
+                var select = $('#survey-building');
+                select.html('<option value="all">TODOS LOS EDIFICIOS</option>');
+                $.each(buildings, function(index, building) {
+                    select.append('<option value="' + building.id + '">' + building.nombre + '</option>');
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading buildings:', error);
+                $('#survey-building').html('<option value="">Error al cargar edificios</option>');
+            }
+        });
+    }
+    
+    // Load buildings when switching to create tab
+    $('.tab-btn[data-tab="create-survey"]').on('click', function() {
+        setTimeout(function() {
+            setMinStartDate();
+            loadBuildings();
+        }, 100);
+    });
+    
     // Set min date on page load and when switching to create tab
     setMinStartDate();
-    $('.tab-btn[data-tab="create-survey"]').on('click', function() {
-        setTimeout(setMinStartDate, 100); // Small delay to ensure DOM is ready
-    });
+    
+    // Load buildings on page load if create tab is active
+    if ($('.tab-content.active').attr('id') === 'create-survey-tab') {
+        loadBuildings();
+    }
     
     // Initialize with surveys list
     if ($('.tab-content.active').attr('id') === 'surveys-list-tab') {

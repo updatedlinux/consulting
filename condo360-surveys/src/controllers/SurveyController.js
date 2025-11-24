@@ -33,7 +33,7 @@ class SurveyController {
   // Create a new survey
   static async createSurvey(req, res) {
     try {
-      const { title, description, start_date, end_date, questions } = req.body;
+      const { title, description, start_date, end_date, questions, building_id } = req.body;
       
       // Validate required fields
       if (!title || !start_date || !end_date || !questions || !Array.isArray(questions)) {
@@ -106,7 +106,8 @@ class SurveyController {
         description,
         start_date,
         end_date,
-        questions
+        questions,
+        building_id
       });
       
       // Send email notifications to subscribers
@@ -206,6 +207,12 @@ class SurveyController {
           new Date(survey.start_date) > now || 
           new Date(survey.end_date) < now) {
         return res.status(400).json({ error: MESSAGES.SURVEY_NOT_ACTIVE });
+      }
+      
+      // Check if user belongs to survey's building
+      const userBelongsToBuilding = await SurveyModel.userBelongsToSurveyBuilding(wp_user_id, id);
+      if (!userBelongsToBuilding) {
+        return res.status(403).json({ error: 'No tiene permiso para votar en esta Carta Consulta. Esta carta es para un edificio específico y usted no pertenece a ese edificio.' });
       }
       
       // Check if user has already participated
@@ -332,7 +339,7 @@ class SurveyController {
   static async updateSurvey(req, res) {
     try {
       const { id } = req.params;
-      const { title, description, start_date, end_date, questions } = req.body;
+      const { title, description, start_date, end_date, questions, building_id } = req.body;
       
       if (!id || isNaN(id)) {
         return res.status(400).json({ error: MESSAGES.INVALID_SURVEY_ID });
@@ -354,7 +361,8 @@ class SurveyController {
         description,
         start_date,
         end_date,
-        questions
+        questions,
+        building_id
       };
       
       await SurveyModel.updateSurvey(id, surveyData);
@@ -489,6 +497,17 @@ class SurveyController {
     } catch (error) {
       console.error('Error getting email queue status:', error);
       res.status(500).json({ error: 'Error al obtener el estado de la cola de emails' });
+    }
+  }
+
+  // Get all buildings
+  static async getAllBuildings(req, res) {
+    try {
+      const buildings = await SurveyModel.getAllBuildings();
+      res.status(200).json(buildings);
+    } catch (error) {
+      console.error('Error fetching buildings:', error);
+      res.status(500).json({ error: 'Error al obtener los edificios' });
     }
   }
 }

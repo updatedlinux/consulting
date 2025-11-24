@@ -19,7 +19,7 @@ function formatMySQLDate(dateString) {
 class SurveyModel {
   // Create a new survey with questions and options
   static async createSurvey(surveyData) {
-    const { title, description, start_date, end_date, questions } = surveyData;
+    const { title, description, start_date, end_date, questions, building_id } = surveyData;
     const connection = await db.getConnection();
     
     try {
@@ -29,10 +29,13 @@ class SurveyModel {
       const formattedStartDate = formatMySQLDate(start_date);
       const formattedEndDate = formatMySQLDate(end_date);
       
+      // building_id can be null (for "TODOS LOS EDIFICIOS") or a specific building ID
+      const buildingIdValue = building_id && building_id !== 'all' && building_id !== '' ? parseInt(building_id) : null;
+      
       // Insert survey with created_at in GMT-4
       const [surveyResult] = await connection.execute(
-        'INSERT INTO condo360_surveys (title, description, start_date, end_date, created_at) VALUES (?, ?, ?, ?, CONVERT_TZ(NOW(), \'+00:00\', \'-04:00\'))',
-        [title, description, formattedStartDate, formattedEndDate]
+        'INSERT INTO condo360_surveys (title, description, start_date, end_date, building_id, created_at) VALUES (?, ?, ?, ?, ?, CONVERT_TZ(NOW(), \'+00:00\', \'-04:00\'))',
+        [title, description, formattedStartDate, formattedEndDate, buildingIdValue]
       );
       
       const surveyId = surveyResult.insertId;
@@ -204,6 +207,21 @@ class SurveyModel {
       [surveyId]
     );
     
+    // Get eligible users count based on building
+    const eligibleUsersCount = await this.getEligibleUsersCount(surveyId);
+    
+    // Get building info if exists
+    let buildingInfo = null;
+    if (survey.building_id) {
+      const [buildings] = await db.execute(
+        'SELECT id, nombre FROM wp_condo360_edificios WHERE id = ?',
+        [survey.building_id]
+      );
+      if (buildings.length > 0) {
+        buildingInfo = buildings[0];
+      }
+    }
+    
     // Structure the results
     const results = {
       survey: {
@@ -212,7 +230,10 @@ class SurveyModel {
         description: survey.description,
         status: survey.status,
         start_date: survey.start_date,
-        end_date: survey.end_date
+        end_date: survey.end_date,
+        building_id: survey.building_id,
+        building: buildingInfo,
+        eligible_users_count: eligibleUsersCount
       },
       questions: []
     };
@@ -287,10 +308,13 @@ class SurveyModel {
       throw new Error('Cannot edit survey that has votes');
     }
     
+    // Handle building_id (can be null for "all buildings")
+    const buildingIdValue = surveyData.building_id && surveyData.building_id !== 'all' && surveyData.building_id !== '' ? parseInt(surveyData.building_id) : null;
+    
     // Update survey basic info
     await db.execute(
-      'UPDATE condo360_surveys SET title = ?, description = ?, start_date = ?, end_date = ? WHERE id = ?',
-      [surveyData.title, surveyData.description, surveyData.start_date, surveyData.end_date, surveyId]
+      'UPDATE condo360_surveys SET title = ?, description = ?, start_date = ?, end_date = ?, building_id = ? WHERE id = ?',
+      [surveyData.title, surveyData.description, surveyData.start_date, surveyData.end_date, buildingIdValue, surveyId]
     );
     
     // Delete existing questions and options
@@ -389,14 +413,8 @@ class SurveyModel {
       throw new Error('Invalid limit');
     }
     
-    // Get total eligible voters (WordPress subscribers)
-    const [eligibleVoters] = await db.execute(`
-      SELECT COUNT(*) as total_eligible
-      FROM wp_users u
-      INNER JOIN wp_usermeta um ON u.ID = um.user_id
-      WHERE um.meta_key = 'wp_capabilities'
-      AND um.meta_value LIKE '%subscriber%'
-    `);
+    // Get total eligible voters based on survey building
+    const eligibleUsersCount = await this.getEligibleUsersCount(surveyIdNum);
     
     // Get total actual voters for this survey (for pagination)
     const [totalVoters] = await db.execute(`
@@ -430,6 +448,18 @@ class SurveyModel {
     
     const survey = surveys[0];
     
+    // Get building info if exists
+    let buildingInfo = null;
+    if (survey.building_id) {
+      const [buildings] = await db.execute(
+        'SELECT id, nombre FROM wp_condo360_edificios WHERE id = ?',
+        [survey.building_id]
+      );
+      if (buildings.length > 0) {
+        buildingInfo = buildings[0];
+      }
+    }
+    
     return {
       survey: {
         id: survey.id,
@@ -437,13 +467,15 @@ class SurveyModel {
         description: survey.description,
         status: survey.status,
         start_date: survey.start_date,
-        end_date: survey.end_date
+        end_date: survey.end_date,
+        building_id: survey.building_id,
+        building: buildingInfo
       },
       statistics: {
-        total_eligible_voters: eligibleVoters[0].total_eligible,
+        total_eligible_voters: eligibleUsersCount,
         actual_voters: totalVoters[0].total_voters,
-        participation_percentage: eligibleVoters[0].total_eligible > 0 
-          ? ((totalVoters[0].total_voters / eligibleVoters[0].total_eligible) * 100).toFixed(2)
+        participation_percentage: eligibleUsersCount > 0 
+          ? ((totalVoters[0].total_voters / eligibleUsersCount) * 100).toFixed(2)
           : 0
       },
       voters: voters.map(voter => ({
@@ -474,6 +506,135 @@ class SurveyModel {
     } catch (error) {
       console.error('Error closing survey:', error);
       throw error;
+    }
+  }
+
+  // Get all buildings
+  static async getAllBuildings() {
+    try {
+      const [buildings] = await db.execute(
+        'SELECT id, nombre FROM wp_condo360_edificios ORDER BY nombre ASC'
+      );
+      return buildings;
+    } catch (error) {
+      console.error('Error fetching buildings:', error);
+      throw error;
+    }
+  }
+
+  // Get eligible users count for a survey (based on building)
+  static async getEligibleUsersCount(surveyId) {
+    try {
+      // Get survey building_id
+      const [surveys] = await db.execute(
+        'SELECT building_id FROM condo360_surveys WHERE id = ?',
+        [surveyId]
+      );
+      
+      if (surveys.length === 0) {
+        return 0;
+      }
+      
+      const buildingId = surveys[0].building_id;
+      
+      // If building_id is NULL, count all subscribers
+      if (buildingId === null) {
+        const [result] = await db.execute(`
+          SELECT COUNT(DISTINCT u.ID) as total
+          FROM wp_users u
+          INNER JOIN wp_usermeta um ON u.ID = um.user_id
+          WHERE um.meta_key = 'wp_capabilities'
+          AND um.meta_value LIKE '%subscriber%'
+          AND u.user_email IS NOT NULL
+          AND u.user_email != ''
+        `);
+        return result[0].total;
+      }
+      
+      // If building_id is set, count subscribers for that specific building
+      const [building] = await db.execute(
+        'SELECT nombre FROM wp_condo360_edificios WHERE id = ?',
+        [buildingId]
+      );
+      
+      if (building.length === 0) {
+        return 0;
+      }
+      
+      const buildingName = building[0].nombre;
+      
+      const [result] = await db.execute(`
+        SELECT COUNT(DISTINCT u.ID) as total
+        FROM wp_users u
+        INNER JOIN wp_usermeta um_role ON u.ID = um_role.user_id AND um_role.meta_key = 'wp_capabilities'
+        INNER JOIN wp_usermeta um_building ON u.ID = um_building.user_id AND um_building.meta_key = 'edificio'
+        WHERE um_role.meta_value LIKE '%subscriber%'
+        AND um_building.meta_value = ?
+        AND u.user_email IS NOT NULL
+        AND u.user_email != ''
+      `, [buildingName]);
+      
+      return result[0].total;
+    } catch (error) {
+      console.error('Error getting eligible users count:', error);
+      throw error;
+    }
+  }
+
+  // Check if user belongs to survey's building
+  static async userBelongsToSurveyBuilding(userId, surveyId) {
+    try {
+      // Get survey building_id
+      const [surveys] = await db.execute(
+        'SELECT building_id FROM condo360_surveys WHERE id = ?',
+        [surveyId]
+      );
+      
+      if (surveys.length === 0) {
+        return false;
+      }
+      
+      const buildingId = surveys[0].building_id;
+      
+      // If building_id is NULL, all subscribers are eligible
+      if (buildingId === null) {
+        const [result] = await db.execute(`
+          SELECT COUNT(*) as count
+          FROM wp_users u
+          INNER JOIN wp_usermeta um ON u.ID = um.user_id
+          WHERE u.ID = ?
+          AND um.meta_key = 'wp_capabilities'
+          AND um.meta_value LIKE '%subscriber%'
+        `, [userId]);
+        return result[0].count > 0;
+      }
+      
+      // If building_id is set, check if user belongs to that building
+      const [building] = await db.execute(
+        'SELECT nombre FROM wp_condo360_edificios WHERE id = ?',
+        [buildingId]
+      );
+      
+      if (building.length === 0) {
+        return false;
+      }
+      
+      const buildingName = building[0].nombre;
+      
+      const [result] = await db.execute(`
+        SELECT COUNT(*) as count
+        FROM wp_users u
+        INNER JOIN wp_usermeta um_role ON u.ID = um_role.user_id AND um_role.meta_key = 'wp_capabilities'
+        INNER JOIN wp_usermeta um_building ON u.ID = um_building.user_id AND um_building.meta_key = 'edificio'
+        WHERE u.ID = ?
+        AND um_role.meta_value LIKE '%subscriber%'
+        AND um_building.meta_value = ?
+      `, [userId, buildingName]);
+      
+      return result[0].count > 0;
+    } catch (error) {
+      console.error('Error checking user building:', error);
+      return false;
     }
   }
 }
