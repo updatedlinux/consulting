@@ -145,7 +145,9 @@ class SurveyController {
   // Get all active surveys
   static async getActiveSurveys(req, res) {
     try {
-      const surveys = await SurveyModel.getActiveSurveys();
+      // Get wp_user_id from query parameter (sent by frontend)
+      const wpUserId = req.query.wp_user_id ? parseInt(req.query.wp_user_id) : null;
+      const surveys = await SurveyModel.getActiveSurveys(wpUserId);
       res.status(200).json(surveys);
     } catch (error) {
       console.error('Error fetching active surveys:', error);
@@ -157,6 +159,7 @@ class SurveyController {
   static async getSurveyById(req, res) {
     try {
       const { id } = req.params;
+      const wpUserId = req.query.wp_user_id ? parseInt(req.query.wp_user_id) : null;
       
       if (!id || isNaN(id)) {
         return res.status(400).json({ error: MESSAGES.INVALID_SURVEY_ID });
@@ -166,6 +169,14 @@ class SurveyController {
       
       if (!survey) {
         return res.status(404).json({ error: MESSAGES.SURVEY_NOT_FOUND });
+      }
+      
+      // If wp_user_id is provided, check if user can access this survey
+      if (wpUserId && survey.building_id !== null) {
+        const userBelongsToBuilding = await SurveyModel.userBelongsToSurveyBuilding(wpUserId, id);
+        if (!userBelongsToBuilding) {
+          return res.status(403).json({ error: 'No tiene permiso para acceder a esta Carta Consulta. Esta carta es para un edificio específico y usted no pertenece a ese edificio.' });
+        }
       }
       
       res.status(200).json(survey);

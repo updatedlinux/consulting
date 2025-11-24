@@ -68,15 +68,54 @@ class SurveyModel {
     }
   }
   
-  // Get all active surveys
-  static async getActiveSurveys() {
-    const [surveys] = await db.execute(`
+  // Get all active surveys (filtered by user's building if wp_user_id provided)
+  static async getActiveSurveys(wpUserId = null) {
+    let query = `
       SELECT * FROM condo360_surveys 
       WHERE status = 'open' 
       AND start_date <= CONVERT_TZ(NOW(), '+00:00', '-04:00')
       AND end_date >= CONVERT_TZ(NOW(), '+00:00', '-04:00')
-      ORDER BY created_at DESC
-    `);
+    `;
+    
+    const params = [];
+    
+    // If wp_user_id is provided, filter by user's building
+    if (wpUserId) {
+      // Get user's building
+      const [userBuilding] = await db.execute(`
+        SELECT um_building.meta_value as edificio
+        FROM wp_users u
+        INNER JOIN wp_usermeta um_building ON u.ID = um_building.user_id AND um_building.meta_key = 'edificio'
+        WHERE u.ID = ?
+      `, [wpUserId]);
+      
+      if (userBuilding.length > 0) {
+        const userBuildingName = userBuilding[0].edificio;
+        
+        // Get building ID from name
+        const [buildings] = await db.execute(
+          'SELECT id FROM wp_condo360_edificios WHERE nombre = ?',
+          [userBuildingName]
+        );
+        
+        if (buildings.length > 0) {
+          const userBuildingId = buildings[0].id;
+          // Show surveys for user's building OR for all buildings (building_id IS NULL)
+          query += ` AND (building_id = ? OR building_id IS NULL)`;
+          params.push(userBuildingId);
+        } else {
+          // User has no building assigned, show only surveys for all buildings
+          query += ` AND building_id IS NULL`;
+        }
+      } else {
+        // User has no building assigned, show only surveys for all buildings
+        query += ` AND building_id IS NULL`;
+      }
+    }
+    
+    query += ` ORDER BY created_at DESC`;
+    
+    const [surveys] = await db.execute(query, params);
     
     // For each survey, get questions and options
     for (const survey of surveys) {

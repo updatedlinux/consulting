@@ -139,34 +139,55 @@ class Condo360_Surveys {
         // Get survey ID
         $survey_id = intval($_POST['survey_id']);
         
-        // Get all surveys from API
-        $api_url = 'https://api.bonaventurecclub.com/polls/surveys';
+        // Get current user ID
+        $current_user_id = get_current_user_id();
+        
+        // Get survey details from API (with user ID for building validation)
+        $api_url = 'https://api.bonaventurecclub.com/polls/surveys/' . $survey_id;
+        if ($current_user_id) {
+            $api_url .= '?wp_user_id=' . $current_user_id;
+        }
         $response = wp_remote_get($api_url, array('timeout' => 30));
         
-        if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
-            $surveys = json_decode(wp_remote_retrieve_body($response), true);
-            
-            // Find the requested survey
-            $requested_survey = null;
-            foreach ($surveys as $survey) {
-                if ($survey['id'] == $survey_id) {
-                    $requested_survey = $survey;
-                    break;
+        if (!is_wp_error($response)) {
+            $response_code = wp_remote_retrieve_response_code($response);
+            if ($response_code === 200) {
+                $survey = json_decode(wp_remote_retrieve_body($response), true);
+                
+                if (!$survey) {
+                    wp_send_json_error(array('message' => __('Error al obtener los detalles de la Carta Consulta.', 'condo360-surveys')));
+                    return;
                 }
-            }
-            
-            if ($requested_survey) {
+                
+                // Get all surveys from API (filtered by user's building)
+                $surveys_api_url = 'https://api.bonaventurecclub.com/polls/surveys';
+                if ($current_user_id) {
+                    $surveys_api_url .= '?wp_user_id=' . $current_user_id;
+                }
+                $surveys_response = wp_remote_get($surveys_api_url, array('timeout' => 30));
+                
+                $surveys = array();
+                if (!is_wp_error($surveys_response) && wp_remote_retrieve_response_code($surveys_response) === 200) {
+                    $surveys = json_decode(wp_remote_retrieve_body($surveys_response), true);
+                }
+                
+                // Use the survey directly from the API response (already validated by building)
                 // Load template
                 ob_start();
                 include plugin_dir_path(__FILE__) . '../templates/survey-detail.php';
                 $html = ob_get_clean();
                 
-                wp_send_json_success(array('html' => $html, 'survey' => $requested_survey));
+                wp_send_json_success(array('html' => $html, 'survey' => $survey));
+            } else if ($response_code === 403) {
+                // User doesn't have permission to access this survey
+                $error_data = json_decode(wp_remote_retrieve_body($response), true);
+                $error_message = isset($error_data['error']) ? $error_data['error'] : __('No tiene permiso para acceder a esta Carta Consulta.', 'condo360-surveys');
+                wp_send_json_error(array('message' => $error_message));
             } else {
-                wp_send_json_error(array('message' => __('Carta Consulta no encontrada.', 'condo360-surveys')));
+                wp_send_json_error(array('message' => __('Error al obtener los detalles de la Carta Consulta.', 'condo360-surveys')));
             }
         } else {
-            wp_send_json_error(array('message' => __('Error al obtener los detalles de la Carta Consulta.', 'condo360-surveys')));
+            wp_send_json_error(array('message' => __('Error de conexión al obtener los detalles.', 'condo360-surveys')));
         }
     }
     
@@ -239,8 +260,14 @@ class Condo360_Surveys {
         wp_enqueue_style($this->plugin_name);
         wp_enqueue_script($this->plugin_name);
         
-        // Get active surveys from API
+        // Get current user ID
+        $current_user_id = get_current_user_id();
+        
+        // Get active surveys from API (filtered by user's building)
         $api_url = 'https://api.bonaventurecclub.com/polls/surveys';
+        if ($current_user_id) {
+            $api_url .= '?wp_user_id=' . $current_user_id;
+        }
         $response = wp_remote_get($api_url, array('timeout' => 30));
         
         $surveys = array();

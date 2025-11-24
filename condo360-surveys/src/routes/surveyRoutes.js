@@ -52,7 +52,13 @@ const router = express.Router();
  * /surveys:
  *   get:
  *     summary: Get active surveys
- *     description: Get all surveys that are currently active
+ *     description: Get all surveys that are currently active, filtered by user's building if wp_user_id is provided
+ *     parameters:
+ *       - in: query
+ *         name: wp_user_id
+ *         schema:
+ *           type: integer
+ *         description: WordPress user ID (optional, filters surveys by user's building)
  *     responses:
  *       200:
  *         description: List of active surveys
@@ -137,7 +143,7 @@ router.get('/surveys', SurveyController.getActiveSurveys);
  * /surveys/{id}:
  *   get:
  *     summary: Get a specific survey
- *     description: Get a specific survey by ID
+ *     description: Get a specific survey by ID. If wp_user_id is provided, validates that user belongs to survey's building
  *     parameters:
  *       - in: path
  *         name: id
@@ -145,7 +151,21 @@ router.get('/surveys', SurveyController.getActiveSurveys);
  *         schema:
  *           type: integer
  *         description: Survey ID
+ *       - in: query
+ *         name: wp_user_id
+ *         schema:
+ *           type: integer
+ *         description: WordPress user ID (optional, validates building access)
  *     responses:
+ *       403:
+ *         description: Forbidden - User doesn't belong to survey's building
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
  *       200:
  *         description: Survey details
  *         content:
