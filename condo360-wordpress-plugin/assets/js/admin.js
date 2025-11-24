@@ -760,19 +760,32 @@ jQuery(document).ready(function($) {
     
     // Load buildings for survey creation/editing
     function loadBuildings() {
+        var select = $('#survey-building');
+        if (select.length === 0) {
+            console.log('Building select not found in DOM, retrying...');
+            setTimeout(loadBuildings, 200);
+            return;
+        }
+        
+        console.log('Loading buildings...');
         $.ajax({
             url: 'https://api.bonaventurecclub.com/polls/buildings',
             type: 'GET',
             success: function(buildings) {
-                var select = $('#survey-building');
+                console.log('Buildings loaded:', buildings);
                 select.html('<option value="all">TODOS LOS EDIFICIOS</option>');
-                $.each(buildings, function(index, building) {
-                    select.append('<option value="' + building.id + '">' + building.nombre + '</option>');
-                });
+                if (buildings && buildings.length > 0) {
+                    $.each(buildings, function(index, building) {
+                        select.append('<option value="' + building.id + '">' + building.nombre + '</option>');
+                    });
+                } else {
+                    select.append('<option value="">No hay edificios disponibles</option>');
+                }
             },
             error: function(xhr, status, error) {
-                console.error('Error loading buildings:', error);
-                $('#survey-building').html('<option value="">Error al cargar edificios</option>');
+                console.error('Error loading buildings:', xhr, status, error);
+                console.error('Response:', xhr.responseText);
+                select.html('<option value="">Error al cargar edificios: ' + error + '</option>');
             }
         });
     }
@@ -781,7 +794,8 @@ jQuery(document).ready(function($) {
     $('.tab-btn[data-tab="create-survey"]').on('click', function() {
         setTimeout(function() {
             setMinStartDate();
-            loadBuildings();
+            // Wait a bit more to ensure DOM is ready
+            setTimeout(loadBuildings, 150);
         }, 100);
     });
     

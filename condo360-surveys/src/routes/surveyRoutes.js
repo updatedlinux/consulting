@@ -107,6 +107,10 @@ router.get('/surveys', SurveyController.getActiveSurveys);
  *                   status:
  *                     type: string
  *                     enum: [open, closed]
+ *                   building_id:
+ *                     type: integer
+ *                     nullable: true
+ *                     description: Building ID (null = all buildings)
  *                   created_at:
  *                     type: string
  *                     format: date-time
@@ -114,6 +118,9 @@ router.get('/surveys', SurveyController.getActiveSurveys);
  *                     type: integer
  *                   question_count:
  *                     type: integer
+ *                   has_votes:
+ *                     type: boolean
+ *                     description: Whether the survey has votes
  *       500:
  *         description: Internal server error
  *         content:
@@ -262,7 +269,18 @@ router.get('/surveys/:id', SurveyController.getSurveyById);
  *               type: object
  *               properties:
  *                 survey:
- *                   $ref: '#/components/schemas/Survey'
+ *                   allOf:
+ *                     - $ref: '#/components/schemas/Survey'
+ *                     - type: object
+ *                       properties:
+ *                         building_id:
+ *                           type: integer
+ *                           nullable: true
+ *                         building:
+ *                           $ref: '#/components/schemas/Building'
+ *                         eligible_users_count:
+ *                           type: integer
+ *                           description: Total eligible users based on building selection
  *                 questions:
  *                   type: array
  *                   items:
@@ -318,12 +336,21 @@ router.get('/surveys/:id', SurveyController.getSurveyById);
  *               type: object
  *               properties:
  *                 survey:
- *                   $ref: '#/components/schemas/Survey'
+ *                   allOf:
+ *                     - $ref: '#/components/schemas/Survey'
+ *                     - type: object
+ *                       properties:
+ *                         building_id:
+ *                           type: integer
+ *                           nullable: true
+ *                         building:
+ *                           $ref: '#/components/schemas/Building'
  *                 statistics:
  *                   type: object
  *                   properties:
  *                     total_eligible_voters:
  *                       type: integer
+ *                       description: Total eligible voters based on building selection
  *                     actual_voters:
  *                       type: integer
  *                     participation_percentage:
@@ -541,6 +568,32 @@ router.get('/surveys/:id/pdf', SurveyController.generateSurveyPDF);
 router.post('/surveys/:id/close', SurveyController.closeSurvey);
 router.put('/surveys/:id', SurveyController.updateSurvey);
 router.get('/email-queue-status', SurveyController.getEmailQueueStatus);
+
+/**
+ * @swagger
+ * /buildings:
+ *   get:
+ *     summary: Get all buildings
+ *     description: Get list of all buildings available for survey assignment
+ *     responses:
+ *       200:
+ *         description: List of buildings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Building'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ */
 router.get('/buildings', SurveyController.getAllBuildings);
 
 module.exports = router;

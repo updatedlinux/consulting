@@ -43,6 +43,26 @@ const options = {
               format: 'date-time',
               description: 'Survey end date',
             },
+            building_id: {
+              type: 'integer',
+              nullable: true,
+              description: 'Building ID (null = all buildings)',
+            },
+            building: {
+              type: 'object',
+              nullable: true,
+              properties: {
+                id: {
+                  type: 'integer',
+                  description: 'Building ID',
+                },
+                nombre: {
+                  type: 'string',
+                  description: 'Building name',
+                },
+              },
+              description: 'Building information (null if survey is for all buildings)',
+            },
             status: {
               type: 'string',
               enum: ['open', 'closed'],
@@ -58,6 +78,19 @@ const options = {
               items: {
                 $ref: '#/components/schemas/Question',
               },
+            },
+          },
+        },
+        Building: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'integer',
+              description: 'Building ID',
+            },
+            nombre: {
+              type: 'string',
+              description: 'Building name',
             },
           },
         },
@@ -134,6 +167,11 @@ const options = {
             description: {
               type: 'string',
               description: 'Survey description',
+            },
+            building_id: {
+              type: 'string',
+              description: 'Building ID (use "all" or null for all buildings, or specific building ID)',
+              example: 'all',
             },
             start_date: {
               type: 'string',
