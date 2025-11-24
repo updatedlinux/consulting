@@ -106,31 +106,27 @@ class EmailService {
     console.log('Original surveyData.start_date:', surveyData.start_date);
     console.log('Original surveyData.end_date:', surveyData.end_date);
     
-    // Convert UTC dates to Caracas timezone (GMT-4) for display
-    // The dates come from API already in UTC format (e.g., "2025-10-11T08:00:00.000Z")
-    // We need to adjust the time to represent midnight in GMT-4
-    const startDateObj = new Date(surveyData.start_date);
-    const endDateObj = new Date(surveyData.end_date);
+    // Dates from database are already in GMT-4 format (YYYY-MM-DD HH:MM:SS)
+    // Parse them directly as GMT-4 dates without timezone conversion
+    // Extract date part (YYYY-MM-DD) and parse it as GMT-4 midnight
+    const startDateStr = surveyData.start_date.split(' ')[0]; // Get YYYY-MM-DD
+    const endDateStr = surveyData.end_date.split(' ')[0]; // Get YYYY-MM-DD
     
-    console.log('startDateObj:', startDateObj);
-    console.log('endDateObj:', endDateObj);
+    // Parse as GMT-4 date (add T00:00:00-04:00 to represent midnight GMT-4)
+    const startDateObj = new Date(startDateStr + 'T00:00:00-04:00');
+    const endDateObj = new Date(endDateStr + 'T00:00:00-04:00');
     
-    // Adjust to represent the correct day in GMT-4
-    // If the UTC time is 08:00:00, it means it's midnight GMT-4 (04:00 UTC)
-    // So we need to subtract 4 hours to get the correct GMT-4 date
-    const adjustedStartDate = new Date(startDateObj.getTime() - (4 * 60 * 60 * 1000));
-    const adjustedEndDate = new Date(endDateObj.getTime() - (4 * 60 * 60 * 1000));
+    console.log('startDateObj (GMT-4):', startDateObj);
+    console.log('endDateObj (GMT-4):', endDateObj);
     
-    console.log('adjustedStartDate:', adjustedStartDate);
-    console.log('adjustedEndDate:', adjustedEndDate);
-    
-    const startDate = adjustedStartDate.toLocaleDateString('es-VE', {
+    // Format dates in Spanish (Venezuela) - dates are already in GMT-4
+    const startDate = startDateObj.toLocaleDateString('es-VE', {
       timeZone: 'America/Caracas',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
-    const endDate = adjustedEndDate.toLocaleDateString('es-VE', {
+    const endDate = endDateObj.toLocaleDateString('es-VE', {
       timeZone: 'America/Caracas',
       year: 'numeric',
       month: 'long',
