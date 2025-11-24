@@ -1,4 +1,4 @@
-# Documentación de Endpoints de la API
+## Documentación de Endpoints de la API
 
 ## URL Base
 Todos los endpoints tienen el prefijo `/polls`
