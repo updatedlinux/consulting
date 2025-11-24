@@ -101,18 +101,54 @@ class EmailService {
     }
   }
   
+  // Helper function to extract date string (YYYY-MM-DD) from various date formats
+  extractDateString(dateValue) {
+    if (!dateValue) return null;
+    
+    // If it's already a string
+    if (typeof dateValue === 'string') {
+      // Handle ISO format: 2025-11-25T04:00:00.000Z
+      if (dateValue.includes('T')) {
+        return dateValue.split('T')[0]; // Extract YYYY-MM-DD
+      }
+      // Handle MySQL format: 2025-11-25 00:00:00
+      if (dateValue.includes(' ')) {
+        return dateValue.split(' ')[0]; // Extract YYYY-MM-DD
+      }
+      // Already in YYYY-MM-DD format
+      return dateValue;
+    }
+    
+    // If it's a Date object
+    if (dateValue instanceof Date) {
+      const year = dateValue.getUTCFullYear();
+      const month = String(dateValue.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(dateValue.getUTCDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    
+    return null;
+  }
+
   generateEmailHTML(surveyData, recipient) {
     // Debug: Log the original dates
     console.log('Original surveyData.start_date:', surveyData.start_date);
     console.log('Original surveyData.end_date:', surveyData.end_date);
     
-    // Dates from database are already in GMT-4 format (YYYY-MM-DD HH:MM:SS)
-    // Parse them directly as GMT-4 dates without timezone conversion
-    // Extract date part (YYYY-MM-DD) and parse it as GMT-4 midnight
-    const startDateStr = surveyData.start_date.split(' ')[0]; // Get YYYY-MM-DD
-    const endDateStr = surveyData.end_date.split(' ')[0]; // Get YYYY-MM-DD
+    // Extract date strings (YYYY-MM-DD) from various formats
+    const startDateStr = this.extractDateString(surveyData.start_date);
+    const endDateStr = this.extractDateString(surveyData.end_date);
+    
+    if (!startDateStr || !endDateStr) {
+      console.error('Error: Could not extract date strings from surveyData');
+      return '<p>Error al procesar las fechas de la encuesta</p>';
+    }
+    
+    console.log('Extracted startDateStr:', startDateStr);
+    console.log('Extracted endDateStr:', endDateStr);
     
     // Parse as GMT-4 date (add T00:00:00-04:00 to represent midnight GMT-4)
+    // The dates in DB are stored as YYYY-MM-DD 00:00:00 in GMT-4, so we parse them as GMT-4
     const startDateObj = new Date(startDateStr + 'T00:00:00-04:00');
     const endDateObj = new Date(endDateStr + 'T00:00:00-04:00');
     
